@@ -1,0 +1,7 @@
+-x Main
+-cp tests
+
+--next
+
+-x Main
+-cp src
