@@ -18,6 +18,7 @@ class Commands
 		var url = Repository.fileURL(info, version);
 
 		var cachePath = "cache/" + url.split("/").pop();
+		FileSystem.createDirectory("cache");
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cachePath))
 		{
@@ -36,7 +37,7 @@ class Commands
 		var infos = tools.haxelib.Data.readInfos(zip, false);
 		var basepath = tools.haxelib.Data.locateBasePath(zip);
 
-		var target = "haxelibs/" + info.name + "/" + version + "/";
+		var target = "haxelibs/" + info.name + "/";
 		FileSystem.createDirectory(target);
 
 		for (item in zip)
@@ -59,11 +60,9 @@ class Commands
 				}
 				if (file == "")
 				{
-					if( path != "" ) trace("  Created "+path);
 					continue; // was just a directory
 				}
 				path += file;
-				trace("  Install " + path);
 				var data = haxe.zip.Reader.unzip(item);
 				File.saveBytes(target + path, data);
 			}
