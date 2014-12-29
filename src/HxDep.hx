@@ -22,7 +22,7 @@ class HxDep
 
 	public function new()
 	{
-		commands = new StringMap<Command>();
+		_commands = new StringMap<Command>();
 		var methods = Meta.getStatics(Commands);
 		for (name in Reflect.fields(methods))
 		{
@@ -33,13 +33,13 @@ class HxDep
 	private function addCommand(name:String, meta:Dynamic):Void
 	{
 		var usage = meta.usage.shift();
-		commands.set(name, new Command(name, usage));
+		_commands.set(name, new Command(name, usage));
 	}
 
 	public function usage():Void
 	{
 		Sys.println("Usage:");
-		for (command in commands)
+		for (command in _commands)
 		{
 			Sys.println("  hxl " + command.name + " " + command.helpText);
 		}
@@ -48,11 +48,11 @@ class HxDep
 	public function process(command:String, args:Array<String>):Void
 	{
 		var result = false;
-		if (commands.exists(command))
+		if (_commands.exists(command))
 		{
 			try
 			{
-				result = commands.get(command).func(args);
+				result = _commands.get(command).func(args);
 			}
 			catch (e:Dynamic)
 			{
@@ -67,6 +67,6 @@ class HxDep
 		}
 	}
 
-	private var commands:StringMap<Command>;
+	private var _commands:StringMap<Command>;
 
 }

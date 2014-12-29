@@ -4,17 +4,11 @@ import haxe.io.Bytes;
 class DownloadProgress extends haxe.io.Output
 {
 
-	var fileOutput:haxe.io.Output;
-	var currentBytes:Int;
-	var totalBytes:Int = 0;
-	var totalText:String;
-	var start:Float;
-
 	public function new(out:haxe.io.Output)
 	{
-		fileOutput = out;
-		currentBytes = 0;
-		start = Timer.stamp();
+		_fileOutput = out;
+		_currentBytes = 0;
+		_startTime = Timer.stamp();
 	}
 
 	private function round(number:Float, ?precision=2): Float
@@ -34,29 +28,29 @@ class DownloadProgress extends haxe.io.Output
 
 	function bytes(numBytes:Int):Void
 	{
-		currentBytes += numBytes;
-		if (totalBytes == 0)
+		_currentBytes += numBytes;
+		if (_totalBytes == 0)
 		{
-			Sys.print(currentBytes + " bytes\r");
+			Sys.print(_currentBytes + " bytes\r");
 		}
 		else
 		{
-			var percent = currentBytes / totalBytes;
+			var percent = _currentBytes / _totalBytes;
 			var progressLength = 30;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
-			Sys.print("Downloading [" + progress + "] " + Std.int(percent * 100) + "% of " + totalText + "\r");
+			Sys.print("Downloading [" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r");
 		}
 	}
 
 	public override function writeByte(c):Void
 	{
-		fileOutput.writeByte(c);
+		_fileOutput.writeByte(c);
 		bytes(1);
 	}
 
 	public override function writeBytes(data:Bytes, position:Int, length:Int):Int
 	{
-		var bytesWritten = fileOutput.writeBytes(data, position, length);
+		var bytesWritten = _fileOutput.writeBytes(data, position, length);
 		bytes(bytesWritten);
 		return bytesWritten;
 	}
@@ -64,19 +58,25 @@ class DownloadProgress extends haxe.io.Output
 	public override function close():Void
 	{
 		super.close();
-		fileOutput.close();
+		_fileOutput.close();
 
-		var time = Timer.stamp() - start;
-		var speed = (currentBytes / time) / 1024;
+		var time = Timer.stamp() - _startTime;
+		var speed = (_currentBytes / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		Sys.print("Download complete: " + bytePrettify(currentBytes) + " in " + time + "s (" + speed + "KB/s)\n");
+		Sys.print("Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)\n");
 	}
 
 	public override function prepare(numBytes:Int):Void
 	{
-		totalBytes = numBytes;
-		totalText = bytePrettify(totalBytes);
+		_totalBytes = numBytes;
+		_totalText = bytePrettify(_totalBytes);
 	}
+
+	private var _fileOutput:haxe.io.Output;
+	private var _currentBytes:Int;
+	private var _totalBytes:Int = 0;
+	private var _totalText:String;
+	private var _startTime:Float;
 
 }
