@@ -24,11 +24,21 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function cachePath():String
 	{
+		// TODO: make this relative to the haxelib command?
 		return "/Users/itmbp/Projects/.other/hxlib/cache/";
 	}
 
-	static public function find(name:String, target:String=""):String
+	static public function find(name:String, target:String=null):String
 	{
+		if (target == null) target = Sys.getCwd();
+
+		// search in the current directory first
+		if (FileSystem.exists(target + Data.JSON))
+		{
+			var data = Data.readData(File.getContent(target + Data.JSON), false);
+			if (data.name == name) return target;
+		}
+
 		target += LIB_DIR + "/";
 		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
 		{
@@ -36,11 +46,11 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			{
 				var path = target + item + "/";
 				if (!FileSystem.isDirectory(path)) continue;
-				if (item == name)
+				var data = Data.readData(sys.io.File.getContent(path + Data.JSON), false);
+				if (data.name == name)
 				{
 					return path;
 				}
-				var data = Data.readData(sys.io.File.getContent(path + Data.JSON), false);
 				for (dependency in data.dependencies)
 				{
 					path = find(dependency.name, path);

@@ -64,7 +64,8 @@ class DownloadProgress extends haxe.io.Output
 		var speed = (_currentBytes / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		Sys.print("Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)\n");
+		var out = "Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)";
+		Sys.println(StringTools.rpad(out, " ", 80));
 	}
 
 	public override function prepare(numBytes:Int):Void

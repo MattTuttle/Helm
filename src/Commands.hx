@@ -1,5 +1,6 @@
 import sys.io.File;
 import sys.FileSystem;
+import haxe.ds.StringMap;
 import tools.haxelib.SemVer;
 import tools.haxelib.Data;
 
@@ -15,26 +16,12 @@ class Commands
 
 		if (args.length == 0)
 		{
-			for (item in FileSystem.readDirectory("."))
+			var libs = findDependencies();
+
+			// install libraries found
+			for (lib in libs.keys())
 			{
-				// search hxml file for libraries to install
-				if (item.endsWith("hxml"))
-				{
-					var hxml = File.getContent(item);
-					for (line in hxml.split("\n"))
-					{
-						if (line.startsWith("-lib"))
-						{
-							var lib = line.split(" ").pop();
-							Repository.install(lib);
-						}
-					}
-				}
-				else if (item.endsWith("json"))
-				{
-					var data = Data.readData(item, false);
-					trace(data);
-				}
+				Repository.install(lib, libs.get(lib));
 			}
 		}
 		else
@@ -46,13 +33,13 @@ class Commands
 		return true;
 	}
 
-	@usage("")
-	static public function submit(args:Array<String>):Bool
+	@category("package")
+	static public function publish(args:Array<String>):Bool
 	{
 		return false;
 	}
 
-	@usage("[name license author version]")
+	@usage
 	static public function init(args:Array<String>):Bool
 	{
 		var data = Data.readData(Data.JSON, false);
@@ -71,15 +58,25 @@ class Commands
 	{
 		if (args.length < 1) return false;
 
-		var command = args.shift();
-		var run = Repository.find(command) + "run.n";
+		var name = args.shift();
+		var repo = Repository.find(name);
+		if (repo == null)
+		{
+			throw "Package " + name + " is not installed";
+		}
+		var run = "run.n";
 
-		args.insert(0, Sys.getCwd());
+		if (!FileSystem.exists(repo + run))
+		{
+			throw "Run command not enabled for " + name;
+		}
+
 		args.insert(0, run);
-		// Sys.setCwd(vdir);
-		Sys.putEnv("HAXELIB_RUN", "1");
-		Sys.command("neko", args);
+		args.push(Sys.getCwd());
 
+		Sys.setCwd(repo);
+		Sys.putEnv("HAXELIB_RUN", "1");
+		Sys.exit(Sys.command("neko", args));
 		return true;
 	}
 
@@ -87,7 +84,7 @@ class Commands
 	static public function clean(args:Array<String>):Bool
 	{
 		// FileSystem.deleteDirectory(CACHE_DIR);
-		return true;
+		return false;
 	}
 
 	@usage("package [package ...]")
@@ -193,6 +190,38 @@ class Commands
 		printStringList(names);
 
 		return true;
+	}
+
+	/**
+	 * Returns a list of project dependencies based on files found in the directory
+	 */
+	static private function findDependencies():StringMap<SemVer>
+	{
+		var libs = new StringMap<SemVer>();
+		for (item in FileSystem.readDirectory("."))
+		{
+			// search files for libraries to install
+			if (item.endsWith("hxml"))
+			{
+				for (line in File.getContent(item).split("\n"))
+				{
+					if (line.startsWith("-lib"))
+					{
+						var lib = line.split(" ").pop().split("=");
+						libs.set(lib[0], lib.length > 1 ? SemVer.ofString(lib[1]) : null);
+					}
+				}
+			}
+			else if (item.endsWith("json"))
+			{
+				var data = Data.readData(File.getContent(item), false);
+				for (lib in data.dependencies)
+				{
+					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
+				}
+			}
+		}
+		return libs;
 	}
 
 	/**
