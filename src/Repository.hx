@@ -76,7 +76,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				{
 					return path;
 				}
-				for (dependency in data.dependencies)
+				// search subfolders
+				if (FileSystem.exists(path + LIB_DIR + "/"))
 				{
 					var found = find(name, path);
 					if (found != null) return found;

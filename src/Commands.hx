@@ -253,7 +253,7 @@ class Commands
 			if (col > 80)
 			{
 				Sys.print("\n");
-				col = 0;
+				col = maxLength;
 			}
 			Sys.print(item.rpad(" ", maxLength));
 		}
