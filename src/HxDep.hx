@@ -1,4 +1,5 @@
 import haxe.ds.StringMap;
+import haxe.rtti.Meta;
 
 class Command
 {
@@ -7,11 +8,11 @@ class Command
 	public var helpText(default, null):String;
 	public var func(default, null):Array<String>->Bool;
 
-	public function new(name:String, helpText:String, func:Array<String>->Bool)
+	public function new(name:String, helpText:String)
 	{
 		this.name = name;
 		this.helpText = helpText;
-		this.func = func;
+		this.func = Reflect.field(Commands, name);
 	}
 
 }
@@ -22,17 +23,17 @@ class HxDep
 	public function new()
 	{
 		commands = new StringMap<Command>();
-		addCommand("install", "package [version]", Commands.install);
-		addCommand("path", "package [package ...]", Commands.path);
-		addCommand("search", "package [package ...]", Commands.search);
-		addCommand("info", "package [version]", Commands.info);
-		addCommand("user", "username", Commands.user);
-		addCommand("register", "[username] [email]", Commands.register);
+		var methods = Meta.getStatics(Commands);
+		for (name in Reflect.fields(methods))
+		{
+			addCommand(name, Reflect.field(methods, name));
+		}
 	}
 
-	private function addCommand(name:String, helpText:String, func:Array<String>->Bool):Void
+	private function addCommand(name:String, meta:Dynamic):Void
 	{
-		commands.set(name, new Command(name, helpText, func));
+		var usage = meta.usage.shift();
+		commands.set(name, new Command(name, usage));
 	}
 
 	public function usage():Void

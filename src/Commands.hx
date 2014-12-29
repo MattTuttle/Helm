@@ -8,7 +8,7 @@ using StringTools;
 class Commands
 {
 
-	@:helpText("package [version]")
+	@usage("package [version]")
 	static public function install(args:Array<String>):Bool
 	{
 		if (args.length < 1 || args.length > 2) return false;
@@ -71,7 +71,7 @@ class Commands
 		return true;
 	}
 
-	@:helpText("package [package ...]")
+	@usage("package [package ...]")
 	static public function path(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -88,7 +88,7 @@ class Commands
 		return true;
 	}
 
-	@:helpText("package [version]")
+	@usage("package [version]")
 	static public function info(args:Array<String>):Bool
 	{
 		if (args.length < 1 || args.length > 2) return false;
@@ -130,7 +130,7 @@ class Commands
 		return true;
 	}
 
-	@:helpText("[username] [email]")
+	@usage("[username] [email]")
 	static public function register(args:Array<String>):Bool
 	{
 		var proxy = Repository.instance;
@@ -145,7 +145,7 @@ class Commands
 		return true;
 	}
 
-	@:helpText("username")
+	@usage("username")
 	static public function user(args:Array<String>):Bool
 	{
 		if (args.length != 1) return false;
@@ -158,7 +158,7 @@ class Commands
 		return true;
 	}
 
-	@:helpText("package [package ...]")
+	@usage("package [package ...]")
 	static public function search(args:Array<String>):Bool
 	{
 		if (args.length == 0) return false;
