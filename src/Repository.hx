@@ -28,36 +28,62 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return "/Users/itmbp/Projects/.other/hxlib/cache/";
 	}
 
+	static private function getPackage(path:String):{name:String, dependencies:Array<tools.haxelib.Dependency>}
+	{
+		if (FileSystem.exists(path + Data.JSON))
+		{
+			var data = Data.readData(File.getContent(path + Data.JSON), false);
+			return {
+				name: Std.string(data.name).toLowerCase(),
+				dependencies: data.dependencies
+			};
+		}
+		return {
+			name: "",
+			dependencies: null
+		};
+	}
+
 	static public function find(name:String, target:String=null):String
 	{
 		if (target == null) target = Sys.getCwd();
 
-		// search in the current directory first
-		if (FileSystem.exists(target + Data.JSON))
+		name = name.toLowerCase();
+
+		// if the name is already in the path, check it first
+		var index = target.toLowerCase().lastIndexOf(name);
+		if (index != -1)
 		{
-			var data = Data.readData(File.getContent(target + Data.JSON), false);
-			if (data.name == name) return target;
+			var path = target.substr(0, index + name.length) + "/";
+			if (getPackage(path).name == name) return path;
 		}
 
+		// search in the current directory for a haxelib.json file
+		if (getPackage(target).name == name)
+		{
+			return target;
+		}
+
+		// search libs directory
 		target += LIB_DIR + "/";
 		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
 		{
 			for (item in FileSystem.readDirectory(target))
 			{
 				var path = target + item + "/";
-				if (!FileSystem.isDirectory(path)) continue;
-				var data = Data.readData(sys.io.File.getContent(path + Data.JSON), false);
+				var data = getPackage(path);
 				if (data.name == name)
 				{
 					return path;
 				}
 				for (dependency in data.dependencies)
 				{
-					path = find(dependency.name, path);
-					if (path != null) return path;
+					var found = find(name, path);
+					if (found != null) return found;
 				}
 			}
 		}
+
 		return null;
 	}
 
