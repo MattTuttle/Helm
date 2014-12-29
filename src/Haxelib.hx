@@ -17,7 +17,7 @@ class Command
 
 }
 
-class HxDep
+class Haxelib
 {
 
 	public function new()
@@ -26,14 +26,10 @@ class HxDep
 		var methods = Meta.getStatics(Commands);
 		for (name in Reflect.fields(methods))
 		{
-			addCommand(name, Reflect.field(methods, name));
+			var meta = Reflect.field(methods, name);
+			var usage = meta.usage != null ? meta.usage.shift() : "";
+			_commands.set(name, new Command(name, usage));
 		}
-	}
-
-	private function addCommand(name:String, meta:Dynamic):Void
-	{
-		var usage = meta.usage.shift();
-		_commands.set(name, new Command(name, usage));
 	}
 
 	public function usage():Void
@@ -41,7 +37,7 @@ class HxDep
 		Sys.println("Usage:");
 		for (command in _commands)
 		{
-			Sys.println("  hxl " + command.name + " " + command.helpText);
+			Sys.println("  haxelib " + command.name + " " + command.helpText);
 		}
 	}
 

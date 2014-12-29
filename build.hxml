@@ -3,5 +3,8 @@
 
 --next
 
--x Main
+-neko Hxl.n
+-main Main
 -cp src
+# -cmd neko Hxl.n install haxepunk
+-cmd neko Hxl.n path haxepunk

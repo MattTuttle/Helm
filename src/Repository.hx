@@ -1,10 +1,18 @@
+import haxe.Http;
+import sys.io.File;
+import sys.FileSystem;
 import tools.haxelib.SemVer;
 import tools.haxelib.Data;
+
+using StringTools;
 
 class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 {
 
 	// TODO: setup a mirror list for multiple repository servers
+	static public var LIB_DIR:String = "libs";
+	static public var NDLL_DIR:String = "ndll";
+
 	static public var url = "http://lib.haxe.org/";
 	static public var apiVersion = "3.0";
 
@@ -12,6 +20,146 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static private function get_instance():Repository
 	{
 		return new Repository(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
+	}
+
+	static public function cachePath():String
+	{
+		return "/Users/itmbp/Projects/.other/hxlib/cache/";
+	}
+
+	static public function find(name:String, target:String=""):String
+	{
+		target += LIB_DIR + "/";
+		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
+		{
+			for (item in FileSystem.readDirectory(target))
+			{
+				var path = target + item + "/";
+				if (!FileSystem.isDirectory(path)) continue;
+				if (item == name)
+				{
+					return path;
+				}
+				var data = Data.readData(sys.io.File.getContent(path + Data.JSON), false);
+				for (dependency in data.dependencies)
+				{
+					path = find(dependency.name, path);
+					if (path != null) return path;
+				}
+			}
+		}
+		return null;
+	}
+
+	static public function print(name:String, target:String=null):Void
+	{
+		if (target == null) target = find(name);
+		else target += LIB_DIR + "/" + name + "/";
+
+		if (target != null && FileSystem.exists(target))
+		{
+			var lib = target + NDLL_DIR + "/";
+			if (FileSystem.exists(lib))
+			{
+				Sys.println("-L " + lib);
+			}
+			Sys.println(target);
+			Sys.println("-D " + name);
+			var data = Data.readData(sys.io.File.getContent(target + Data.JSON), false);
+			for (dependency in data.dependencies)
+			{
+				print(dependency.name, target);
+			}
+		}
+		else
+		{
+			throw "Package '" + name + "' is not installed.";
+		}
+	}
+
+	static public function download(name:String, version:SemVer):String
+	{
+		var info = Repository.instance.infos(name);
+		var url = Repository.fileURL(info, version);
+
+		var cache = cachePath() + url.split("/").pop();
+		FileSystem.createDirectory(cachePath());
+		// TODO: allow to redownload with --force argument
+		if (!FileSystem.exists(cache))
+		{
+			var out = File.write(cache, true);
+			var progress = new DownloadProgress(out);
+			var http = new Http(url);
+			http.onError = function(error) {
+				progress.close();
+			};
+			http.customRequest(false, progress);
+		}
+
+		return cache;
+	}
+
+	static public function install(name:String, ?version:SemVer, target:String="")
+	{
+		var path = download(name, version);
+
+		var f = File.read(path, true);
+		var zip = haxe.zip.Reader.readZip(f);
+		f.close();
+		var infos = Data.readInfos(zip, false);
+		var basepath = Data.locateBasePath(zip);
+
+		target += LIB_DIR + "/" + name + "/";
+		FileSystem.createDirectory(target);
+
+		var totalItems = zip.length,
+			unzippedItems = 0;
+		for (item in zip)
+		{
+			var percent = unzippedItems++ / totalItems;
+			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.round(20 * percent)), " ", 20);
+			Sys.print("Unpacking [" + progress + "] " + unzippedItems + "/" + totalItems + "\r");
+
+			var name = item.fileName;
+			if (name.startsWith(basepath))
+			{
+				// remove basepath
+				name = name.substr(basepath.length, name.length - basepath.length);
+				if (name.charAt(0) == "/" || name.charAt(0) == "\\" || name.split("..").length > 1)
+					throw "Invalid filename : " + name;
+				var dirs = ~/[\/\\]/g.split(name);
+				var path = "";
+				var file = dirs.pop();
+				for (dir in dirs)
+				{
+					path += dir;
+					FileSystem.createDirectory(target + path);
+					path += "/";
+				}
+				if (file == "")
+				{
+					continue; // was just a directory
+				}
+				path += file;
+				var data = haxe.zip.Reader.unzip(item);
+				File.saveBytes(target + path, data);
+			}
+		}
+		var out = "Installed '" + name + "' in " + target;
+		Sys.println(out.rpad(" ", 80));
+
+		for (d in infos.dependencies)
+		{
+			try
+			{
+				version = SemVer.ofString(d.version);
+			}
+			catch(e:Dynamic)
+			{
+				version = null;
+			}
+			install(d.name, version, target);
+		}
 	}
 
 	static public function fileURL(info:ProjectInfos, version:SemVer=null):String

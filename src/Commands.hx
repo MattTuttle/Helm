@@ -1,73 +1,92 @@
-import haxe.Http;
 import sys.io.File;
 import sys.FileSystem;
 import tools.haxelib.SemVer;
+import tools.haxelib.Data;
 
 using StringTools;
 
 class Commands
 {
 
-	@usage("package [version]")
+	@usage("[package [version]]")
 	static public function install(args:Array<String>):Bool
 	{
-		if (args.length < 1 || args.length > 2) return false;
+		if (args.length > 2) return false;
 
-		var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
-		var info = Repository.instance.infos(args[0]);
-		var url = Repository.fileURL(info, version);
-
-		var cachePath = "cache/" + url.split("/").pop();
-		FileSystem.createDirectory("cache");
-		// TODO: allow to redownload with --force argument
-		if (!FileSystem.exists(cachePath))
+		if (args.length == 0)
 		{
-			var out = File.write(cachePath, true);
-			var progress = new DownloadProgress(out);
-			var http = new Http(url);
-			http.onError = function(error) {
-				progress.close();
-			};
-			http.customRequest(false, progress);
-		}
-
-		var f = File.read(cachePath, true);
-		var zip = haxe.zip.Reader.readZip(f);
-		f.close();
-		var infos = tools.haxelib.Data.readInfos(zip, false);
-		var basepath = tools.haxelib.Data.locateBasePath(zip);
-
-		var target = "haxelibs/" + info.name + "/";
-		FileSystem.createDirectory(target);
-
-		for (item in zip)
-		{
-			var name = item.fileName;
-			if (name.startsWith(basepath))
+			for (item in FileSystem.readDirectory("."))
 			{
-				// remove basepath
-				name = name.substr(basepath.length, name.length - basepath.length);
-				if (name.charAt(0) == "/" || name.charAt(0) == "\\" || name.split("..").length > 1)
-					throw "Invalid filename : " + name;
-				var dirs = ~/[\/\\]/g.split(name);
-				var path = "";
-				var file = dirs.pop();
-				for (dir in dirs)
+				// search hxml file for libraries to install
+				if (item.endsWith("hxml"))
 				{
-					path += dir;
-					FileSystem.createDirectory(target + path);
-					path += "/";
+					var hxml = File.getContent(item);
+					for (line in hxml.split("\n"))
+					{
+						if (line.startsWith("-lib"))
+						{
+							var lib = line.split(" ").pop();
+							Repository.install(lib);
+						}
+					}
 				}
-				if (file == "")
+				else if (item.endsWith("json"))
 				{
-					continue; // was just a directory
+					var data = Data.readData(item, false);
+					trace(data);
 				}
-				path += file;
-				var data = haxe.zip.Reader.unzip(item);
-				File.saveBytes(target + path, data);
 			}
 		}
+		else
+		{
+			var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
+			Repository.install(args[0], version);
+		}
 
+		return true;
+	}
+
+	@usage("")
+	static public function submit(args:Array<String>):Bool
+	{
+		return false;
+	}
+
+	@usage("[name license author version]")
+	static public function init(args:Array<String>):Bool
+	{
+		var data = Data.readData(Data.JSON, false);
+		data.name = ProjectName.ofString("");
+		var json = haxe.Json.stringify(data);
+		// beautify json
+		json = json.replace(',', ',\n\t').replace('{', '{\n\t').replace('}', '\n}');
+		var out = sys.io.File.write(Data.JSON);
+		out.writeString(json);
+		out.close();
+		return true;
+	}
+
+	@usage("package [args ...]")
+	static public function run(args:Array<String>):Bool
+	{
+		if (args.length < 1) return false;
+
+		var command = args.shift();
+		var run = Repository.find(command) + "run.n";
+
+		args.insert(0, Sys.getCwd());
+		args.insert(0, run);
+		// Sys.setCwd(vdir);
+		Sys.putEnv("HAXELIB_RUN", "1");
+		Sys.command("neko", args);
+
+		return true;
+	}
+
+	@category("repository")
+	static public function clean(args:Array<String>):Bool
+	{
+		// FileSystem.deleteDirectory(CACHE_DIR);
 		return true;
 	}
 
@@ -78,11 +97,7 @@ class Commands
 
 		for (name in args)
 		{
-			var target = "haxelibs/" + name + "/";
-			if (FileSystem.exists(target))
-			{
-				trace(target);
-			}
+			Repository.print(name);
 		}
 
 		return true;
@@ -205,13 +220,13 @@ class Commands
 		});
 		for (item in array)
 		{
-			Sys.print(item.rpad(" ", maxLength));
 			col += maxLength;
 			if (col > 80)
 			{
 				Sys.print("\n");
 				col = 0;
 			}
+			Sys.print(item.rpad(" ", maxLength));
 		}
 		if (col > 0) Sys.print("\n"); // add newline, if not at beginning of line
 	}
