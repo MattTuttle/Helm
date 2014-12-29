@@ -23,6 +23,7 @@ class HxDep
 	{
 		commands = new StringMap<Command>();
 		addCommand("install", "package [version]", Commands.install);
+		addCommand("path", "package [package ...]", Commands.path);
 		addCommand("search", "package [package ...]", Commands.search);
 		addCommand("info", "package [version]", Commands.info);
 		addCommand("user", "username", Commands.user);

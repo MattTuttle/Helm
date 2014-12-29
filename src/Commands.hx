@@ -71,6 +71,23 @@ class Commands
 		return true;
 	}
 
+	@:helpText("package [package ...]")
+	static public function path(args:Array<String>):Bool
+	{
+		if (args.length < 1) return false;
+
+		for (name in args)
+		{
+			var target = "haxelibs/" + name + "/";
+			if (FileSystem.exists(target))
+			{
+				trace(target);
+			}
+		}
+
+		return true;
+	}
+
 	@:helpText("package [version]")
 	static public function info(args:Array<String>):Bool
 	{
