@@ -107,13 +107,13 @@ class Commands
 
 		var info = Repository.instance.infos(args[0]);
 
-		Sys.println(info.name + " [" + info.website + "]");
-		Sys.println(info.desc + "\n");
-		Sys.println("   Owner: " + info.owner);
-		Sys.println(" License: " + info.license);
-		Sys.println("    Tags: " + info.tags.join(", "));
-
-		Sys.print("\n");
+		Logger.log(info.name + " [" + info.website + "]");
+		Logger.log(info.desc);
+		Logger.log();
+		Logger.log("   Owner: " + info.owner);
+		Logger.log(" License: " + info.license);
+		Logger.log("    Tags: " + info.tags.join(", "));
+		Logger.log();
 
 		if (args.length == 2)
 		{
@@ -124,9 +124,9 @@ class Commands
 			{
 				if (SemVer.ofString(version.name) == requestedVersion)
 				{
-					Sys.println(" Version: " + version.name);
-					Sys.println("    Date: " + version.date);
-					Sys.println(" Comment: " + version.comments);
+					Logger.log(" Version: " + version.name);
+					Logger.log("    Date: " + version.date);
+					Logger.log(" Comment: " + version.comments);
 					break;
 				}
 			}
@@ -135,7 +135,7 @@ class Commands
 		{
 			var versions = new Array<String>();
 			for (version in info.versions) { versions.push(version.name); }
-			Sys.println("Versions: (current = " + info.curversion + ")");
+			Logger.log("Versions: (current = " + info.curversion + ")");
 			printStringList(versions, false);
 		}
 
@@ -163,8 +163,9 @@ class Commands
 		if (args.length != 1) return false;
 
 		var user = Repository.instance.user(args[0]);
-		Sys.println(user.fullname + " [" + user.email + "]");
-		Sys.println("\nPackages:");
+		Logger.log(user.fullname + " [" + user.email + "]");
+		Logger.log();
+		Logger.log("Packages:");
 		printStringList(user.projects);
 
 		return true;
@@ -252,12 +253,12 @@ class Commands
 			col += maxLength;
 			if (col > 80)
 			{
-				Sys.print("\n");
+				Logger.log();
 				col = maxLength;
 			}
-			Sys.print(item.rpad(" ", maxLength));
+			Logger.log(item.rpad(" ", maxLength), false);
 		}
-		if (col > 0) Sys.print("\n"); // add newline, if not at beginning of line
+		if (col > 0) Logger.log(); // add newline, if not at beginning of line
 	}
 
 }

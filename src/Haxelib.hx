@@ -34,10 +34,10 @@ class Haxelib
 
 	public function usage():Void
 	{
-		Sys.println("Usage:");
+		Logger.log("Usage:");
 		for (command in _commands)
 		{
-			Sys.println("  haxelib " + command.name + " " + command.helpText);
+			Logger.log("  haxelib " + command.name + " " + command.helpText);
 		}
 	}
 
@@ -52,7 +52,7 @@ class Haxelib
 			}
 			catch (e:Dynamic)
 			{
-				Sys.println(e);
+				Logger.log(e);
 				return;
 			}
 		}
@@ -60,6 +60,22 @@ class Haxelib
 		if (!result)
 		{
 			usage();
+		}
+	}
+
+	static public function main()
+	{
+		var args = Sys.args();
+
+		var lib = new Haxelib();
+		if (args.length < 1)
+		{
+			lib.usage();
+		}
+		else
+		{
+			var command = args.shift();
+			lib.process(command, args);
 		}
 	}
 

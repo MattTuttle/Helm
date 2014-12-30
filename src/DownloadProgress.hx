@@ -31,14 +31,14 @@ class DownloadProgress extends haxe.io.Output
 		_currentBytes += numBytes;
 		if (_totalBytes == 0)
 		{
-			Sys.print(_currentBytes + " bytes\r");
+			Logger.log(_currentBytes + " bytes" + "\r", false);
 		}
 		else
 		{
 			var percent = _currentBytes / _totalBytes;
 			var progressLength = 30;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
-			Sys.print("Downloading [" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r");
+			Logger.log("Downloading [" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r", false);
 		}
 	}
 
@@ -64,8 +64,7 @@ class DownloadProgress extends haxe.io.Output
 		var speed = (_currentBytes / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		var out = "Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)";
-		Sys.println(StringTools.rpad(out, " ", 80));
+		Logger.log("Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)");
 	}
 
 	public override function prepare(numBytes:Int):Void

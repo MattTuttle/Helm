@@ -1,7 +1,7 @@
 class TestLib extends haxe.unit.TestCase
 {
-	public function testHi()
+	public function testPackageInfo()
 	{
-		assertTrue(true);
+		assertTrue(Commands.info(["format"]));
 	}
 }

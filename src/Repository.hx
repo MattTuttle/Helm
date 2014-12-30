@@ -98,10 +98,10 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			var lib = target + NDLL_DIR + "/";
 			if (FileSystem.exists(lib))
 			{
-				Sys.println("-L " + lib);
+				Logger.log("-L " + lib);
 			}
-			Sys.println(target);
-			Sys.println("-D " + name);
+			Logger.log(target);
+			Logger.log("-D " + name);
 			var data = Data.readData(sys.io.File.getContent(target + Data.JSON), false);
 			for (dependency in data.dependencies)
 			{
@@ -155,7 +155,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		{
 			var percent = unzippedItems++ / totalItems;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.round(20 * percent)), " ", 20);
-			Sys.print("Unpacking [" + progress + "] " + unzippedItems + "/" + totalItems + "\r");
+			Logger.log("Unpacking [" + progress + "] " + unzippedItems + "/" + totalItems + "\r", false);
 
 			var name = item.fileName;
 			if (name.startsWith(basepath))
@@ -182,8 +182,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				File.saveBytes(target + path, data);
 			}
 		}
-		var out = "Installed '" + name + "' in " + target;
-		Sys.println(out.rpad(" ", 80));
+		Logger.log("Installed '" + name + "' in " + target);
 
 		for (d in infos.dependencies)
 		{

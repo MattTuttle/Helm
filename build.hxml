@@ -1,9 +1,10 @@
--x Main
+-x TestMain
 -cp tests
+-cp src
 
 --next
 
--neko Hxl.n
--main Main
+-neko haxelib.n
+-main Haxelib
 -cp src
 # -cmd neko Hxl.n path haxepunk
