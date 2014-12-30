@@ -1,6 +1,5 @@
 import sys.io.File;
 import sys.FileSystem;
-import haxe.ds.StringMap;
 import tools.haxelib.SemVer;
 import tools.haxelib.Data;
 
@@ -16,7 +15,7 @@ class Commands
 
 		if (args.length == 0)
 		{
-			var libs = findDependencies();
+			var libs = Repository.findDependencies(Sys.getCwd());
 
 			// install libraries found
 			for (lib in libs.keys())
@@ -136,7 +135,7 @@ class Commands
 			var versions = new Array<String>();
 			for (version in info.versions) { versions.push(version.name); }
 			Logger.log("Versions: (current = " + info.curversion + ")");
-			printStringList(versions, false);
+			Logger.logList(versions, false);
 		}
 
 		return true;
@@ -166,7 +165,7 @@ class Commands
 		Logger.log(user.fullname + " [" + user.email + "]");
 		Logger.log();
 		Logger.log("Packages:");
-		printStringList(user.projects);
+		Logger.logList(user.projects);
 
 		return true;
 	}
@@ -188,77 +187,9 @@ class Commands
 		}
 
 		// print names in columns sorted alphabetically
-		printStringList(names);
+		Logger.logList(names);
 
 		return true;
-	}
-
-	/**
-	 * Returns a list of project dependencies based on files found in the directory
-	 */
-	static private function findDependencies():StringMap<SemVer>
-	{
-		var libs = new StringMap<SemVer>();
-		for (item in FileSystem.readDirectory("."))
-		{
-			// search files for libraries to install
-			if (item.endsWith("hxml"))
-			{
-				for (line in File.getContent(item).split("\n"))
-				{
-					if (line.startsWith("-lib"))
-					{
-						var lib = line.split(" ").pop().split("=");
-						libs.set(lib[0], lib.length > 1 ? SemVer.ofString(lib[1]) : null);
-					}
-				}
-			}
-			else if (item.endsWith("json"))
-			{
-				var data = Data.readData(File.getContent(item), false);
-				for (lib in data.dependencies)
-				{
-					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
-				}
-			}
-		}
-		return libs;
-	}
-
-	/**
-	 * Prints a string list in multiple columns
-	 */
-	static private function printStringList(list:Iterable<String>, ascending:Bool = true):Void
-	{
-		var maxLength = 0, col = 0;
-		var array = new Array<String>();
-		for (item in list)
-		{
-			if (item.length > maxLength) maxLength = item.length;
-			array.push(item); // copy to array so sorting works...
-		}
-
-		maxLength += 2; // add padding
-
-		array.sort(function (a:String, b:String):Int {
-			a = a.toLowerCase();
-			b = b.toLowerCase();
-			if (ascending)
-				return (a > b ? 1 : (a < b ? -1 : 0));
-			else
-				return (a > b ? -1 : (a < b ? 1 : 0));
-		});
-		for (item in array)
-		{
-			col += maxLength;
-			if (col > 80)
-			{
-				Logger.log();
-				col = maxLength;
-			}
-			Logger.log(item.rpad(" ", maxLength), false);
-		}
-		if (col > 0) Logger.log(); // add newline, if not at beginning of line
 	}
 
 }

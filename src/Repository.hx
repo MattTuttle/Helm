@@ -1,4 +1,5 @@
 import haxe.Http;
+import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
 import tools.haxelib.SemVer;
@@ -86,6 +87,38 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns a list of project dependencies based on files found in the directory
+	 */
+	static public function findDependencies(dir:String):StringMap<SemVer>
+	{
+		var libs = new StringMap<SemVer>();
+		for (item in FileSystem.readDirectory(dir))
+		{
+			// search files for libraries to install
+			if (item.endsWith("hxml"))
+			{
+				for (line in File.getContent(item).split("\n"))
+				{
+					if (line.startsWith("-lib"))
+					{
+						var lib = line.split(" ").pop().split("=");
+						libs.set(lib[0], lib.length > 1 ? SemVer.ofString(lib[1]) : null);
+					}
+				}
+			}
+			else if (item.endsWith("json"))
+			{
+				var data = Data.readData(File.getContent(item), false);
+				for (lib in data.dependencies)
+				{
+					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
+				}
+			}
+		}
+		return libs;
 	}
 
 	static public function print(name:String, target:String=null):Void
