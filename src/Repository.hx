@@ -7,6 +7,12 @@ import tools.haxelib.Data;
 
 using StringTools;
 
+typedef Package = {
+	name:String,
+	version:SemVer,
+	packages: Array<Package>
+};
+
 class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 {
 
@@ -45,10 +51,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		};
 	}
 
-	static public function find(name:String, target:String=null):String
+	static public function find(name:String, target:String):String
 	{
-		if (target == null) target = Sys.getCwd();
-
 		name = name.toLowerCase();
 
 		// if the name is already in the path, check it first
@@ -89,6 +93,55 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return null;
 	}
 
+	static public function printPackages(list:Array<Package>, ?level:Array<Bool>):Void
+	{
+		if (level == null) level = [true];
+
+		var numItems = list.length, i = 0;
+		for (item in list)
+		{
+			i += 1;
+			var start = "";
+			level[level.length - 1] = (i == numItems);
+			for (j in 0...level.length - 1)
+			{
+				start += (level[j] ? "   " : "│  ");
+			}
+			var separator = (i == numItems ? "└" : "├") + "── ";
+			Logger.log(start + separator + item.name + "@" + item.version);
+
+			if (item.packages.length > 0)
+			{
+				level.push(true);
+				printPackages(item.packages, level);
+				level.pop();
+			}
+		}
+	}
+
+	static public function list(dir:String):Array<Package>
+	{
+		var packages = new Array<Package>();
+		var libs = dir + LIB_DIR + "/";
+		if (FileSystem.exists(libs) && FileSystem.isDirectory(libs))
+		{
+			for (item in FileSystem.readDirectory(libs))
+			{
+				var path = libs + item + "/";
+				if (FileSystem.exists(path + Data.JSON))
+				{
+					var data = Data.readData(File.getContent(path + Data.JSON), false);
+					packages.push({
+						name: data.name,
+						version: data.version,
+						packages: list(path)
+					});
+				}
+			}
+		}
+		return packages;
+	}
+
 	/**
 	 * Returns a list of project dependencies based on files found in the directory
 	 */
@@ -123,7 +176,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function print(name:String, target:String=null):Void
 	{
-		if (target == null) target = find(name);
+		if (target == null) target = find(name, Sys.getCwd());
 		else target += LIB_DIR + "/" + name + "/";
 
 		if (target != null && FileSystem.exists(target))

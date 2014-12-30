@@ -9,6 +9,7 @@ class Commands
 {
 
 	@usage("[package [version]]")
+	@alias("isntall") // TODO: allow for command aliases
 	static public function install(args:Array<String>):Bool
 	{
 		if (args.length > 2) return false;
@@ -38,6 +39,15 @@ class Commands
 		return false;
 	}
 
+	@category("package")
+	static public function list(args:Array<String>):Bool
+	{
+		var cwd = Sys.getCwd();
+		Logger.log(cwd);
+		Repository.printPackages(Repository.list(cwd));
+		return true;
+	}
+
 	@usage
 	static public function init(args:Array<String>):Bool
 	{
@@ -58,7 +68,7 @@ class Commands
 		if (args.length < 1) return false;
 
 		var name = args.shift();
-		var repo = Repository.find(name);
+		var repo = Repository.find(name, Sys.getCwd());
 		if (repo == null)
 		{
 			throw "Package " + name + " is not installed";
