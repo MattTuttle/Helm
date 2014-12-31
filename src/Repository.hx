@@ -7,10 +7,10 @@ import tools.haxelib.Data;
 
 using StringTools;
 
-typedef Package = {
+typedef PackageInfo = {
 	name:String,
 	version:SemVer,
-	packages: Array<Package>
+	packages: Array<PackageInfo>
 };
 
 class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
@@ -42,20 +42,18 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return "/usr/local/lib/haxe/";
 	}
 
-	static private function getPackage(path:String):{name:String, dependencies:Array<tools.haxelib.Dependency>}
+	static public function loadPackageInfo(path:String):PackageInfo
 	{
 		if (FileSystem.exists(path + Data.JSON))
 		{
 			var data = Data.readData(File.getContent(path + Data.JSON), false);
 			return {
 				name: Std.string(data.name).toLowerCase(),
-				dependencies: data.dependencies
+				version: data.version,
+				packages: list(path)
 			};
 		}
-		return {
-			name: "",
-			dependencies: null
-		};
+		return null;
 	}
 
 	static public function findPackage(name:String):String
@@ -70,6 +68,12 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return repo;
 	}
 
+	static private function hasPackageNamed(path:String, name:String):Bool
+	{
+		var info = loadPackageInfo(path);
+		return (info != null && info.name == name);
+	}
+
 	static private function findPackageIn(name:String, target:String):String
 	{
 		name = name.toLowerCase();
@@ -79,11 +83,11 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		if (index != -1)
 		{
 			var path = target.substr(0, index + name.length) + "/";
-			if (getPackage(path).name == name) return path;
+			if (hasPackageNamed(path, name)) return path;
 		}
 
 		// search in the current directory for a haxelib.json file
-		if (getPackage(target).name == name)
+		if (hasPackageNamed(target, name))
 		{
 			return target;
 		}
@@ -95,8 +99,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			for (item in FileSystem.readDirectory(target))
 			{
 				var path = target + item + "/";
-				var data = getPackage(path);
-				if (data.name == name)
+				if (hasPackageNamed(path, name))
 				{
 					return path;
 				}
@@ -112,7 +115,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return null;
 	}
 
-	static public function printPackages(list:Array<Package>, ?level:Array<Bool>):Void
+	static public function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>):Void
 	{
 		if (level == null) level = [true];
 
@@ -139,24 +142,17 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 	}
 
-	static public function list(dir:String):Array<Package>
+	static public function list(dir:String):Array<PackageInfo>
 	{
-		var packages = new Array<Package>();
+		var packages = new Array<PackageInfo>();
 		var libs = dir + LIB_DIR + "/";
 		if (FileSystem.exists(libs) && FileSystem.isDirectory(libs))
 		{
 			for (item in FileSystem.readDirectory(libs))
 			{
 				var path = libs + item + "/";
-				if (FileSystem.exists(path + Data.JSON))
-				{
-					var data = Data.readData(File.getContent(path + Data.JSON), false);
-					packages.push({
-						name: data.name,
-						version: data.version,
-						packages: list(path)
-					});
-				}
+				var info = loadPackageInfo(path);
+				if (info != null) packages.push(info);
 			}
 		}
 		return packages;
@@ -194,9 +190,9 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return libs;
 	}
 
-	static public function print(name:String, target:String=null):Void
+	static public function printInclude(name:String, target:String=null):Void
 	{
-		if (target == null) target = findPackageIn(name, Sys.getCwd());
+		if (target == null) target = findPackage(name);
 		else target += LIB_DIR + "/" + name + "/";
 
 		if (target != null && FileSystem.exists(target))
@@ -211,7 +207,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			var data = Data.readData(sys.io.File.getContent(target + Data.JSON), false);
 			for (dependency in data.dependencies)
 			{
-				print(dependency.name, target);
+				printInclude(dependency.name, target);
 			}
 		}
 		else

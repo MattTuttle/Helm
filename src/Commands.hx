@@ -25,6 +25,8 @@ class Commands
 			}
 		}
 
+		// TODO: handle cancelled downloads
+
 		if (args.length == 0)
 		{
 			var libs = Repository.findDependencies(Sys.getCwd());
@@ -96,7 +98,8 @@ class Commands
 		if (args.length < 1) return false;
 
 		var repo = Repository.findPackage(args.shift());
-		Logger.log(repo);
+		var info = Repository.loadPackageInfo(repo);
+		Logger.log(repo + " [" + info.version + "]");
 		return true;
 	}
 
@@ -139,7 +142,7 @@ class Commands
 
 		for (name in args)
 		{
-			Repository.print(name);
+			Repository.printInclude(name);
 		}
 
 		return true;
