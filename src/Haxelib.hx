@@ -47,7 +47,7 @@ class Haxelib
 		}
 		for (category in categories.keys())
 		{
-			Logger.log("  " + category);
+			Logger.log("-- " + category + " --");
 			var list = categories.get(category);
 			list.sort(function(a:Command, b:Command):Int {
 				return (a.name > b.name ? 1 : (a.name < b.name ? -1 : 0));
@@ -56,6 +56,7 @@ class Haxelib
 			{
 				Logger.log("    haxelib " + command.name + " " + command.helpText);
 			}
+			Logger.log();
 		}
 	}
 

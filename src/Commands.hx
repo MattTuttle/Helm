@@ -10,7 +10,7 @@ class Commands
 
 	@usage("[package [version]]")
 	@alias("isntall") // TODO: allow for command aliases
-	@category("package")
+	@category("development")
 	static public function install(args:Array<String>):Bool
 	{
 		if (args.length > 2) return false;
@@ -47,7 +47,7 @@ class Commands
 		return true;
 	}
 
-	@category("repository")
+	@category("development")
 	static public function upgrade(args:Array<String>):Bool
 	{
 		var path = Sys.getCwd();
@@ -65,13 +65,13 @@ class Commands
 		return true;
 	}
 
-	@category("package")
+	@category("development")
 	static public function publish(args:Array<String>):Bool
 	{
 		return false;
 	}
 
-	@category("package")
+	@category("information")
 	static public function list(args:Array<String>):Bool
 	{
 		var path = Sys.getCwd();
@@ -97,7 +97,7 @@ class Commands
 		return true;
 	}
 
-	@category("package")
+	@category("development")
 	static public function init(args:Array<String>):Bool
 	{
 		// TODO: make this interactive and less crappy...
@@ -113,7 +113,7 @@ class Commands
 	}
 
 	@usage("package")
-	@category("repository")
+	@category("information")
 	static public function which(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -125,7 +125,7 @@ class Commands
 	}
 
 	@usage("package [args ...]")
-	@category("repository")
+	@category("development")
 	static public function run(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -150,7 +150,7 @@ class Commands
 		return true;
 	}
 
-	@category("cache")
+	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
 		Repository.clearCache();
@@ -158,7 +158,7 @@ class Commands
 	}
 
 	@usage("package [package ...]")
-	@category("repository")
+	@category("information")
 	static public function path(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -171,8 +171,24 @@ class Commands
 		return true;
 	}
 
+	@usage("[username] [email]")
+	@category("development")
+	static public function register(args:Array<String>):Bool
+	{
+		var proxy = Repository.instance;
+		var username = "heardtheword";
+		var email = "heardtheword@gmail.com";
+		var password = "";
+		var name = "Matt Tuttle";
+		if (proxy.isNewUser(username))
+		{
+			proxy.register(username, password, email, name);
+		}
+		return true;
+	}
+
 	@usage("package [version]")
-	@category("server")
+	@category("information")
 	static public function info(args:Array<String>):Bool
 	{
 		if (args.length < 1 || args.length > 2) return false;
@@ -214,24 +230,8 @@ class Commands
 		return true;
 	}
 
-	@usage("[username] [email]")
-	@category("server")
-	static public function register(args:Array<String>):Bool
-	{
-		var proxy = Repository.instance;
-		var username = "heardtheword";
-		var email = "heardtheword@gmail.com";
-		var password = "";
-		var name = "Matt Tuttle";
-		if (proxy.isNewUser(username))
-		{
-			proxy.register(username, password, email, name);
-		}
-		return true;
-	}
-
 	@usage("username")
-	@category("server")
+	@category("information")
 	static public function user(args:Array<String>):Bool
 	{
 		if (args.length != 1) return false;
@@ -246,7 +246,7 @@ class Commands
 	}
 
 	@usage("package [package ...]")
-	@category("server")
+	@category("information")
 	static public function search(args:Array<String>):Bool
 	{
 		if (args.length == 0) return false;
