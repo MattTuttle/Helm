@@ -24,15 +24,22 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static public var apiVersion = "3.0";
 
 	static public var instance(get, never):Repository;
+	@:access(haxe.remoting.HttpConnection)
 	static private function get_instance():Repository
 	{
-		return new Repository(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
+		var connection = new haxe.remoting.HttpConnection(url + "api/" + apiVersion + "/index.n", []);
+		return new Repository(connection.api);
 	}
 
 	static public function cachePath():String
 	{
+		return globalPath() + "cache/";
+	}
+
+	static public function globalPath():String
+	{
 		// TODO: make this relative to the haxelib command?
-		return "/Users/itmbp/Projects/.other/hxlib/cache/";
+		return "/usr/local/lib/haxe/";
 	}
 
 	static private function getPackage(path:String):{name:String, dependencies:Array<tools.haxelib.Dependency>}
@@ -51,7 +58,19 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		};
 	}
 
-	static public function find(name:String, target:String):String
+	static public function findPackage(name:String):String
+	{
+		var repo = Repository.findPackageIn(name, Sys.getCwd());
+		if (repo == null)
+		{
+			repo = Repository.findPackageIn(name, Repository.globalPath());
+			if (repo == null)
+				throw "Package " + name + " is not installed";
+		}
+		return repo;
+	}
+
+	static private function findPackageIn(name:String, target:String):String
 	{
 		name = name.toLowerCase();
 
@@ -84,7 +103,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				// search subfolders
 				if (FileSystem.exists(path + LIB_DIR + "/"))
 				{
-					var found = find(name, path);
+					var found = findPackageIn(name, path);
 					if (found != null) return found;
 				}
 			}
@@ -105,12 +124,13 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			level[level.length - 1] = (i == numItems);
 			for (j in 0...level.length - 1)
 			{
-				start += (level[j] ? "   " : "│  ");
+				start += (level[j] ? "  " : "│ ");
 			}
-			var separator = (i == numItems ? "└" : "├") + "── ";
+			var hasChildren = item.packages.length > 0;
+			var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
 			Logger.log(start + separator + item.name + "@" + item.version);
 
-			if (item.packages.length > 0)
+			if (hasChildren)
 			{
 				level.push(true);
 				printPackages(item.packages, level);
@@ -176,7 +196,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function print(name:String, target:String=null):Void
 	{
-		if (target == null) target = find(name, Sys.getCwd());
+		if (target == null) target = findPackageIn(name, Sys.getCwd());
 		else target += LIB_DIR + "/" + name + "/";
 
 		if (target != null && FileSystem.exists(target))

@@ -14,6 +14,17 @@ class Commands
 	{
 		if (args.length > 2) return false;
 
+		var path = Sys.getCwd();
+		for (arg in args)
+		{
+			switch (arg)
+			{
+				case "-g":
+					path = Repository.globalPath();
+					args.remove(arg);
+			}
+		}
+
 		if (args.length == 0)
 		{
 			var libs = Repository.findDependencies(Sys.getCwd());
@@ -21,13 +32,13 @@ class Commands
 			// install libraries found
 			for (lib in libs.keys())
 			{
-				Repository.install(lib, libs.get(lib));
+				Repository.install(lib, libs.get(lib), path);
 			}
 		}
 		else
 		{
 			var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
-			Repository.install(args[0], version);
+			Repository.install(args[0], version, path);
 		}
 
 		return true;
@@ -42,9 +53,26 @@ class Commands
 	@category("package")
 	static public function list(args:Array<String>):Bool
 	{
-		var cwd = Sys.getCwd();
-		Logger.log(cwd);
-		Repository.printPackages(Repository.list(cwd));
+		var path = Sys.getCwd();
+		for (arg in args)
+		{
+			switch (arg)
+			{
+				case "-g":
+					path = Repository.globalPath();
+			}
+		}
+
+		Logger.log(path);
+		var list = Repository.list(path);
+		if (list.length == 0)
+		{
+			Logger.log("└── (empty)");
+		}
+		else
+		{
+			Repository.printPackages(list);
+		}
 		return true;
 	}
 
@@ -62,18 +90,26 @@ class Commands
 		return true;
 	}
 
+	@usage("package")
+	static public function which(args:Array<String>):Bool
+	{
+		if (args.length < 1) return false;
+
+		var repo = Repository.findPackage(args.shift());
+		Logger.log(repo);
+		return true;
+	}
+
 	@usage("package [args ...]")
 	static public function run(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
 
 		var name = args.shift();
-		var repo = Repository.find(name, Sys.getCwd());
-		if (repo == null)
-		{
-			throw "Package " + name + " is not installed";
-		}
+		var repo = Repository.findPackage(name);
 		var run = "run.n";
+
+		// TODO: add ability to run program with haxe command instead of neko
 
 		if (!FileSystem.exists(repo + run))
 		{

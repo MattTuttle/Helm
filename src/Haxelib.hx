@@ -41,9 +41,10 @@ class Haxelib
 		}
 	}
 
-	public function process(command:String, args:Array<String>):Void
+	public function process(args:Array<String>):Void
 	{
 		var result = false;
+		var command = args.shift();
 		if (_commands.exists(command))
 		{
 			try
@@ -74,8 +75,7 @@ class Haxelib
 		}
 		else
 		{
-			var command = args.shift();
-			lib.process(command, args);
+			lib.process(args);
 		}
 	}
 
