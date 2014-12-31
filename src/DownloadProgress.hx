@@ -11,19 +11,16 @@ class DownloadProgress extends haxe.io.Output
 		_startTime = Timer.stamp();
 	}
 
-	private function round(number:Float, ?precision=2): Float
+	static public function humanizeBytes(bytes:Int):String
 	{
-		var zeroes = Math.pow(10, precision);
-		number *= zeroes;
-		return Math.round(number) / zeroes;
-	}
-
-	private function bytePrettify(bytes:Int):String
-	{
-		if (bytes < 1024*1024)
-			return Std.string(round(bytes / 1024)) + "KB";
-		else
-			return Std.string(round(bytes / (1024*1024))) + "MB";
+		var byteSuffix = ["B", "KB", "MB", "GB", "TB"];
+		var result:Float = bytes, i = 0;
+		while (result > 1024 && i < byteSuffix.length - 1)
+		{
+			result /= 1024;
+			i += 1;
+		}
+		return Math.round(result * 100) / 100 + byteSuffix[i];
 	}
 
 	function bytes(numBytes:Int):Void
@@ -64,13 +61,13 @@ class DownloadProgress extends haxe.io.Output
 		var speed = (_currentBytes / time) / 1024;
 		time = Std.int(time * 10) / 10;
 		speed = Std.int(speed * 10) / 10;
-		Logger.log("Download complete: " + bytePrettify(_currentBytes) + " in " + time + "s (" + speed + "KB/s)");
+		Logger.log("Download complete: " + humanizeBytes(_currentBytes) + " in " + time + "s (" + speed + "KB/s)");
 	}
 
 	public override function prepare(numBytes:Int):Void
 	{
 		_totalBytes = numBytes;
-		_totalText = bytePrettify(_totalBytes);
+		_totalText = humanizeBytes(_totalBytes);
 	}
 
 	private var _fileOutput:haxe.io.Output;

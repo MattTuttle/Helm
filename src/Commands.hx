@@ -81,6 +81,7 @@ class Commands
 	@usage
 	static public function init(args:Array<String>):Bool
 	{
+		// TODO: make this interactive and less crappy...
 		var data = Data.readData(Data.JSON, false);
 		data.name = ProjectName.ofString("");
 		var json = haxe.Json.stringify(data);

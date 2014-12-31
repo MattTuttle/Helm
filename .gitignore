@@ -1,4 +1,6 @@
 *.n
+haxelib
 
+bin/
+libs/
 cache/
-haxelibs/
