@@ -71,7 +71,7 @@ class Haxelib
 			}
 			catch (e:Dynamic)
 			{
-				Logger.log(e);
+				Logger.log(Std.string(e));
 				return;
 			}
 		}

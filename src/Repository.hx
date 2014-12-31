@@ -216,23 +216,39 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 	}
 
+	static public function clearCache()
+	{
+		Directory.delete(cachePath());
+		Directory.delete(globalPath() + "downloads/");
+	}
+
 	static public function download(name:String, version:SemVer):String
 	{
 		var info = Repository.instance.infos(name);
 		var url = Repository.fileURL(info, version);
 
-		var cache = cachePath() + url.split("/").pop();
-		FileSystem.createDirectory(cachePath());
+		var filename = url.split("/").pop();
+		var cache = cachePath() + filename;
+
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cache))
 		{
-			var out = File.write(cache, true);
+			// create a downloads folder if there isn't already one
+			var downloadPath = globalPath() + "downloads/";
+			Directory.create(downloadPath);
+
+			// download the file and show progress
+			var out = File.write(downloadPath + filename, true);
 			var progress = new DownloadProgress(out);
 			var http = new Http(url);
 			http.onError = function(error) {
 				progress.close();
 			};
 			http.customRequest(false, progress);
+
+			// move file from the downloads folder to cache (prevents corrupt zip files if cancelled)
+			Directory.create(cachePath());
+			FileSystem.rename(downloadPath + filename, cache);
 		}
 
 		return cache;
@@ -249,7 +265,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		var basepath = Data.locateBasePath(zip);
 
 		target += LIB_DIR + "/" + name + "/";
-		FileSystem.createDirectory(target);
+		Directory.create(target);
 
 		var totalItems = zip.length,
 			unzippedItems = 0;
@@ -272,7 +288,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				for (dir in dirs)
 				{
 					path += dir;
-					FileSystem.createDirectory(target + path);
+					Directory.create(target + path);
 					path += "/";
 				}
 				if (file == "")

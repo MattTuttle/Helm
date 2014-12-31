@@ -9,9 +9,8 @@
 -cp src
 # -cmd neko Hxl.n path haxepunk
 
---next
+# --next
 
--cpp bin
--main Haxelib
--cp src
-# -cmd neko Hxl.n path haxepunk
+# -cpp bin
+# -main Haxelib
+# -cp src

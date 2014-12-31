@@ -47,6 +47,24 @@ class Commands
 		return true;
 	}
 
+	@category("repository")
+	static public function upgrade(args:Array<String>):Bool
+	{
+		var path = Sys.getCwd();
+		for (arg in args)
+		{
+			switch (arg)
+			{
+				case "-g":
+					path = Repository.globalPath();
+					args.remove(arg);
+			}
+		}
+		var list = Repository.list(path);
+		trace(list);
+		return true;
+	}
+
 	@category("package")
 	static public function publish(args:Array<String>):Bool
 	{
@@ -135,8 +153,8 @@ class Commands
 	@category("cache")
 	static public function clean(args:Array<String>):Bool
 	{
-		// FileSystem.deleteDirectory(CACHE_DIR);
-		return false;
+		Repository.clearCache();
+		return true;
 	}
 
 	@usage("package [package ...]")
