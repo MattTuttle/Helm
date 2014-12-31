@@ -21,7 +21,7 @@ class Commands
 			switch (arg)
 			{
 				case "-g":
-					path = Repository.globalPath();
+					path = Config.globalPath;
 					args.remove(arg);
 			}
 		}
@@ -56,7 +56,7 @@ class Commands
 			switch (arg)
 			{
 				case "-g":
-					path = Repository.globalPath();
+					path = Config.globalPath;
 					args.remove(arg);
 			}
 		}
@@ -80,7 +80,7 @@ class Commands
 			switch (arg)
 			{
 				case "-g":
-					path = Repository.globalPath();
+					path = Config.globalPath;
 			}
 		}
 

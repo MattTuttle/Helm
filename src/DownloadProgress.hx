@@ -23,7 +23,7 @@ class DownloadProgress extends haxe.io.Output
 		return Math.round(result * 100) / 100 + byteSuffix[i];
 	}
 
-	function bytes(numBytes:Int):Void
+	function printProgress(numBytes:Int):Void
 	{
 		_currentBytes += numBytes;
 		if (_totalBytes == 0)
@@ -35,20 +35,20 @@ class DownloadProgress extends haxe.io.Output
 			var percent = _currentBytes / _totalBytes;
 			var progressLength = 30;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
-			Logger.log("Downloading [" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r", false);
+			Logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r", false);
 		}
 	}
 
-	public override function writeByte(c):Void
+	public override function writeByte(byte:Int):Void
 	{
-		_fileOutput.writeByte(c);
-		bytes(1);
+		_fileOutput.writeByte(byte);
+		printProgress(1);
 	}
 
 	public override function writeBytes(data:Bytes, position:Int, length:Int):Int
 	{
 		var bytesWritten = _fileOutput.writeBytes(data, position, length);
-		bytes(bytesWritten);
+		printProgress(bytesWritten);
 		return bytesWritten;
 	}
 
@@ -56,12 +56,7 @@ class DownloadProgress extends haxe.io.Output
 	{
 		super.close();
 		_fileOutput.close();
-
-		var time = Timer.stamp() - _startTime;
-		var speed = (_currentBytes / time) / 1024;
-		time = Std.int(time * 10) / 10;
-		speed = Std.int(speed * 10) / 10;
-		Logger.log("Download complete: " + humanizeBytes(_currentBytes) + " in " + time + "s (" + speed + "KB/s)");
+		Logger.log("\n", false);
 	}
 
 	public override function prepare(numBytes:Int):Void

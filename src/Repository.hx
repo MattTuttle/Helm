@@ -31,17 +31,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return new Repository(connection.api);
 	}
 
-	static public function cachePath():String
-	{
-		return globalPath() + "cache/";
-	}
-
-	static public function globalPath():String
-	{
-		// TODO: make this relative to the haxelib command?
-		return "/usr/local/lib/haxe/";
-	}
-
 	static public function loadPackageInfo(path:String):PackageInfo
 	{
 		if (FileSystem.exists(path + Data.JSON))
@@ -58,10 +47,10 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function findPackage(name:String):String
 	{
-		var repo = Repository.findPackageIn(name, Sys.getCwd());
+		var repo = findPackageIn(name, Sys.getCwd());
 		if (repo == null)
 		{
-			repo = Repository.findPackageIn(name, Repository.globalPath());
+			repo = findPackageIn(name, Config.globalPath);
 			if (repo == null)
 				throw "Package " + name + " is not installed";
 		}
@@ -218,8 +207,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function clearCache()
 	{
-		Directory.delete(cachePath());
-		Directory.delete(globalPath() + "downloads/");
+		Directory.delete(Config.cachePath);
+		Directory.delete(Config.downloadPath);
 	}
 
 	static public function download(name:String, version:SemVer):String
@@ -228,17 +217,16 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		var url = Repository.fileURL(info, version);
 
 		var filename = url.split("/").pop();
-		var cache = cachePath() + filename;
+		var cache = Config.cachePath + filename;
 
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cache))
 		{
 			// create a downloads folder if there isn't already one
-			var downloadPath = globalPath() + "downloads/";
-			Directory.create(downloadPath);
+			Directory.create(Config.downloadPath);
 
 			// download the file and show progress
-			var out = File.write(downloadPath + filename, true);
+			var out = File.write(Config.downloadPath + filename, true);
 			var progress = new DownloadProgress(out);
 			var http = new Http(url);
 			http.onError = function(error) {
@@ -247,8 +235,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			http.customRequest(false, progress);
 
 			// move file from the downloads folder to cache (prevents corrupt zip files if cancelled)
-			Directory.create(cachePath());
-			FileSystem.rename(downloadPath + filename, cache);
+			Directory.create(Config.cachePath);
+			FileSystem.rename(Config.downloadPath + filename, cache);
 		}
 
 		return cache;

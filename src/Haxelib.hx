@@ -86,6 +86,7 @@ class Haxelib
 	static public function main()
 	{
 		var args = Sys.args();
+		Config.load();
 
 		var lib = new Haxelib();
 		if (args.length < 1)
