@@ -10,6 +10,7 @@ class Commands
 
 	@usage("[package [version]]")
 	@alias("isntall") // TODO: allow for command aliases
+	@category("package")
 	static public function install(args:Array<String>):Bool
 	{
 		if (args.length > 2) return false;
@@ -78,7 +79,7 @@ class Commands
 		return true;
 	}
 
-	@usage
+	@category("package")
 	static public function init(args:Array<String>):Bool
 	{
 		// TODO: make this interactive and less crappy...
@@ -94,6 +95,7 @@ class Commands
 	}
 
 	@usage("package")
+	@category("repository")
 	static public function which(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -105,6 +107,7 @@ class Commands
 	}
 
 	@usage("package [args ...]")
+	@category("repository")
 	static public function run(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -129,7 +132,7 @@ class Commands
 		return true;
 	}
 
-	@category("repository")
+	@category("cache")
 	static public function clean(args:Array<String>):Bool
 	{
 		// FileSystem.deleteDirectory(CACHE_DIR);
@@ -137,6 +140,7 @@ class Commands
 	}
 
 	@usage("package [package ...]")
+	@category("repository")
 	static public function path(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
@@ -150,6 +154,7 @@ class Commands
 	}
 
 	@usage("package [version]")
+	@category("server")
 	static public function info(args:Array<String>):Bool
 	{
 		if (args.length < 1 || args.length > 2) return false;
@@ -192,6 +197,7 @@ class Commands
 	}
 
 	@usage("[username] [email]")
+	@category("server")
 	static public function register(args:Array<String>):Bool
 	{
 		var proxy = Repository.instance;
@@ -207,6 +213,7 @@ class Commands
 	}
 
 	@usage("username")
+	@category("server")
 	static public function user(args:Array<String>):Bool
 	{
 		if (args.length != 1) return false;
@@ -221,6 +228,7 @@ class Commands
 	}
 
 	@usage("package [package ...]")
+	@category("server")
 	static public function search(args:Array<String>):Bool
 	{
 		if (args.length == 0) return false;

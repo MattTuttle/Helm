@@ -53,17 +53,19 @@ class Logger
 			else
 				return (a > b ? -1 : (a < b ? 1 : 0));
 		});
+		var out = "";
 		for (item in array)
 		{
 			col += maxLength;
 			if (col > 80)
 			{
-				log();
+				out += "\n";
 				col = maxLength;
 			}
-			log(item.rpad(" ", maxLength), false);
+			out += item.rpad(" ", maxLength);
 		}
-		if (col > 0) log(); // add newline, if not at beginning of line
+		if (col > 0) out += "\n"; // add newline, if not at beginning of line
+		if (OUTPUT) Sys.print(out);
 	}
 
 }
