@@ -71,7 +71,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		var index = target.toLowerCase().lastIndexOf(name);
 		if (index != -1)
 		{
-			var path = target.substr(0, index + name.length) + "/";
+			var path = target.substr(0, index + name.length) + Directory.SEPARATOR;
 			if (hasPackageNamed(path, name)) return path;
 		}
 
@@ -82,18 +82,18 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 
 		// search libs directory
-		target += LIB_DIR + "/";
+		target += LIB_DIR + Directory.SEPARATOR;
 		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
 		{
 			for (item in FileSystem.readDirectory(target))
 			{
-				var path = target + item + "/";
+				var path = target + item + Directory.SEPARATOR;
 				if (hasPackageNamed(path, name))
 				{
 					return path;
 				}
 				// search subfolders
-				if (FileSystem.exists(path + LIB_DIR + "/"))
+				if (FileSystem.exists(path + LIB_DIR + Directory.SEPARATOR))
 				{
 					var found = findPackageIn(name, path);
 					if (found != null) return found;
@@ -134,12 +134,12 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static public function list(dir:String):Array<PackageInfo>
 	{
 		var packages = new Array<PackageInfo>();
-		var libs = dir + LIB_DIR + "/";
+		var libs = dir + LIB_DIR + Directory.SEPARATOR;
 		if (FileSystem.exists(libs) && FileSystem.isDirectory(libs))
 		{
 			for (item in FileSystem.readDirectory(libs))
 			{
-				var path = libs + item + "/";
+				var path = libs + item + Directory.SEPARATOR;
 				var info = loadPackageInfo(path);
 				if (info != null) packages.push(info);
 			}
@@ -182,11 +182,11 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static public function printInclude(name:String, target:String=null):Void
 	{
 		if (target == null) target = findPackage(name);
-		else target += LIB_DIR + "/" + name + "/";
+		else target += LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR;
 
 		if (target != null && FileSystem.exists(target))
 		{
-			var lib = target + NDLL_DIR + "/";
+			var lib = target + NDLL_DIR + Directory.SEPARATOR;
 			if (FileSystem.exists(lib))
 			{
 				Logger.log("-L " + lib);
@@ -243,7 +243,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function install(name:String, ?version:SemVer, target:String="")
 	{
-		var gitRepository = "";
+		var gitRepository = null;
 		if (name.startsWith("git+"))
 		{
 			gitRepository = name.substr(4);
@@ -255,7 +255,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			name = name.split("/").pop();
 		}
 
-		target += LIB_DIR + "/" + name + "/";
+		target += LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR;
 		if (FileSystem.exists(target))
 		{
 			// TODO: update repository??
@@ -264,7 +264,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 		Directory.create(target);
 
-		if (gitRepository != "")
+		if (gitRepository != null)
 		{
 			// TODO: rename folder to the name of the project
 			var args = ["clone", gitRepository, target];
@@ -302,7 +302,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				{
 					path += dir;
 					Directory.create(target + path);
-					path += "/";
+					path += Directory.SEPARATOR;
 				}
 				if (file == "")
 				{

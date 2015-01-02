@@ -5,6 +5,8 @@ using StringTools;
 class Directory
 {
 
+	static public var SEPARATOR:String = "/";
+
 	/**
 	 * Create a directory if it doesn't already exist
 	 * @param path the directory's path
@@ -36,7 +38,11 @@ class Directory
 	{
 		if (FileSystem.exists(path) && FileSystem.isDirectory(path))
 		{
-			if (!path.endsWith("/")) path += "/";
+			if (!path.endsWith(Directory.SEPARATOR))
+			{
+				path += Directory.SEPARATOR;
+			}
+
 			for (item in FileSystem.readDirectory(path))
 			{
 				var path = path + item;

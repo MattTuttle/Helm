@@ -20,10 +20,11 @@ class Config
 		if (globalPath == null)
 		{
 			var isWindows = (Sys.systemName() == "Windows");
+			Directory.SEPARATOR = isWindows ? "\\" : "/";
 			var home = isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
-			if (FileSystem.exists(home + "/.haxelib"))
+			if (FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
 			{
-				globalPath = File.getContent(home + "/.haxelib");
+				globalPath = File.getContent(home + Directory.SEPARATOR + ".haxelib");
 			}
 			else if (FileSystem.exists("/etc/haxelib"))
 			{
@@ -36,9 +37,9 @@ class Config
 		}
 
 		// make sure the path ends with a slash
-		if (!globalPath.endsWith("/"))
+		if (!globalPath.endsWith(Directory.SEPARATOR))
 		{
-			globalPath += "/";
+			globalPath += Directory.SEPARATOR;
 		}
 
 		if (!(FileSystem.exists(globalPath) && FileSystem.isDirectory(globalPath)))

@@ -26,8 +26,6 @@ class Commands
 			}
 		}
 
-		// TODO: handle cancelled downloads
-
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (args.length == 0)
 		{
