@@ -28,6 +28,7 @@ class Commands
 
 		// TODO: handle cancelled downloads
 
+		// if no packages are given as arguments, search in local directory for dependencies
 		if (args.length == 0)
 		{
 			var libs = Repository.findDependencies(Sys.getCwd());
@@ -41,7 +42,8 @@ class Commands
 		else
 		{
 			var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
-			Repository.install(args[0], version, path);
+			var name = args[0];
+			Repository.install(name, version, path);
 		}
 
 		return true;
