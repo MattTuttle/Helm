@@ -14,12 +14,6 @@ class Config
 		return globalPath + "cache/";
 	}
 
-	static public var downloadPath(get, never):String;
-	static private function get_downloadPath():String
-	{
-		return globalPath + "download/";
-	}
-
 	static public function load():Void
 	{
 		globalPath = Sys.getEnv("HAXELIB_PATH");

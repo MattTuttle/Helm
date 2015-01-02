@@ -208,7 +208,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static public function clearCache()
 	{
 		Directory.delete(Config.cachePath);
-		Directory.delete(Config.downloadPath);
 	}
 
 	static public function download(name:String, version:SemVer):String
@@ -222,11 +221,12 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cache))
 		{
-			// create a downloads folder if there isn't already one
-			Directory.create(Config.downloadPath);
+			Directory.create(Config.cachePath);
+			// download as different name to prevent loading partial downloads if cancelled
+			var downloadPath = cache.replace("zip", "part");
 
 			// download the file and show progress
-			var out = File.write(Config.downloadPath + filename, true);
+			var out = File.write(downloadPath, true);
 			var progress = new DownloadProgress(out);
 			var http = new Http(url);
 			http.onError = function(error) {
@@ -235,8 +235,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			http.customRequest(false, progress);
 
 			// move file from the downloads folder to cache (prevents corrupt zip files if cancelled)
-			Directory.create(Config.cachePath);
-			FileSystem.rename(Config.downloadPath + filename, cache);
+			FileSystem.rename(downloadPath, cache);
 		}
 
 		return cache;
@@ -244,6 +243,35 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function install(name:String, ?version:SemVer, target:String="")
 	{
+		var gitRepository = "";
+		if (name.startsWith("git+"))
+		{
+			gitRepository = name.substr(4);
+			name = gitRepository.substr(gitRepository.lastIndexOf("/") + 1).replace(".git", "");
+		}
+		else if (name.split("/").length == 2) // <User>/<Repository>
+		{
+			gitRepository = "https://github.com/" + name + ".git";
+			name = name.split("/").pop();
+		}
+
+		target += LIB_DIR + "/" + name + "/";
+		if (FileSystem.exists(target))
+		{
+			// TODO: update repository??
+			Logger.log("Package already installed");
+			return;
+		}
+		Directory.create(target);
+
+		if (gitRepository != "")
+		{
+			// TODO: rename folder to the name of the project
+			var args = ["clone", gitRepository, target];
+			Sys.command("git", args);
+			return;
+		}
+
 		var path = download(name, version);
 
 		var f = File.read(path, true);
@@ -251,9 +279,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		f.close();
 		var infos = Data.readInfos(zip, false);
 		var basepath = Data.locateBasePath(zip);
-
-		target += LIB_DIR + "/" + name + "/";
-		Directory.create(target);
 
 		var totalItems = zip.length,
 			unzippedItems = 0;

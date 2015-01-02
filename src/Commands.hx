@@ -42,8 +42,7 @@ class Commands
 		else
 		{
 			var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
-			var name = args[0];
-			Repository.install(name, version, path);
+			Repository.install(args[0], version, path);
 		}
 
 		return true;
