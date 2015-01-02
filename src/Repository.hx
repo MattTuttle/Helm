@@ -63,7 +63,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return (info != null && info.name == name);
 	}
 
-	static private function findPackageIn(name:String, target:String):String
+	static public function findPackageIn(name:String, target:String):String
 	{
 		name = name.toLowerCase();
 
@@ -202,21 +202,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		else
 		{
 			throw "Package '" + name + "' is not installed.";
-		}
-	}
-
-	static public function remove(name:String, target:String):Void
-	{
-		target += LIB_DIR + Directory.SEPARATOR;
-		for (file in FileSystem.readDirectory(target))
-		{
-			var path = target + file + Directory.SEPARATOR;
-			var info = loadPackageInfo(path);
-			if (info != null && info.name == name)
-			{
-				Directory.delete(path);
-				break;
-			}
 		}
 	}
 

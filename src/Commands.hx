@@ -141,10 +141,19 @@ class Commands
 		}
 
 		args.insert(0, run);
-		args.push(Sys.getCwd());
+
+		// TODO: Use a flag to set the run path as an environment variable instead of the old way
+		if (false)
+		{
+			Sys.putEnv("HAXELIB_RUN", Sys.getCwd());
+		}
+		else
+		{
+			args.push(Sys.getCwd());
+			Sys.putEnv("HAXELIB_RUN", "1");
+		}
 
 		Sys.setCwd(repo);
-		Sys.putEnv("HAXELIB_RUN", "1");
 		Sys.exit(Sys.command("neko", args));
 		return true;
 	}
@@ -165,7 +174,12 @@ class Commands
 
 		for (arg in args)
 		{
-			Repository.remove(arg, path);
+			var path = Repository.findPackageIn(arg, path);
+			if (path != null)
+			{
+				Directory.delete(path);
+				Logger.log("Removed " + arg);
+			}
 		}
 		return true;
 	}
