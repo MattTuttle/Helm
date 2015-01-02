@@ -24,11 +24,9 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	static public var apiVersion = "3.0";
 
 	static public var instance(get, never):Repository;
-	@:access(haxe.remoting.HttpConnection)
 	static private function get_instance():Repository
 	{
-		var connection = new haxe.remoting.HttpConnection(url + "api/" + apiVersion + "/index.n", []);
-		return new Repository(connection.api);
+		return new Repository(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
 	}
 
 	static public function loadPackageInfo(path:String):PackageInfo

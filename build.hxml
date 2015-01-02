@@ -7,10 +7,4 @@
 -neko haxelib.n
 -main Haxelib
 -cp src
-# -cmd neko Hxl.n path haxepunk
-
-# --next
-
-# -cpp bin
-# -main Haxelib
-# -cp src
+-cmd nekotools boot haxelib.n
