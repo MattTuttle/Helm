@@ -268,7 +268,7 @@ class Commands
 		var username:String, password:String;
 		while (true)
 		{
-			username = prompt("Username: ");
+			username = prompt("Username: ").toLowerCase();
 			if (!Repository.instance.isNewUser(username)) break;
 			Logger.log("Username is not registered.");
 		}

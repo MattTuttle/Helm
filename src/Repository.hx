@@ -65,22 +65,23 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	{
 		name = name.toLowerCase();
 
-		// if the name is already in the path, check it first
-		var index = target.toLowerCase().lastIndexOf(name);
-		if (index != -1)
-		{
-			var path = target.substr(0, index + name.length) + Directory.SEPARATOR;
-			if (hasPackageNamed(path, name)) return path;
-		}
-
 		// search in the current directory for a haxelib.json file
 		if (hasPackageNamed(target, name))
 		{
 			return target;
 		}
 
+		// find a libs directory in the current directory or a parent
+		if (target.endsWith("/")) target = target.substr(0, -1);
+		var parts = target.split(Directory.SEPARATOR);
+		while (parts.length > 0)
+		{
+			target = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR + LIB_DIR + Directory.SEPARATOR;
+			if (FileSystem.exists(target)) break;
+			parts.pop();
+		}
+
 		// search libs directory
-		target += LIB_DIR + Directory.SEPARATOR;
 		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
 		{
 			for (item in FileSystem.readDirectory(target))
@@ -205,8 +206,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 	static public function download(name:String, version:SemVer):String
 	{
-		var info = Repository.instance.infos(name);
-		var url = Repository.fileURL(info, version);
+		var info = instance.infos(name);
+		var url = fileURL(info, version);
 
 		var filename = url.split("/").pop();
 		var cache = Config.cachePath + filename;
@@ -339,7 +340,14 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 		if (version == null)
 		{
-			versionString = SemVer.ofString(info.curversion);
+			var version:SemVer = SemVer.ofString(info.curversion);
+			// prevent automatic downloads of development versions
+			var i = info.versions.length;
+			while (version.preview != null && --i > 0)
+			{
+				version = SemVer.ofString(info.versions[i].name);
+			}
+			versionString = version;
 		}
 		else
 		{
