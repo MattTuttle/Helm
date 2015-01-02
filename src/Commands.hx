@@ -8,13 +8,8 @@ using StringTools;
 class Commands
 {
 
-	@usage("[package [version]]")
-	@alias("isntall") // TODO: allow for command aliases
-	@category("development")
-	static public function install(args:Array<String>):Bool
+	static private function getPathTarget(args:Array<String>):String
 	{
-		if (args.length > 2) return false;
-
 		var path = Sys.getCwd();
 		for (arg in args)
 		{
@@ -25,6 +20,17 @@ class Commands
 					args.remove(arg);
 			}
 		}
+		return path;
+	}
+
+	@usage("[package [version]]")
+	@alias("isntall") // TODO: allow for command aliases
+	@category("development")
+	static public function install(args:Array<String>):Bool
+	{
+		if (args.length > 2) return false;
+
+		var path = getPathTarget(args);
 
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (args.length == 0)
@@ -49,16 +55,7 @@ class Commands
 	@category("development")
 	static public function upgrade(args:Array<String>):Bool
 	{
-		var path = Sys.getCwd();
-		for (arg in args)
-		{
-			switch (arg)
-			{
-				case "-g":
-					path = Config.globalPath;
-					args.remove(arg);
-			}
-		}
+		var path = getPathTarget(args);
 		var list = Repository.list(path);
 		trace(list);
 		return true;
@@ -73,15 +70,7 @@ class Commands
 	@category("information")
 	static public function list(args:Array<String>):Bool
 	{
-		var path = Sys.getCwd();
-		for (arg in args)
-		{
-			switch (arg)
-			{
-				case "-g":
-					path = Config.globalPath;
-			}
-		}
+		var path = getPathTarget(args);
 
 		Logger.log(path);
 		var list = Repository.list(path);
@@ -161,16 +150,7 @@ class Commands
 	@category("development")
 	static public function remove(args:Array<String>):Bool
 	{
-		var path = Sys.getCwd();
-		for (arg in args)
-		{
-			switch (arg)
-			{
-				case "-g":
-					path = Config.globalPath;
-					args.remove(arg);
-			}
-		}
+		var path = getPathTarget(args);
 
 		for (arg in args)
 		{
