@@ -9,11 +9,11 @@ class Command
 	public var category(default, null):String;
 	public var func(default, null):Array<String>->Bool;
 
-	public function new(name:String, helpText:String, category:String)
+	public function new(name:String, meta:Dynamic)
 	{
 		this.name = name;
-		this.helpText = helpText;
-		this.category = category;
+		this.helpText = meta.usage != null ? meta.usage.shift() : "";
+		this.category = meta.category != null ? meta.category.shift() : "";
 		this.func = Reflect.field(Commands, name);
 	}
 
@@ -25,13 +25,24 @@ class Haxelib
 	public function new()
 	{
 		_commands = new StringMap<Command>();
+		_aliases = new StringMap<Command>();
+
 		var methods = Meta.getStatics(Commands);
 		for (name in Reflect.fields(methods))
 		{
 			var meta = Reflect.field(methods, name);
-			var usage = meta.usage != null ? meta.usage.shift() : "";
-			var category = meta.category != null ? meta.category.shift() : "";
-			_commands.set(name, new Command(name, usage, category));
+
+			var command = new Command(name, meta);
+			_commands.set(name, command);
+
+			// don't group aliases with commands so they don't show on the help screen
+			if (meta.alias != null)
+			{
+				for (alias in cast(meta.alias, Array<Dynamic>))
+				{
+					_aliases.set(alias, command);
+				}
+			}
 		}
 	}
 
@@ -60,21 +71,42 @@ class Haxelib
 		}
 	}
 
-	public function process(args:Array<String>):Void
+	function runCommand(command:String, args:Array<String>, map:StringMap<Command>):Bool
 	{
 		var result = false;
-		var command = args.shift();
-		if (_commands.exists(command))
+		if (map.exists(command))
 		{
 			try
 			{
-				result = _commands.get(command).func(args);
+				result = map.get(command).func(args);
 			}
 			catch (e:Dynamic)
 			{
 				Logger.log(Std.string(e));
-				return;
 			}
+		}
+		return result;
+	}
+
+	public function process(args:Array<String>):Void
+	{
+		var command = args.shift();
+		var result = false;
+
+		try
+		{
+			if (_commands.exists(command))
+			{
+				result = _commands.get(command).func(args);
+			}
+			else if (_aliases.exists(command))
+			{
+				result = _aliases.get(command).func(args);
+			}
+		}
+		catch (e:Dynamic)
+		{
+			Logger.log(Std.string(e));
 		}
 
 		if (!result)
@@ -100,5 +132,6 @@ class Haxelib
 	}
 
 	private var _commands:StringMap<Command>;
+	private var _aliases:StringMap<Command>;
 
 }

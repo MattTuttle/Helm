@@ -68,6 +68,7 @@ class Commands
 	}
 
 	@category("information")
+	@alias("l", "ls")
 	static public function list(args:Array<String>):Bool
 	{
 		var path = getPathTarget(args);
@@ -148,6 +149,7 @@ class Commands
 	}
 
 	@category("development")
+	@alias("rm")
 	static public function remove(args:Array<String>):Bool
 	{
 		var path = getPathTarget(args);
@@ -167,7 +169,8 @@ class Commands
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
-		Repository.clearCache();
+		// TODO: prompt warning
+		Directory.delete(Config.cachePath);
 		return true;
 	}
 

@@ -205,11 +205,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 	}
 
-	static public function clearCache():Void
-	{
-		Directory.delete(Config.cachePath);
-	}
-
 	static public function download(name:String, version:SemVer):String
 	{
 		var info = Repository.instance.infos(name);
@@ -241,8 +236,10 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		return cache;
 	}
 
-	static public function install(name:String, ?version:SemVer, target:String="")
+	static public function install(name:String, ?version:SemVer, target:String="", ?installed:StringMap<PackageInfo>)
 	{
+		if (installed == null) installed = new StringMap<PackageInfo>();
+
 		var gitRepository = null;
 		if (name.startsWith("git+"))
 		{
@@ -259,7 +256,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		if (FileSystem.exists(target))
 		{
 			// TODO: update repository??
-			Logger.log("Package already installed");
+			Logger.log("Package '" + name + "' already installed");
 			return;
 		}
 
@@ -270,6 +267,8 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			Sys.command("git", args);
 			return;
 		}
+
+		Logger.log("Installing '" + name + "'...");
 
 		var path = download(name, version);
 
@@ -313,8 +312,10 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 				File.saveBytes(target + path, data);
 			}
 		}
-		Logger.log("Installed '" + name + "' in " + target);
 
+		Logger.log("\n", false);
+
+		installed.set(name, loadPackageInfo(target));
 		for (d in infos.dependencies)
 		{
 			try
@@ -325,7 +326,12 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			{
 				version = null;
 			}
-			install(d.name, version, target);
+
+			// prevent installing a library we already installed (infinite loop)
+			if (!installed.exists(d.name))
+			{
+				install(d.name, version, target, installed);
+			}
 		}
 	}
 
