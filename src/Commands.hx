@@ -149,6 +149,27 @@ class Commands
 		return true;
 	}
 
+	@category("development")
+	static public function remove(args:Array<String>):Bool
+	{
+		var path = Sys.getCwd();
+		for (arg in args)
+		{
+			switch (arg)
+			{
+				case "-g":
+					path = Config.globalPath;
+					args.remove(arg);
+			}
+		}
+
+		for (arg in args)
+		{
+			Repository.remove(arg, path);
+		}
+		return true;
+	}
+
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
@@ -205,7 +226,7 @@ class Commands
 		if (args.length == 2)
 		{
 			var versions = new Array<String>();
-			// TODO: error handling if invalid version passed
+			// TODO: error handling if invalid version passed or if no version is found
 			var requestedVersion:SemVer = SemVer.ofString(args[1]);
 			for (version in info.versions)
 			{

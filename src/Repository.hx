@@ -205,7 +205,22 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 	}
 
-	static public function clearCache()
+	static public function remove(name:String, target:String):Void
+	{
+		target += LIB_DIR + Directory.SEPARATOR;
+		for (file in FileSystem.readDirectory(target))
+		{
+			var path = target + file + Directory.SEPARATOR;
+			var info = loadPackageInfo(path);
+			if (info != null && info.name == name)
+			{
+				Directory.delete(path);
+				break;
+			}
+		}
+	}
+
+	static public function clearCache():Void
 	{
 		Directory.delete(Config.cachePath);
 	}
@@ -262,7 +277,6 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			Logger.log("Package already installed");
 			return;
 		}
-		Directory.create(target);
 
 		if (gitRepository != null)
 		{
@@ -279,6 +293,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		f.close();
 		var infos = Data.readInfos(zip, false);
 		var basepath = Data.locateBasePath(zip);
+		Directory.create(target);
 
 		var totalItems = zip.length,
 			unzippedItems = 0;
