@@ -90,11 +90,11 @@ class Haxelib
 
 	public function process(args:Array<String>):Void
 	{
-		var command = args.shift();
-		var result = false;
-
 		try
 		{
+			var command = args.shift();
+			var result = false;
+
 			if (_commands.exists(command))
 			{
 				result = _commands.get(command).func(args);
@@ -103,15 +103,15 @@ class Haxelib
 			{
 				result = _aliases.get(command).func(args);
 			}
+
+			if (!result)
+			{
+				usage();
+			}
 		}
 		catch (e:Dynamic)
 		{
 			Logger.log(Std.string(e));
-		}
-
-		if (!result)
-		{
-			usage();
 		}
 	}
 

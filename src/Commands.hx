@@ -24,7 +24,7 @@ class Commands
 	}
 
 	@usage("[package [version]]")
-	@alias("isntall") // TODO: allow for command aliases
+	@alias("isntall")
 	@category("development")
 	static public function install(args:Array<String>):Bool
 	{
