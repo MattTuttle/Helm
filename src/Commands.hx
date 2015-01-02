@@ -1,3 +1,4 @@
+import haxe.crypto.Md5;
 import sys.io.File;
 import sys.FileSystem;
 import tools.haxelib.SemVer;
@@ -59,12 +60,6 @@ class Commands
 		var list = Repository.list(path);
 		trace(list);
 		return true;
-	}
-
-	@category("development")
-	static public function publish(args:Array<String>):Bool
-	{
-		return false;
 	}
 
 	@category("information")
@@ -176,7 +171,8 @@ class Commands
 
 	@usage("package [package ...]")
 	@category("information")
-	static public function path(args:Array<String>):Bool
+	@alias("path")
+	static public function include(args:Array<String>):Bool
 	{
 		if (args.length < 1) return false;
 
@@ -185,22 +181,6 @@ class Commands
 			Repository.printInclude(name);
 		}
 
-		return true;
-	}
-
-	@usage("[username] [email]")
-	@category("development")
-	static public function register(args:Array<String>):Bool
-	{
-		var proxy = Repository.instance;
-		var username = "heardtheword";
-		var email = "heardtheword@gmail.com";
-		var password = "";
-		var name = "Matt Tuttle";
-		if (proxy.isNewUser(username))
-		{
-			proxy.register(username, password, email, name);
-		}
 		return true;
 	}
 
@@ -247,8 +227,109 @@ class Commands
 		return true;
 	}
 
+	static private function prompt(msg:String, secure:Bool = false):String
+	{
+		Logger.log(msg, false);
+		if (secure)
+		{
+			var buffer = new StringBuf(),
+				result = null;
+			while (true)
+			{
+				switch (Sys.getChar(false))
+				{
+					case 3: // Ctrl+C
+						Logger.log();
+						Sys.exit(1); // cancel
+					case 10, 13: // new line
+						result = buffer.toString();
+						break;
+					case c:
+						buffer.addChar(c);
+				}
+			}
+			Logger.log("<secure>");
+			return result;
+		}
+		return Sys.stdin().readLine();
+	}
+
+	@category("development")
+	@alias("upload", "submit")
+	static public function publish(args:Array<String>):Bool
+	{
+		var username = login();
+		trace(username);
+		return true;
+	}
+
+	static private function login():String
+	{
+		var username:String, password:String;
+		while (true)
+		{
+			username = prompt("Username: ");
+			if (!Repository.instance.isNewUser(username)) break;
+			Logger.log("Username is not registered.");
+		}
+		while (true)
+		{
+			password = Md5.encode(prompt("Password: ", true));
+			if (Repository.instance.checkPassword(username, password)) break;
+			Logger.log("Invalid password.");
+		}
+		return username;
+	}
+
+	@usage("[username] [email]")
+	@category("profile")
+	static public function register(args:Array<String>):Bool
+	{
+		var proxy = Repository.instance;
+		var username_regex = ~/^[a-z0-9_-]{3,32}$/;
+		var email_regex = ~/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+		while (true)
+		{
+			var password:String, email:String;
+			var username = prompt("Username: ").toLowerCase();
+			if (!username_regex.match(username))
+			{
+				Logger.log("Invalid username. Must be alphanumeric and 3-32 characters long.");
+				continue;
+			}
+
+			if (!proxy.isNewUser(username))
+			{
+				Logger.log("Username " + username + " is already taken");
+				continue;
+			}
+
+			while (true)
+			{
+				password = prompt("Password: ", true);
+				var confirm = prompt("Confirm Password: ", true);
+				if (password == confirm) break;
+				Logger.log("Passwords didn't match.");
+			}
+			password = Md5.encode(password);
+
+			while(true)
+			{
+				email = prompt("Email: ");
+				if (email_regex.match(email)) break;
+				Logger.log("Invalid email address.");
+			}
+
+			var name = prompt("Full Name: ");
+
+			proxy.register(username, password, email, name);
+			break;
+		}
+		return true;
+	}
+
 	@usage("username")
-	@category("information")
+	@category("profile")
 	static public function user(args:Array<String>):Bool
 	{
 		if (args.length != 1) return false;

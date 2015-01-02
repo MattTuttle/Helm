@@ -21,7 +21,7 @@ class Logger
 		{
 			if (newLine)
 			{
-				Sys.println(msg.rpad(" ", 80));
+				Sys.println(msg);
 			}
 			else
 			{
