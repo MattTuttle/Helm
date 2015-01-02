@@ -164,7 +164,7 @@ class Commands
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
-		// TODO: prompt warning
+		// TODO: prompt warning and only delete older versions unless forced to clear everything
 		Directory.delete(Config.cachePath);
 		return true;
 	}

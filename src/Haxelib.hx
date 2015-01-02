@@ -1,5 +1,6 @@
 import haxe.ds.StringMap;
 import haxe.rtti.Meta;
+import haxe.CallStack;
 
 class Command
 {
@@ -112,6 +113,7 @@ class Haxelib
 		catch (e:Dynamic)
 		{
 			Logger.log(Std.string(e));
+			// Logger.log(CallStack.toString(CallStack.exceptionStack()));
 		}
 	}
 

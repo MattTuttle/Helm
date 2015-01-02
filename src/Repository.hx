@@ -208,6 +208,10 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	{
 		var info = instance.infos(name);
 		var url = fileURL(info, version);
+		if (url == null)
+		{
+			throw "Could not find package " + name + "@" + version;
+		}
 
 		var filename = url.split("/").pop();
 		var cache = Config.cachePath + filename;
