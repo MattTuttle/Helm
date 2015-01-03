@@ -1,7 +1,6 @@
 import haxe.crypto.Md5;
 import sys.io.File;
 import sys.FileSystem;
-import tools.haxelib.Data;
 
 using StringTools;
 
@@ -92,8 +91,8 @@ class Commands
 	static public function init(args:Array<String>):Bool
 	{
 		// TODO: make this interactive and less crappy...
-		var data = Data.readData(Data.JSON, false);
-		data.name = ProjectName.ofString("");
+		var data = Data.readData(Data.JSON);
+		data.name = "";
 		var json = haxe.Json.stringify(data);
 		// beautify json
 		json = json.replace(',', ',\n\t').replace('{', '{\n\t').replace('}', '\n}');

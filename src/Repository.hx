@@ -2,17 +2,11 @@ import haxe.Http;
 import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
-import tools.haxelib.Data;
+import Types;
 
 using StringTools;
 
-typedef PackageInfo = {
-	name:String,
-	version:SemVer,
-	packages: Array<PackageInfo>
-};
-
-class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
+class Repository extends haxe.remoting.Proxy<SiteApi>
 {
 
 	// TODO: setup a mirror list for multiple repository servers
@@ -32,7 +26,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 	{
 		if (FileSystem.exists(path + Data.JSON))
 		{
-			var data = Data.readData(File.getContent(path + Data.JSON), false);
+			var data = Data.readData(path + Data.JSON);
 			return {
 				name: Std.string(data.name).toLowerCase(),
 				version: SemVer.ofString(data.version),
@@ -167,7 +161,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			}
 			else if (item.endsWith("json"))
 			{
-				var data = Data.readData(File.getContent(item), false);
+				var data = Data.readData(item);
 				for (lib in data.dependencies)
 				{
 					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
@@ -191,7 +185,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			}
 			Logger.log(target);
 			Logger.log("-D " + name);
-			var data = Data.readData(sys.io.File.getContent(target + Data.JSON), false);
+			var data = Data.readData(target + Data.JSON);
 			for (dependency in data.dependencies)
 			{
 				printInclude(dependency.name, target);
@@ -277,7 +271,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		var f = File.read(path, true);
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
-		var infos = Data.readInfos(zip, false);
+		var infos = Data.readInfos(zip);
 		var basepath = Data.locateBasePath(zip);
 		Directory.create(target);
 
@@ -337,7 +331,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 		}
 	}
 
-	static public function fileURL(info:ProjectInfos, version:SemVer=null):String
+	static public function fileURL(info:ProjectInfo, version:SemVer=null):String
 	{
 		var versionString:String = null;
 
