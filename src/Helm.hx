@@ -20,7 +20,7 @@ class Command
 
 }
 
-class Haxelib
+class Helm
 {
 
 	public function new()
@@ -49,7 +49,8 @@ class Haxelib
 
 	public function usage():Void
 	{
-		Logger.log("Usage:");
+		Logger.log("Haxe Extended Library Manager v1.0.0");
+		Logger.log("Usage: helm <command>");
 		var categories = new StringMap<Array<Command>>();
 		for (command in _commands)
 		{
@@ -66,7 +67,7 @@ class Haxelib
 			});
 			for (command in list)
 			{
-				Logger.log("    haxelib " + command.name + " " + command.helpText);
+				Logger.log("    helm " + command.name + " " + command.helpText);
 			}
 			Logger.log();
 		}
@@ -122,7 +123,7 @@ class Haxelib
 		var args = Sys.args();
 		Config.load();
 
-		var lib = new Haxelib();
+		var lib = new Helm();
 		if (args.length < 1)
 		{
 			lib.usage();

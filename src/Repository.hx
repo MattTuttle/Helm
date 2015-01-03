@@ -2,7 +2,6 @@ import haxe.Http;
 import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
-import tools.haxelib.SemVer;
 import tools.haxelib.Data;
 
 using StringTools;
@@ -36,7 +35,7 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 			var data = Data.readData(File.getContent(path + Data.JSON), false);
 			return {
 				name: Std.string(data.name).toLowerCase(),
-				version: data.version,
+				version: SemVer.ofString(data.version),
 				packages: list(path)
 			};
 		}
@@ -344,12 +343,12 @@ class Repository extends haxe.remoting.Proxy<tools.haxelib.SiteApi>
 
 		if (version == null)
 		{
-			var version:SemVer = SemVer.ofString(info.curversion);
+			var version:SemVer = info.curversion;
 			// prevent automatic downloads of development versions
 			var i = info.versions.length;
-			while (version.preview != null && --i > 0)
+			while (version.preRelease != null && --i > 0)
 			{
-				version = SemVer.ofString(info.versions[i].name);
+				version = info.versions[i].name;
 			}
 			versionString = version;
 		}

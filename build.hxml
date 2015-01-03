@@ -4,7 +4,7 @@
 
 --next
 
--neko haxelib.n
--main Haxelib
+-neko helm.n
+-main Helm
 -cp src
--cmd nekotools boot haxelib.n
+-cmd nekotools boot helm.n

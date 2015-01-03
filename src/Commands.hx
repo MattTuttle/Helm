@@ -1,7 +1,6 @@
 import haxe.crypto.Md5;
 import sys.io.File;
 import sys.FileSystem;
-import tools.haxelib.SemVer;
 import tools.haxelib.Data;
 
 using StringTools;
@@ -58,7 +57,15 @@ class Commands
 	{
 		var path = getPathTarget(args);
 		var list = Repository.list(path);
-		trace(list);
+		for (item in list)
+		{
+			var info = Repository.instance.infos(item.name);
+			var version = SemVer.ofString(info.curversion);
+			// if (version > item.version)
+			{
+
+			}
+		}
 		return true;
 	}
 
