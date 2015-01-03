@@ -60,7 +60,9 @@ abstract SemVer(SemVerData)
 	@:op(A == B)
 	inline public function equal(other:SemVer):Bool
 	{
-		return this.major == other.major && this.minor == other.minor && this.patch == other.patch &&
+		if (this == null) return other == null;
+		return other != null &&
+			this.major == other.major && this.minor == other.minor && this.patch == other.patch &&
 			this.preRelease == other.preRelease && this.preReleaseNum == other.preReleaseNum;
 	}
 
@@ -166,23 +168,25 @@ abstract SemVer(SemVerData)
 	@:from
 	static inline public function ofString(value:String)
 	{
-		return new SemVer(new SemVerData(value));
+		var data = new SemVerData(value);
+		return data.major == null ? null : new SemVer(data);
 	}
 
 	@:to
 	public function toString():String
 	{
-		var out = this.major + "." + this.minor + "." + this.patch;
-		if (this.preRelease != null)
+		if (this == null) return "0.0.0";
+		var out = major + "." + minor + "." + patch;
+		if (preRelease != null)
 		{
-			out += "-" + switch(this.preRelease) {
+			out += "-" + switch(preRelease) {
 				case Alpha: "alpha";
 				case Beta: "beta";
 				case ReleaseCandidate: "rc";
 			};
-			if (this.preReleaseNum != null)
+			if (preReleaseNum != null)
 			{
-				out += "." + this.preReleaseNum;
+				out += "." + preReleaseNum;
 			}
 		}
 		return out;

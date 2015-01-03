@@ -114,7 +114,7 @@ class Helm
 		catch (e:Dynamic)
 		{
 			Logger.log(Std.string(e));
-			// Logger.log(CallStack.toString(CallStack.exceptionStack()));
+			Logger.log(CallStack.toString(CallStack.exceptionStack()));
 		}
 	}
 

@@ -25,19 +25,26 @@ class Data
 
 	static public var JSON:String = "haxelib.json";
 
-	static public function readData(path:String):HaxelibData
+	static public function readData(json:String):HaxelibData
 	{
-		if (!FileSystem.exists(path)) return null;
-		var content = Json.parse(File.getContent(path));
+		var json = Json.parse(json);
+		var dependencies = new List<HaxelibDependency>();
+		for (field in Reflect.fields(json.dependencies))
+		{
+			dependencies.add({
+				name: field,
+				version: SemVer.ofString(Reflect.field(json.dependencies, field))
+			});
+		}
 		return {
-			name: content.name,
-			license: content.license,
-			description: content.description,
-			contributors: content.contributors,
-			releasenote: content.releasenote,
-			url: content.url,
-			dependencies: content.dependencies,
-			version: SemVer.ofString(content.version)
+			name: json.name,
+			license: json.license,
+			description: json.description,
+			contributors: json.contributors,
+			releasenote: json.releasenote,
+			url: json.url,
+			dependencies: dependencies,
+			version: SemVer.ofString(json.version)
 		};
 	}
 

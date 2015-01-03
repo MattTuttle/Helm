@@ -60,6 +60,17 @@ class TestSemVer extends haxe.unit.TestCase
 		assertTrue(e != c);
 	}
 
+	public function testNull()
+	{
+		var a:SemVer = "1.1.0",
+			b:SemVer = null;
+
+		assertFalse(a == null);
+		assertFalse(null == a);
+		assertTrue(b == null);
+		assertTrue(null == b);
+	}
+
 	public function testToString()
 	{
 		var a:SemVer = "1.0.0-alpha.1";

@@ -26,7 +26,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 	{
 		if (FileSystem.exists(path + Data.JSON))
 		{
-			var data = Data.readData(path + Data.JSON);
+			var data = Data.readData(File.getContent(path + Data.JSON));
 			return {
 				name: Std.string(data.name).toLowerCase(),
 				version: SemVer.ofString(data.version),
@@ -161,7 +161,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			else if (item.endsWith("json"))
 			{
-				var data = Data.readData(item);
+				var data = Data.readData(File.getContent(item));
 				for (lib in data.dependencies)
 				{
 					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
@@ -185,7 +185,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			Logger.log(target);
 			Logger.log("-D " + name);
-			var data = Data.readData(target + Data.JSON);
+			var data = Data.readData(File.getContent(target + Data.JSON));
 			for (dependency in data.dependencies)
 			{
 				printInclude(dependency.name, target);
@@ -314,19 +314,10 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		installed.set(name, loadPackageInfo(target));
 		for (d in infos.dependencies)
 		{
-			try
-			{
-				version = SemVer.ofString(d.version);
-			}
-			catch(e:Dynamic)
-			{
-				version = null;
-			}
-
 			// prevent installing a library we already installed (infinite loop)
 			if (!installed.exists(d.name))
 			{
-				install(d.name, version, target, installed);
+				install(d.name, d.version, target, installed);
 			}
 		}
 	}
