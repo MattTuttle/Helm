@@ -23,6 +23,8 @@ class Command
 class Helm
 {
 
+	inline static public var VERSION:String = "0.1.0";
+
 	public function new()
 	{
 		_commands = new StringMap<Command>();
@@ -49,8 +51,12 @@ class Helm
 
 	public function usage():Void
 	{
-		Logger.log("Haxe Extended Library Manager v1.0.0");
-		Logger.log("Usage: helm <command>");
+		Logger.log("\x1b[36;1m __ __      _____          __            __ __ ");
+		Logger.log("|  |  |    |   __|        |  |          |     |");
+		Logger.log("|     |    |   __|        |  |__        | | | |");
+		Logger.log("|__|__|axe |_____|xtended |_____|ibrary |_|_|_|anager   v" + VERSION + "\x1b[0m");
+		Logger.log();
+
 		var categories = new StringMap<Array<Command>>();
 		for (command in _commands)
 		{
@@ -114,7 +120,9 @@ class Helm
 		catch (e:Dynamic)
 		{
 			Logger.log(Std.string(e));
+			#if debug
 			Logger.log(CallStack.toString(CallStack.exceptionStack()));
+			#end
 		}
 	}
 

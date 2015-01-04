@@ -1,7 +1,8 @@
 typedef PackageInfo = {
 	name:String,
 	version:SemVer,
-	packages: Array<PackageInfo>
+	packages: Array<PackageInfo>,
+	path:String
 };
 
 typedef UserInfo = {

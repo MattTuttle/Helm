@@ -150,8 +150,8 @@ class Commands
 	}
 
 	@category("development")
-	@alias("rm")
-	static public function remove(args:Array<String>):Bool
+	@alias("rm", "remove")
+	static public function uninstall(args:Array<String>):Bool
 	{
 		var path = getPathTarget(args);
 
@@ -160,7 +160,8 @@ class Commands
 			var path = Repository.findPackageIn(arg, path);
 			if (path != null)
 			{
-				Directory.delete(path);
+				trace(path);
+				// Directory.delete(path);
 				Logger.log("Removed " + arg);
 			}
 		}

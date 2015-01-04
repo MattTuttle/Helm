@@ -30,7 +30,8 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			return {
 				name: Std.string(data.name).toLowerCase(),
 				version: SemVer.ofString(data.version),
-				packages: list(path)
+				packages: list(path),
+				path: path
 			};
 		}
 		return null;
@@ -45,7 +46,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			if (repo == null)
 				throw "Package " + name + " is not installed";
 		}
-		return repo;
+		return repo[0].path;
 	}
 
 	static private function hasPackageNamed(path:String, name:String):Bool
@@ -54,14 +55,31 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		return (info != null && info.name == name);
 	}
 
-	static public function findPackageIn(name:String, target:String):String
+	static private function searchPackageList(name:String, l:Array<PackageInfo>):Array<PackageInfo>
+	{
+		var results = new Array<PackageInfo>();
+		for (item in l)
+		{
+			if (item.name == name)
+			{
+				results.push(item);
+			}
+			for (result in searchPackageList(name, item.packages))
+			{
+				results.push(result);
+			}
+		}
+		return results;
+	}
+
+	static public function findPackageIn(name:String, target:String):Array<PackageInfo>
 	{
 		name = name.toLowerCase();
 
 		// search in the current directory for a haxelib.json file
 		if (hasPackageNamed(target, name))
 		{
-			return target;
+			return [loadPackageInfo(target)];
 		}
 
 		// find a libs directory in the current directory or a parent
@@ -69,31 +87,12 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		var parts = target.split(Directory.SEPARATOR);
 		while (parts.length > 0)
 		{
-			target = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR + LIB_DIR + Directory.SEPARATOR;
+			target = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR;
 			if (FileSystem.exists(target)) break;
 			parts.pop();
 		}
 
-		// search libs directory
-		if (FileSystem.exists(target) && FileSystem.isDirectory(target))
-		{
-			for (item in FileSystem.readDirectory(target))
-			{
-				var path = target + item + Directory.SEPARATOR;
-				if (hasPackageNamed(path, name))
-				{
-					return path;
-				}
-				// search subfolders
-				if (FileSystem.exists(path + LIB_DIR + Directory.SEPARATOR))
-				{
-					var found = findPackageIn(name, path);
-					if (found != null) return found;
-				}
-			}
-		}
-
-		return null;
+		return searchPackageList(name, list(target));
 	}
 
 	static public function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>):Void
