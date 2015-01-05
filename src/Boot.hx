@@ -22,7 +22,7 @@ class Boot
 		var info = Repository.loadPackageInfo(path);
 
 		var version:SemVer = try {
-			Repository.instance.infos(PACKAGE_NAME).curversion;
+			Repository.server.infos(PACKAGE_NAME).curversion;
 		} catch (e:Dynamic) {
 			"0.0.0";
 		}

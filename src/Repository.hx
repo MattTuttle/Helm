@@ -18,8 +18,8 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 	static public var url = "http://lib.haxe.org/";
 	static public var apiVersion = "3.0";
 
-	static public var instance(get, never):Repository;
-	static private function get_instance():Repository
+	static public var server(get, never):Repository;
+	static private function get_server():Repository
 	{
 		return new Repository(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
 	}
@@ -129,10 +129,9 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 	{
 		// TODO: change this to a typedef and include more info
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
-		var list = Repository.list(path);
-		for (item in list)
+		for (item in list(path))
 		{
-			var info = Repository.instance.infos(item.name);
+			var info = server.infos(item.name);
 			var version:SemVer = info.curversion;
 			if (version > item.version)
 			{
@@ -222,7 +221,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 
 	static public function download(name:String, version:SemVer):String
 	{
-		var info = instance.infos(name);
+		var info = server.infos(name);
 		var url = fileURL(info, version);
 		if (url == null)
 		{

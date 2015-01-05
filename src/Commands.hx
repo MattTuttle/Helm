@@ -203,40 +203,54 @@ class Commands
 	@category("information")
 	static public function info(args:Array<String>):Bool
 	{
-		if (args.length < 1 || args.length > 2) return false;
-
-		var info = Repository.instance.infos(args[0]);
-
-		Logger.log(info.name + " [" + info.website + "]");
-		Logger.log(info.desc);
-		Logger.log();
-		Logger.log("   Owner: " + info.owner);
-		Logger.log(" License: " + info.license);
-		Logger.log("    Tags: " + info.tags.join(", "));
-		Logger.log();
-
-		if (args.length == 2)
+		if (args.length == 0)
 		{
-			var versions = new Array<String>();
-			// TODO: error handling if invalid version passed or if no version is found
-			var requestedVersion:SemVer = SemVer.ofString(args[1]);
-			for (version in info.versions)
-			{
-				if (SemVer.ofString(version.name) == requestedVersion)
-				{
-					Logger.log(" Version: " + version.name);
-					Logger.log("    Date: " + version.date);
-					Logger.log(" Comment: " + version.comments);
-					break;
-				}
-			}
+			var info = Repository.loadPackageInfo(Sys.getCwd());
+			Logger.log(info.name + "@" + info.version);
 		}
 		else
 		{
-			var versions = new Array<String>();
-			for (version in info.versions) { versions.push(version.name); }
-			Logger.log("Versions: (current = " + info.curversion + ")");
-			Logger.logList(versions, false);
+			for (arg in args)
+			{
+				var parts = arg.split("@");
+				var info = Repository.server.infos(parts[0]);
+
+				Logger.log(info.name + " [" + info.website + "]");
+				Logger.log(info.desc);
+				Logger.log();
+				Logger.log("   Owner: " + info.owner);
+				Logger.log(" License: " + info.license);
+				Logger.log("    Tags: " + info.tags.join(", "));
+				Logger.log();
+
+				if (parts.length == 2)
+				{
+					var versions = new Array<String>();
+					// TODO: error handling if invalid version passed or if no version is found
+					var requestedVersion:SemVer = SemVer.ofString(parts[1]);
+					var found = false;
+					for (version in info.versions)
+					{
+						if (SemVer.ofString(version.name) == requestedVersion)
+						{
+							Logger.log(" Version: " + version.name);
+							Logger.log("    Date: " + version.date);
+							Logger.log(" Comment: " + version.comments);
+							found = true;
+							break;
+						}
+					}
+					if (!found) Logger.log("Version " + requestedVersion + " not found");
+				}
+				else
+				{
+					var versions = new Array<String>();
+					for (version in info.versions) { versions.push(version.name); }
+					Logger.log("Versions: (current = " + info.curversion + ")");
+					Logger.logList(versions, false);
+				}
+				Logger.log("-----------");
+			}
 		}
 
 		return true;
@@ -284,13 +298,13 @@ class Commands
 		while (true)
 		{
 			username = prompt("Username: ").toLowerCase();
-			if (!Repository.instance.isNewUser(username)) break;
+			if (!Repository.server.isNewUser(username)) break;
 			Logger.log("Username is not registered.");
 		}
 		while (true)
 		{
 			password = Md5.encode(prompt("Password: ", true));
-			if (Repository.instance.checkPassword(username, password)) break;
+			if (Repository.server.checkPassword(username, password)) break;
 			Logger.log("Invalid password.");
 		}
 		return username;
@@ -300,7 +314,7 @@ class Commands
 	@category("profile")
 	static public function register(args:Array<String>):Bool
 	{
-		var proxy = Repository.instance;
+		var proxy = Repository.server;
 		var username_regex = ~/^[a-z0-9_-]{3,32}$/;
 		var email_regex = ~/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 		while (true)
@@ -349,7 +363,7 @@ class Commands
 	{
 		if (args.length != 1) return false;
 
-		var user = Repository.instance.user(args[0]);
+		var user = Repository.server.user(args[0]);
 		Logger.log(user.fullname + " [" + user.email + "]");
 		Logger.log();
 		Logger.log("Packages:");
@@ -369,7 +383,7 @@ class Commands
 		// for every argument do a search against haxelib repository
 		for (arg in args)
 		{
-			for (result in Repository.instance.search(arg))
+			for (result in Repository.server.search(arg))
 			{
 				names.push(result.name);
 			}
