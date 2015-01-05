@@ -52,18 +52,24 @@ class Commands
 	}
 
 	@category("development")
+	static public function outdated(args:Array<String>):Bool
+	{
+		var outdated = Repository.outdated(getPathTarget(args));
+		for (item in outdated)
+		{
+			Logger.log(item.name + "@" + item.current + " < " + item.latest);
+		}
+		return true;
+	}
+
+	@category("development")
 	static public function upgrade(args:Array<String>):Bool
 	{
 		var path = getPathTarget(args);
-		var list = Repository.list(path);
-		for (item in list)
+		var outdated = Repository.outdated(path);
+		for (item in outdated)
 		{
-			var info = Repository.instance.infos(item.name);
-			var version:SemVer = info.curversion;
-			if (version > item.version)
-			{
-				Repository.install(item.name, version, path);
-			}
+			Repository.install(item.name, item.latest, path);
 		}
 		return true;
 	}
@@ -111,12 +117,6 @@ class Commands
 		var repo = Repository.findPackage(args.shift());
 		var info = Repository.loadPackageInfo(repo);
 		Logger.log(repo + " [" + info.version + "]");
-		return true;
-	}
-
-	@category("development")
-	static public function outdated(args:Array<String>):Bool
-	{
 		return true;
 	}
 

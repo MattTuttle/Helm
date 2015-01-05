@@ -1,10 +1,18 @@
+-cp src
+
+--each
+
 -x TestMain
 -cp tests
--cp src
+-cmd rm TestMain.n # cleanup
+
+--next
+
+-neko run.n
+-main Boot
 
 --next
 
 -neko helm.n
 -main Helm
--cp src
--cmd nekotools boot helm.n
+-cmd nekotools boot helm.n && rm helm.n

@@ -40,12 +40,13 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 	static public function findPackage(name:String):String
 	{
 		var repo = findPackageIn(name, Sys.getCwd());
-		if (repo == null)
+		if (repo.length == 0)
 		{
 			repo = findPackageIn(name, Config.globalPath);
-			if (repo == null)
+			if (repo.length == 0)
 				throw "Package " + name + " is not installed";
 		}
+		// TODO: resolve multiple packages
 		return repo[0].path;
 	}
 
@@ -120,6 +121,27 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 				level.pop();
 			}
 		}
+	}
+
+	static public function outdated(path:String):List<{name:String, current:SemVer, latest:SemVer}>
+	{
+		// TODO: change this to a typedef and include more info
+		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
+		var list = Repository.list(path);
+		for (item in list)
+		{
+			var info = Repository.instance.infos(item.name);
+			var version:SemVer = info.curversion;
+			if (version > item.version)
+			{
+				outdated.add({
+					name: item.name,
+					current: item.version,
+					latest: version
+				});
+			}
+		}
+		return outdated;
 	}
 
 	static public function list(dir:String):Array<PackageInfo>
@@ -231,7 +253,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		return cache;
 	}
 
-	static public function install(name:String, ?version:SemVer, target:String="", ?installed:StringMap<PackageInfo>)
+	static public function install(name:String, ?version:SemVer, target:String="", ?installed:StringMap<PackageInfo>):Void
 	{
 		if (installed == null) installed = new StringMap<PackageInfo>();
 
