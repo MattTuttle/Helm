@@ -1,4 +1,3 @@
-import haxe.Timer;
 import haxe.io.Bytes;
 
 class DownloadProgress extends haxe.io.Output
@@ -8,7 +7,6 @@ class DownloadProgress extends haxe.io.Output
 	{
 		_fileOutput = out;
 		_currentBytes = 0;
-		_startTime = Timer.stamp();
 	}
 
 	static public function humanizeBytes(bytes:Int):String
@@ -56,7 +54,7 @@ class DownloadProgress extends haxe.io.Output
 	{
 		super.close();
 		_fileOutput.close();
-		Logger.log("\n", false);
+		Logger.log();
 	}
 
 	public override function prepare(numBytes:Int):Void
@@ -69,6 +67,5 @@ class DownloadProgress extends haxe.io.Output
 	private var _currentBytes:Int;
 	private var _totalBytes:Int = 0;
 	private var _totalText:String;
-	private var _startTime:Float;
 
 }
