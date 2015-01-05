@@ -250,9 +250,16 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		target += LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR;
 		if (FileSystem.exists(target))
 		{
-			// TODO: update repository??
-			Logger.log("Package '" + name + "' already installed");
-			return;
+			var info = loadPackageInfo(target);
+			if (version != info.version)
+			{
+				Directory.delete(target);
+			}
+			else
+			{
+				Logger.log("Package " + name + "@" + info.version + " already installed");
+				return;
+			}
 		}
 
 		if (gitRepository != null)
@@ -263,7 +270,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			return;
 		}
 
-		Logger.log("Installing '" + name + "'...");
+		Logger.log("Installing " + name);
 
 		var path = download(name, version);
 

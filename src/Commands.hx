@@ -59,10 +59,10 @@ class Commands
 		for (item in list)
 		{
 			var info = Repository.instance.infos(item.name);
-			var version = SemVer.ofString(info.curversion);
-			// if (version > item.version)
+			var version:SemVer = info.curversion;
+			if (version > item.version)
 			{
-
+				Repository.install(item.name, version, path);
 			}
 		}
 		return true;
@@ -114,6 +114,12 @@ class Commands
 		return true;
 	}
 
+	@category("development")
+	static public function outdated(args:Array<String>):Bool
+	{
+		return true;
+	}
+
 	@usage("package [args ...]")
 	@category("development")
 	static public function run(args:Array<String>):Bool
@@ -158,7 +164,7 @@ class Commands
 		for (arg in args)
 		{
 			var path = Repository.findPackageIn(arg, path);
-			if (path != null)
+			if (path.length > 0)
 			{
 				trace(path);
 				// Directory.delete(path);

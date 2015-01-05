@@ -51,7 +51,7 @@ class Helm
 
 	public function usage():Void
 	{
-		Logger.log("\x1b[36;1m __ __      _____          __            __ __ ");
+		Logger.log("\x1b[34;1m __ __      _____          __            __ __ ");
 		Logger.log("|  |  |    |   __|        |  |          |     |");
 		Logger.log("|     |    |   __|        |  |__        | | | |");
 		Logger.log("|__|__|axe |_____|xtended |_____|ibrary |_|_|_|anager   v" + VERSION + "\x1b[0m");
