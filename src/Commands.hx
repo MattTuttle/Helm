@@ -25,7 +25,7 @@ class Commands
 	}
 
 	@usage("[package [version]]")
-	@alias("isntall")
+	@alias("i", "isntall")
 	@category("development")
 	static public function install(args:Array<String>):Bool
 	{
@@ -65,6 +65,7 @@ class Commands
 	}
 
 	@category("development")
+	@alias("up")
 	static public function upgrade(args:Array<String>):Bool
 	{
 		var path = getPathTarget(args);
@@ -165,11 +166,19 @@ class Commands
 
 		for (arg in args)
 		{
-			var path = Repository.findPackageIn(arg, path);
-			if (path.length > 0)
+			var infos = Repository.findPackageIn(arg, path);
+			if (infos.length > 0)
 			{
-				trace(path);
-				// Directory.delete(path);
+				path = null;
+				// TODO: should this only delete from the immediate libs folder instead of searching for a package?
+				for (info in infos)
+				{
+					if (path == null || info.path.length < path.length)
+					{
+						path = info.path;
+					}
+				}
+				Directory.delete(path);
 				Logger.log("Removed " + arg);
 			}
 		}
@@ -254,33 +263,6 @@ class Commands
 		}
 
 		return true;
-	}
-
-	static private function prompt(msg:String, secure:Bool = false):String
-	{
-		Logger.log(msg, false);
-		if (secure)
-		{
-			var buffer = new StringBuf(),
-				result = null;
-			while (true)
-			{
-				switch (Sys.getChar(false))
-				{
-					case 3: // Ctrl+C
-						Logger.log();
-						Sys.exit(1); // cancel
-					case 10, 13: // new line
-						result = buffer.toString();
-						break;
-					case c:
-						buffer.addChar(c);
-				}
-			}
-			Logger.log("<secure>");
-			return result;
-		}
-		return Sys.stdin().readLine();
 	}
 
 	@category("development")
@@ -393,6 +375,33 @@ class Commands
 		Logger.logList(names);
 
 		return true;
+	}
+
+	static private function prompt(msg:String, secure:Bool = false):String
+	{
+		Logger.log(msg, false);
+		if (secure)
+		{
+			var buffer = new StringBuf(),
+				result = null;
+			while (true)
+			{
+				switch (Sys.getChar(false))
+				{
+					case 3: // Ctrl+C
+						Logger.log();
+						Sys.exit(1); // cancel
+					case 10, 13: // new line
+						result = buffer.toString();
+						break;
+					case c:
+						buffer.addChar(c);
+				}
+			}
+			Logger.log("<secure>");
+			return result;
+		}
+		return Sys.stdin().readLine();
 	}
 
 }
