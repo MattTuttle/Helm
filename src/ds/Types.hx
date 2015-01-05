@@ -1,3 +1,5 @@
+package ds;
+
 typedef PackageInfo = {
 	name:String,
 	version:SemVer,

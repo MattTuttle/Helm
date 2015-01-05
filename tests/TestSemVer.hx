@@ -1,4 +1,4 @@
-import SemVer;
+import ds.SemVer;
 
 class TestSemVer extends haxe.unit.TestCase
 {

@@ -1,4 +1,4 @@
-import Types;
+import ds.Types;
 
 interface SiteApi
 {

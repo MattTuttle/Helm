@@ -1,3 +1,5 @@
+package ds;
+
 import haxe.Json;
 import haxe.zip.Entry;
 import haxe.zip.Reader;
@@ -9,7 +11,7 @@ typedef HaxelibDependency = {
 	version:SemVer
 }
 
-typedef HaxelibData = {
+typedef HaxelibInfo = {
 	name:String,
 	license:String,
 	description:String,
@@ -20,12 +22,12 @@ typedef HaxelibData = {
 	version:SemVer
 }
 
-class Data
+class HaxelibData
 {
 
 	static public var JSON:String = "haxelib.json";
 
-	static public function readData(json:String):HaxelibData
+	static public function readData(json:String):HaxelibInfo
 	{
 		var json = Json.parse(json);
 		var dependencies = new List<HaxelibDependency>();
@@ -59,7 +61,7 @@ class Data
 		throw "No " + JSON + " found";
 	}
 
-	public static function readInfos(zip:List<Entry>):HaxelibData {
+	public static function readInfos(zip:List<Entry>):HaxelibInfo {
 		var infodata = null;
 		for (f in zip)
 		{

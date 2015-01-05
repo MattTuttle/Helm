@@ -2,7 +2,9 @@ import haxe.Http;
 import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
-import Types;
+import ds.Types;
+import ds.SemVer;
+import ds.HaxelibData;
 
 using StringTools;
 
@@ -24,9 +26,9 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 
 	static public function loadPackageInfo(path:String):PackageInfo
 	{
-		if (FileSystem.exists(path + Data.JSON))
+		if (FileSystem.exists(path + HaxelibData.JSON))
 		{
-			var data = Data.readData(File.getContent(path + Data.JSON));
+			var data = HaxelibData.readData(File.getContent(path + HaxelibData.JSON));
 			return {
 				name: Std.string(data.name).toLowerCase(),
 				version: SemVer.ofString(data.version),
@@ -182,7 +184,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			else if (item.endsWith("json"))
 			{
-				var data = Data.readData(File.getContent(item));
+				var data = HaxelibData.readData(File.getContent(item));
 				for (lib in data.dependencies)
 				{
 					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
@@ -206,7 +208,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			Logger.log(target);
 			Logger.log("-D " + name);
-			var data = Data.readData(File.getContent(target + Data.JSON));
+			var data = HaxelibData.readData(File.getContent(target + HaxelibData.JSON));
 			for (dependency in data.dependencies)
 			{
 				printInclude(dependency.name, target);
@@ -299,8 +301,8 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		var f = File.read(path, true);
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
-		var infos = Data.readInfos(zip);
-		var basepath = Data.locateBasePath(zip);
+		var infos = HaxelibData.readInfos(zip);
+		var basepath = HaxelibData.locateBasePath(zip);
 		Directory.create(target);
 
 		var totalItems = zip.length,
