@@ -15,4 +15,5 @@
 
 -neko helm.n
 -main Helm
+-cp libs/hxargs
 -cmd nekotools boot helm.n && rm helm.n

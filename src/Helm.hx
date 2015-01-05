@@ -57,6 +57,8 @@ class Helm
 		Logger.log("|__|__|axe |_____|xtended |_____|ibrary |_|_|_|anager   v" + VERSION + "\x1b[0m");
 		Logger.log();
 
+		Logger.log(_argHandler.getDoc());
+
 		var categories = new StringMap<Array<Command>>();
 		for (command in _commands)
 		{
@@ -131,6 +133,17 @@ class Helm
 		var args = Sys.args();
 		Config.load();
 
+		var list = [];
+		_argHandler = hxargs.Args.generate([
+			@doc("Use global path instead of local")
+			["-g", "--global"] => function() {
+				Config.useGlobal = true;
+			},
+			_ => function(arg:String) {
+				list.push(arg);
+			}
+		]);
+
 		var lib = new Helm();
 		if (args.length < 1)
 		{
@@ -138,11 +151,14 @@ class Helm
 		}
 		else
 		{
-			lib.process(args);
+			_argHandler.parse(args);
+			lib.process(list);
 		}
 	}
 
 	private var _commands:StringMap<Command>;
 	private var _aliases:StringMap<Command>;
+
+	static private var _argHandler:Dynamic;
 
 }

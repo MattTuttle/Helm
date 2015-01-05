@@ -6,6 +6,7 @@ using StringTools;
 class Config
 {
 
+	static public var useGlobal:Bool = false;
 	static public var globalPath:String;
 
 	static public var cachePath(get, never):String;

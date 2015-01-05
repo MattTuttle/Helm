@@ -274,14 +274,14 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		if (FileSystem.exists(target))
 		{
 			var info = loadPackageInfo(target);
-			if (version != info.version)
-			{
-				Directory.delete(target);
-			}
-			else
+			if (version == null || version == info.version)
 			{
 				Logger.log("Package " + name + "@" + info.version + " already installed");
 				return;
+			}
+			else
+			{
+				Directory.delete(target);
 			}
 		}
 
@@ -308,8 +308,8 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			unzippedItems = 0;
 		for (item in zip)
 		{
-			var percent = unzippedItems++ / totalItems;
-			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.round(20 * percent)), " ", 20);
+			var percent = ++unzippedItems / totalItems;
+			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.floor(20 * percent)), " ", 20);
 			Logger.log("Unpacking [" + progress + "] " + unzippedItems + "/" + totalItems + "\r", false);
 
 			var name = item.fileName;

@@ -9,19 +9,9 @@ using StringTools;
 class Commands
 {
 
-	static private function getPathTarget(args:Array<String>):String
+	static inline private function getPathTarget(args:Array<String>):String
 	{
-		var path = Sys.getCwd();
-		for (arg in args)
-		{
-			switch (arg)
-			{
-				case "-g":
-					path = Config.globalPath;
-					args.remove(arg);
-			}
-		}
-		return path;
+		return Config.useGlobal ? Config.globalPath : Sys.getCwd();
 	}
 
 	@usage("[package [version]]")
