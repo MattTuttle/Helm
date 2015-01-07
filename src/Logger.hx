@@ -12,6 +12,7 @@ class Logger
 {
 
 	static public var OUTPUT:Bool = true;
+	static public var LEVEL:LogLevel = Info;
 
 	static public function log(msg:String="", newLine:Bool=true, ?level:LogLevel)
 	{

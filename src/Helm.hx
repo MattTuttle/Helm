@@ -2,6 +2,8 @@ import haxe.ds.StringMap;
 import haxe.rtti.Meta;
 import haxe.CallStack;
 
+using StringTools;
+
 class Command
 {
 
@@ -57,8 +59,6 @@ class Helm
 		Logger.log("|__|__|axe |_____|xtended |_____|ibrary |_|_|_|anager   v" + VERSION + "\x1b[0m");
 		Logger.log();
 
-		Logger.log(_argHandler.getDoc());
-
 		var categories = new StringMap<Array<Command>>();
 		for (command in _commands)
 		{
@@ -79,6 +79,7 @@ class Helm
 			}
 			Logger.log();
 		}
+		Sys.exit(1);
 	}
 
 	function runCommand(command:String, args:Array<String>, map:StringMap<Command>):Bool
@@ -102,6 +103,11 @@ class Helm
 	{
 		try
 		{
+			if (args.length == 0)
+			{
+				usage();
+			}
+
 			var command = args.shift();
 			var result = false;
 
@@ -133,32 +139,60 @@ class Helm
 		var args = Sys.args();
 		Config.load();
 
-		var list = [];
-		_argHandler = hxargs.Args.generate([
-			@doc("Use global path instead of local")
-			["-g", "--global"] => function() {
-				Config.useGlobal = true;
-			},
-			_ => function(arg:String) {
+		var lib = new Helm();
+
+		var list = new Array<String>();
+		var flags = new Array<String>();
+		for (arg in args)
+		{
+			if (arg.startsWith("-"))
+			{
+				if (arg.startsWith("--"))
+				{
+					flags.push(arg);
+				}
+				else
+				{
+					// convert single dash flags to double dash
+					arg = arg.substr(1);
+					for (i in 0...arg.length)
+					{
+						switch (arg.charAt(i))
+						{
+							case "g":
+								flags.push("--global");
+							case "v":
+								flags.push(args.length == 1 ? "--version" : "--verbose");
+							default:
+								Logger.log("Unknown flag -" + arg.charAt(i));
+						}
+					}
+				}
+			}
+			else
+			{
 				list.push(arg);
 			}
-		]);
+		}
 
-		var lib = new Helm();
-		if (args.length < 1)
+		for (flag in flags)
 		{
-			lib.usage();
+			switch (flag)
+			{
+				case "--global":
+					Config.useGlobal = true;
+				case "--version":
+					Logger.log(VERSION);
+					Sys.exit(0);
+				case "--verbose":
+					Logger.LEVEL = Verbose;
+			}
 		}
-		else
-		{
-			_argHandler.parse(args);
-			lib.process(list);
-		}
+
+		lib.process(list);
 	}
 
 	private var _commands:StringMap<Command>;
 	private var _aliases:StringMap<Command>;
-
-	static private var _argHandler:Dynamic;
 
 }

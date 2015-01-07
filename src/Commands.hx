@@ -204,8 +204,16 @@ class Commands
 	{
 		if (args.length == 0)
 		{
-			var info = Repository.loadPackageInfo(Sys.getCwd());
-			Logger.log(info.name + "@" + info.version);
+			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
+			var info = Repository.loadPackageInfo(path);
+			if (info == null)
+			{
+				Logger.log("Not a helm package");
+			}
+			else
+			{
+				Logger.log(info.name + "@" + info.version);
+			}
 		}
 		else
 		{

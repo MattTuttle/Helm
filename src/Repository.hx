@@ -75,6 +75,22 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		return results;
 	}
 
+	static public function getPackageRoot(path:String, find:String):String
+	{
+		if (path.endsWith("/")) path = path.substr(0, -1);
+		var parts = path.split(Directory.SEPARATOR);
+		while (parts.length > 0)
+		{
+			path = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR;
+			if (FileSystem.exists(path + find))
+			{
+				return path;
+			}
+			parts.pop();
+		}
+		return null;
+	}
+
 	static public function findPackageIn(name:String, target:String):Array<PackageInfo>
 	{
 		name = name.toLowerCase();
@@ -86,14 +102,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		}
 
 		// find a libs directory in the current directory or a parent
-		if (target.endsWith("/")) target = target.substr(0, -1);
-		var parts = target.split(Directory.SEPARATOR);
-		while (parts.length > 0)
-		{
-			target = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR;
-			if (FileSystem.exists(target)) break;
-			parts.pop();
-		}
+		target = getPackageRoot(target, LIB_DIR + Directory.SEPARATOR);
 
 		return searchPackageList(name, list(target));
 	}
@@ -131,7 +140,11 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
 		for (item in list(path))
 		{
-			var info = server.infos(item.name);
+			var info = try {
+				server.infos(item.name);
+			} catch (e:Dynamic) {
+				continue; // ignore local only repositories
+			}
 			var version:SemVer = info.curversion;
 			if (version > item.version)
 			{
