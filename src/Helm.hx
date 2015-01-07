@@ -82,23 +82,6 @@ class Helm
 		Sys.exit(1);
 	}
 
-	function runCommand(command:String, args:Array<String>, map:StringMap<Command>):Bool
-	{
-		var result = false;
-		if (map.exists(command))
-		{
-			try
-			{
-				result = map.get(command).func(args);
-			}
-			catch (e:Dynamic)
-			{
-				Logger.log(Std.string(e));
-			}
-		}
-		return result;
-	}
-
 	public function process(args:Array<String>):Void
 	{
 		try
@@ -138,8 +121,6 @@ class Helm
 	{
 		var args = Sys.args();
 		Config.load();
-
-		var lib = new Helm();
 
 		var list = new Array<String>();
 		var flags = new Array<String>();
@@ -189,6 +170,7 @@ class Helm
 			}
 		}
 
+		var lib = new Helm();
 		lib.process(list);
 	}
 
