@@ -178,8 +178,12 @@ class Commands
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
-		// TODO: prompt warning and only delete older versions unless forced to clear everything
-		Directory.delete(Config.cachePath);
+		var result = prompt("Are you sure you want to delete the cache? [y/N] ");
+		if (~/^y(es)?$/.match(result.toLowerCase()))
+		{
+			Directory.delete(Config.cachePath);
+			Logger.log("Cleared cache");
+		}
 		return true;
 	}
 
