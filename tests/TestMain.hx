@@ -7,6 +7,7 @@ class TestMain
 		var unit = new haxe.unit.TestRunner();
 		unit.add(new TestLib());
 		unit.add(new TestSemVer());
+		unit.add(new TestLocalization());
 		unit.run();
 	}
 }

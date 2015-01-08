@@ -44,7 +44,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		{
 			repo = findPackageIn(name, Config.globalPath);
 			if (repo.length == 0)
-				throw "Package " + name + " is not installed";
+				throw L10n.get("not_installed", [name]);
 		}
 		// TODO: resolve multiple packages
 		return repo[0].path;
@@ -229,7 +229,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		}
 		else
 		{
-			throw "Package '" + name + "' is not installed.";
+			throw L10n.get("not_installed", [name]);
 		}
 	}
 
@@ -255,7 +255,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		var url = fileURL(info, version);
 		if (url == null)
 		{
-			throw "Could not find package " + name + "@" + version;
+			throw L10n.get("not_on_server", [name, version]);
 		}
 
 		var filename = url.split("/").pop();
@@ -306,7 +306,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			var info = loadPackageInfo(target);
 			if (version == null || version == info.version)
 			{
-				Logger.log("Package " + info.fullName + " already installed");
+				Logger.log(L10n.get("already_installed", [info.fullName]));
 				return;
 			}
 			else
@@ -323,7 +323,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			return;
 		}
 
-		Logger.log("Installing " + name);
+		Logger.log(L10n.get("installing_package", [name]));
 
 		var path = download(name, version);
 
@@ -340,7 +340,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		{
 			var percent = ++unzippedItems / totalItems;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.floor(20 * percent)), " ", 20);
-			Logger.log("Unpacking [" + progress + "] " + unzippedItems + "/" + totalItems + "\r", false);
+			Logger.log(L10n.get("unpacking", [progress, unzippedItems, totalItems]) + "\r", false);
 
 			var name = item.fileName;
 			if (name.startsWith(basepath))
@@ -348,7 +348,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 				// remove basepath
 				name = name.substr(basepath.length, name.length - basepath.length);
 				if (name.charAt(0) == "/" || name.charAt(0) == "\\" || name.split("..").length > 1)
-					throw "Invalid filename : " + name;
+					throw L10n.get("invalid_filename", [name]);
 				var dirs = ~/[\/\\]/g.split(name);
 				var path = "";
 				var file = dirs.pop();

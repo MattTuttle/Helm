@@ -26,7 +26,7 @@ class DownloadProgress extends haxe.io.Output
 		_currentBytes += numBytes;
 		if (_totalBytes == 0)
 		{
-			Logger.log(_currentBytes + " bytes" + "\r", false);
+			Logger.log(_currentBytes + " bytes\r", false);
 		}
 		else
 		{

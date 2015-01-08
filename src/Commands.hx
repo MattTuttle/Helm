@@ -103,7 +103,7 @@ class Commands
 		if (info != null) throw "Package " + info.fullName + " already exists!";
 
 		var data = new HaxelibData();
-		data.name = Logger.prompt("Project name: ");
+		data.name = Logger.prompt(L10n.get("init_project_name"));
 		data.description = Logger.prompt("Description: ");
 		data.version = Logger.prompt("Version: ", "0.1.0");
 		data.url = Logger.prompt("URL: ");

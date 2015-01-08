@@ -121,6 +121,7 @@ class Helm
 	static public function main()
 	{
 		var args = Sys.args();
+		L10n.init();
 		Config.load();
 
 		var list = new Array<String>();
