@@ -1,17 +1,25 @@
-import haxe.crypto.Md5;
 import sys.io.File;
 import sys.FileSystem;
 import ds.SemVer;
 import ds.HaxelibData;
+import ds.Types;
 
 using StringTools;
 
 class Commands
 {
 
-	static inline private function getPathTarget(args:Array<String>):String
+	static inline private function getPathTarget():String
 	{
-		return Config.useGlobal ? Config.globalPath : Sys.getCwd();
+		if (Config.useGlobal)
+		{
+			return Config.globalPath;
+		}
+		else
+		{
+			var path = Repository.getPackageRoot(Sys.getCwd(), "haxelib.json");
+			return path == null ? Sys.getCwd() : path;
+		}
 	}
 
 	@usage("[package [version]]")
@@ -21,7 +29,7 @@ class Commands
 	{
 		if (args.length > 2) return false;
 
-		var path = getPathTarget(args);
+		var path = getPathTarget();
 
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (args.length == 0)
@@ -46,7 +54,7 @@ class Commands
 	@category("development")
 	static public function outdated(args:Array<String>):Bool
 	{
-		var outdated = Repository.outdated(getPathTarget(args));
+		var outdated = Repository.outdated(getPathTarget());
 		for (item in outdated)
 		{
 			Logger.log(item.name + "@" + item.current + " < " + item.latest);
@@ -58,7 +66,7 @@ class Commands
 	@alias("up")
 	static public function upgrade(args:Array<String>):Bool
 	{
-		var path = getPathTarget(args);
+		var path = getPathTarget();
 		var outdated = Repository.outdated(path);
 		for (item in outdated)
 		{
@@ -71,7 +79,7 @@ class Commands
 	@alias("l", "ls")
 	static public function list(args:Array<String>):Bool
 	{
-		var path = getPathTarget(args);
+		var path = getPathTarget();
 
 		Logger.log(path);
 		var list = Repository.list(path);
@@ -152,7 +160,7 @@ class Commands
 	@alias("rm", "remove")
 	static public function uninstall(args:Array<String>):Bool
 	{
-		var path = getPathTarget(args);
+		var path = getPathTarget();
 
 		for (arg in args)
 		{
@@ -178,7 +186,7 @@ class Commands
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
-		var result = prompt("Are you sure you want to delete the cache? [y/N] ");
+		var result = Logger.prompt("Are you sure you want to delete the cache? [y/N] ");
 		if (~/^y(es)?$/.match(result.toLowerCase()))
 		{
 			Directory.delete(Config.cachePath);
@@ -268,76 +276,40 @@ class Commands
 	}
 
 	@category("development")
-	@alias("upload", "submit")
-	static public function publish(args:Array<String>):Bool
+	@alias("package")
+	static public function bundle(args:Array<String>):Bool
 	{
-		var username = login();
-		trace(username);
+		var path = getPathTarget();
+		Bundle.make(path);
 		return true;
 	}
 
-	static private function login():String
+	@category("development")
+	@alias("upload", "submit")
+	static public function publish(args:Array<String>):Bool
 	{
-		var username:String, password:String;
-		while (true)
-		{
-			username = prompt("Username: ").toLowerCase();
-			if (!Repository.server.isNewUser(username)) break;
-			Logger.log("Username is not registered.");
-		}
-		while (true)
-		{
-			password = Md5.encode(prompt("Password: ", true));
-			if (Repository.server.checkPassword(username, password)) break;
-			Logger.log("Invalid password.");
-		}
-		return username;
+		var path = getPathTarget();
+		var info = Repository.loadPackageInfo(path);
+
+		var auth = new Auth();
+		auth.login();
+		Repository.server.checkDeveloper(info.name, auth.username);
+		var bundleName = Bundle.make(path);
+
+		var zip = File.read(bundleName);
+		var data = zip.readAll();
+
+		Repository.submit(data, auth);
+
+		return true;
 	}
 
 	@usage("[username] [email]")
 	@category("profile")
 	static public function register(args:Array<String>):Bool
 	{
-		var proxy = Repository.server;
-		var username_regex = ~/^[a-z0-9_-]{3,32}$/;
-		var email_regex = ~/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-		while (true)
-		{
-			var password:String, email:String;
-			var username = prompt("Username: ").toLowerCase();
-			if (!username_regex.match(username))
-			{
-				Logger.log("Invalid username. Must be alphanumeric and 3-32 characters long.");
-				continue;
-			}
-
-			if (!proxy.isNewUser(username))
-			{
-				Logger.log("Username " + username + " is already taken");
-				continue;
-			}
-
-			while (true)
-			{
-				password = prompt("Password: ", true);
-				var confirm = prompt("Confirm Password: ", true);
-				if (password == confirm) break;
-				Logger.log("Passwords didn't match.");
-			}
-			password = Md5.encode(password);
-
-			while(true)
-			{
-				email = prompt("Email: ");
-				if (email_regex.match(email)) break;
-				Logger.log("Invalid email address.");
-			}
-
-			var name = prompt("Full Name: ");
-
-			proxy.register(username, password, email, name);
-			break;
-		}
+		var auth = new Auth();
+		auth.register();
 		return true;
 	}
 
@@ -377,33 +349,6 @@ class Commands
 		Logger.logList(names);
 
 		return true;
-	}
-
-	static private function prompt(msg:String, secure:Bool = false):String
-	{
-		Logger.log(msg, false);
-		if (secure)
-		{
-			var buffer = new StringBuf(),
-				result = null;
-			while (true)
-			{
-				switch (Sys.getChar(false))
-				{
-					case 3: // Ctrl+C
-						Logger.log();
-						Sys.exit(1); // cancel
-					case 10, 13: // new line
-						result = buffer.toString();
-						break;
-					case c:
-						buffer.addChar(c);
-				}
-			}
-			Logger.log("<secure>");
-			return result;
-		}
-		return Sys.stdin().readLine();
 	}
 
 }

@@ -1,0 +1,6 @@
+.git*
+helm
+bin/
+
+.DS_Store
+Thumbs.db

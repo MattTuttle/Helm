@@ -7,6 +7,11 @@ typedef PackageInfo = {
 	path:String
 };
 
+typedef AuthInfo = {
+	var username:String;
+	var password:String;
+}
+
 typedef UserInfo = {
 	var name:String;
 	var fullname:String;

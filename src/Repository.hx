@@ -232,6 +232,22 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		}
 	}
 
+	static public function submit(data:haxe.io.Bytes, auth:Auth):Void
+	{
+		var id = server.getSubmitId();
+
+		// TODO: separate from haxelib?
+		var h = new haxe.Http(url);
+		h.onError = function(e) { throw e; };
+		h.onData = function(d) { Logger.log(d); }
+		h.fileTransfert("file", id, new UploadProgress(data), data.length);
+		h.request(true);
+		haxe.remoting.HttpConnection.TIMEOUT = 1000;
+
+		// is there a reason we have to submit the username/password AGAIN?!?
+		server.processSubmit(id, auth.username, auth.password);
+	}
+
 	static public function download(name:String, version:SemVer):String
 	{
 		var info = server.infos(name);

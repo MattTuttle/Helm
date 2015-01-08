@@ -69,4 +69,31 @@ class Logger
 		if (OUTPUT) Sys.print(out);
 	}
 
+	static public function prompt(msg:String, secure:Bool = false):String
+	{
+		Logger.log(msg, false);
+		if (secure)
+		{
+			var buffer = new StringBuf(),
+				result = null;
+			while (true)
+			{
+				switch (Sys.getChar(false))
+				{
+					case 3: // Ctrl+C
+						Logger.log();
+						Sys.exit(1); // cancel
+					case 10, 13: // new line
+						result = buffer.toString();
+						break;
+					case c:
+						buffer.addChar(c);
+				}
+			}
+			Logger.log("<secure>");
+			return result;
+		}
+		return Sys.stdin().readLine();
+	}
+
 }
