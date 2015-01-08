@@ -33,6 +33,8 @@ class Logger
 
 	/**
 	 * Prints a string list in multiple columns
+	 * @param list a list/array of strings to print
+	 * @ascending which diretion to sort the list
 	 */
 	static public function logList(list:Iterable<String>, ascending:Bool = true):Void
 	{
@@ -69,19 +71,30 @@ class Logger
 		if (OUTPUT) Sys.print(out);
 	}
 
-	static public function prompt(msg:String, secure:Bool = false):String
+	/**
+	 * Prompts the user for input
+	 * @param msg the message to show to the user before asking for input
+	 * @param secure whether or not to show user input (default = false)
+	 * @return the user input value
+	 */
+	static public function prompt(msg:String, secure:Bool = false, ?defaultValue:String):String
 	{
-		Logger.log(msg, false);
+		var result = null;
+		log(msg, false);
+		if (defaultValue != null)
+		{
+			log('[$defaultValue] ', false);
+		}
+
 		if (secure)
 		{
-			var buffer = new StringBuf(),
-				result = null;
+			var buffer = new StringBuf();
 			while (true)
 			{
 				switch (Sys.getChar(false))
 				{
 					case 3: // Ctrl+C
-						Logger.log();
+						log();
 						Sys.exit(1); // cancel
 					case 10, 13: // new line
 						result = buffer.toString();
@@ -90,10 +103,19 @@ class Logger
 						buffer.addChar(c);
 				}
 			}
-			Logger.log("<secure>");
-			return result;
+			log("<secure>");
 		}
-		return Sys.stdin().readLine();
+		else
+		{
+			result = Sys.stdin().readLine();
+		}
+
+		if (defaultValue != null && result.trim() == "")
+		{
+			result = defaultValue;
+		}
+
+		return result;
 	}
 
 }

@@ -1,11 +1,30 @@
 package ds;
 
-typedef PackageInfo = {
-	name:String,
-	version:SemVer,
-	packages: Array<PackageInfo>,
-	path:String
-};
+class PackageInfo
+{
+
+	public var name(default, null):String;
+	public var version(default, null):SemVer;
+	public var packages(default, null):Array<PackageInfo>;
+	public var path(default, null):String;
+
+	public var fullName(get, never):String;
+	private inline function get_fullName():String { return name + "@" + version; }
+
+	public function new(name, version, packages, path)
+	{
+		this.name = name;
+		this.version = version;
+		this.packages = packages;
+		this.path = path;
+	}
+
+	public function toString():String
+	{
+		return name;
+	}
+
+}
 
 typedef AuthInfo = {
 	var username:String;

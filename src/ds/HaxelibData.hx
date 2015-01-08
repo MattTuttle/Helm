@@ -1,53 +1,64 @@
 package ds;
 
 import haxe.Json;
+import haxe.ds.StringMap;
 import haxe.zip.Entry;
 import haxe.zip.Reader;
 import sys.io.File;
 import sys.FileSystem;
-
-typedef HaxelibDependency = {
-	name:String,
-	version:SemVer
-}
-
-typedef HaxelibInfo = {
-	name:String,
-	license:String,
-	description:String,
-	contributors:Array<String>,
-	releasenote:String,
-	url:String,
-	dependencies:List<HaxelibDependency>,
-	version:SemVer
-}
 
 class HaxelibData
 {
 
 	static public var JSON:String = "haxelib.json";
 
-	static public function readData(json:String):HaxelibInfo
+	public var name:String;
+	public var license:String;
+	public var description:String;
+	public var contributors:Array<String>;
+	public var releasenote:String;
+	public var url:String;
+	public var dependencies:StringMap<SemVer>;
+	public var version:SemVer;
+
+	public function new()
 	{
+		dependencies = new StringMap<SemVer>();
+		contributors = new Array<String>();
+	}
+
+	public function read(json:String)
+	{
+		// TODO: error handling!!
 		var json = Json.parse(json);
-		var dependencies = new List<HaxelibDependency>();
+		dependencies = new StringMap<SemVer>();
 		for (field in Reflect.fields(json.dependencies))
 		{
-			dependencies.add({
-				name: field,
-				version: SemVer.ofString(Reflect.field(json.dependencies, field))
-			});
+			dependencies.set(field, SemVer.ofString(Reflect.field(json.dependencies, field)));
 		}
-		return {
-			name: json.name,
-			license: json.license,
-			description: json.description,
-			contributors: json.contributors,
-			releasenote: json.releasenote,
-			url: json.url,
-			dependencies: dependencies,
-			version: SemVer.ofString(json.version)
+		name = json.name;
+		license = json.license;
+		description = json.description;
+		contributors = json.contributors;
+		releasenote = json.releasenote;
+		url = json.url;
+		version = SemVer.ofString(json.version);
+	}
+
+	public function toString():String
+	{
+		var data = {
+			name: name,
+			description: description,
+			version: version.toString(),
+			license: license,
+			releasenote: releasenote,
+			url: url,
+			contributors: contributors,
+			dependencies: dependencies
 		};
+		var json = haxe.Json.stringify(data, null, "\t");
+		return json;
 	}
 
 	public static function locateBasePath(zip:List<Entry>):String {
@@ -61,7 +72,7 @@ class HaxelibData
 		throw "No " + JSON + " found";
 	}
 
-	public static function readInfos(zip:List<Entry>):HaxelibInfo {
+	public static function readInfos(zip:List<Entry>):HaxelibData {
 		var infodata = null;
 		for (f in zip)
 		{
@@ -74,7 +85,9 @@ class HaxelibData
 		if (infodata == null)
 			throw JSON + " not found in package";
 
-		return readData(infodata);
+		var data = new HaxelibData();
+		data.read(infodata);
+		return data;
 	}
 
 }

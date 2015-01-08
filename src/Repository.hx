@@ -8,7 +8,7 @@ import ds.HaxelibData;
 
 using StringTools;
 
-class Repository extends haxe.remoting.Proxy<SiteApi>
+class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 {
 
 	// TODO: setup a mirror list for multiple repository servers
@@ -28,13 +28,11 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 	{
 		if (FileSystem.exists(path + HaxelibData.JSON))
 		{
-			var data = HaxelibData.readData(File.getContent(path + HaxelibData.JSON));
-			return {
-				name: Std.string(data.name).toLowerCase(),
-				version: SemVer.ofString(data.version),
-				packages: list(path),
-				path: path
-			};
+			var data = new HaxelibData();
+			data.read(File.getContent(path + HaxelibData.JSON));
+			return new PackageInfo(Std.string(data.name).toLowerCase(),
+				SemVer.ofString(data.version),
+				list(path), path);
 		}
 		return null;
 	}
@@ -123,7 +121,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			var hasChildren = item.packages.length > 0;
 			var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-			Logger.log(start + separator + item.name + "@" + item.version);
+			Logger.log(start + separator + item.fullName);
 
 			if (hasChildren)
 			{
@@ -196,10 +194,12 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			else if (item.endsWith("json"))
 			{
-				var data = HaxelibData.readData(File.getContent(item));
-				for (lib in data.dependencies)
+				var data = new HaxelibData();
+				data.read(File.getContent(item));
+				for (name in data.dependencies.keys())
 				{
-					libs.set(lib.name, lib.version != "" ? SemVer.ofString(lib.version) : null);
+					var version = data.dependencies.get(name);
+					libs.set(name, version != "" ? SemVer.ofString(version) : null);
 				}
 			}
 		}
@@ -220,10 +220,11 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			}
 			Logger.log(target);
 			Logger.log("-D " + name);
-			var data = HaxelibData.readData(File.getContent(target + HaxelibData.JSON));
-			for (dependency in data.dependencies)
+			var data = new HaxelibData();
+			data.read(File.getContent(target + HaxelibData.JSON));
+			for (name in data.dependencies.keys())
 			{
-				printInclude(dependency.name, target);
+				printInclude(name, target);
 			}
 		}
 		else
@@ -305,7 +306,7 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 			var info = loadPackageInfo(target);
 			if (version == null || version == info.version)
 			{
-				Logger.log("Package " + name + "@" + info.version + " already installed");
+				Logger.log("Package " + info.fullName + " already installed");
 				return;
 			}
 			else
@@ -370,12 +371,13 @@ class Repository extends haxe.remoting.Proxy<SiteApi>
 		Logger.log("\n", false);
 
 		installed.set(name, loadPackageInfo(target));
-		for (d in infos.dependencies)
+		for (name in infos.dependencies.keys())
 		{
+			var version = infos.dependencies.get(name);
 			// prevent installing a library we already installed (infinite loop)
-			if (!installed.exists(d.name))
+			if (!installed.exists(name))
 			{
-				install(d.name, d.version, target, installed);
+				install(name, version, target, installed);
 			}
 		}
 	}

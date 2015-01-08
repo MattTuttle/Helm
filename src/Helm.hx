@@ -32,6 +32,7 @@ class Helm
 		_commands = new StringMap<Command>();
 		_aliases = new StringMap<Command>();
 
+		// TODO: use a macro instead of runtime metadata??
 		var methods = Meta.getStatics(Commands);
 		for (name in Reflect.fields(methods))
 		{

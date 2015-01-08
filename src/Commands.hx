@@ -63,7 +63,7 @@ class Commands
 	}
 
 	@category("development")
-	@alias("up")
+	@alias("up", "update")
 	static public function upgrade(args:Array<String>):Bool
 	{
 		var path = getPathTarget();
@@ -98,14 +98,21 @@ class Commands
 	static public function init(args:Array<String>):Bool
 	{
 		// TODO: make this interactive and less crappy...
-		var data = HaxelibData.readData(HaxelibData.JSON);
-		data.name = "";
-		var json = haxe.Json.stringify(data);
-		// beautify json
-		json = json.replace(',', ',\n\t').replace('{', '{\n\t').replace('}', '\n}');
+		var path = getPathTarget();
+		var info = Repository.loadPackageInfo(path);
+		if (info != null) throw "Package " + info.fullName + " already exists!";
+
+		var data = new HaxelibData();
+		data.name = Logger.prompt("Project name: ");
+		data.description = Logger.prompt("Description: ");
+		data.version = Logger.prompt("Version: ", "0.1.0");
+		data.url = Logger.prompt("URL: ");
+		data.license = Logger.prompt("License: ", "MIT");
+
 		var out = sys.io.File.write(HaxelibData.JSON);
-		out.writeString(json);
+		out.writeString(data.toString());
 		out.close();
+
 		return true;
 	}
 
@@ -168,7 +175,7 @@ class Commands
 			if (infos.length > 0)
 			{
 				path = null;
-				// TODO: should this only delete from the immediate libs folder instead of searching for a package?
+				// TODO: should this only delete from the immediate libs folder instead of searching for a package and accidentally deleting a dependency?
 				for (info in infos)
 				{
 					if (path == null || info.path.length < path.length)
@@ -224,7 +231,7 @@ class Commands
 			}
 			else
 			{
-				Logger.log(info.name + "@" + info.version);
+				Logger.log(info.fullName);
 			}
 		}
 		else
