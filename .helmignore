@@ -1,6 +1,7 @@
 .git*
 helm
 bin/
+build.hxml
 
 .DS_Store
 Thumbs.db

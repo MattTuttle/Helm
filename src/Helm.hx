@@ -25,7 +25,7 @@ class Command
 class Helm
 {
 
-	inline static public var VERSION:String = "0.1.0";
+	inline static public var VERSION:ds.SemVer = "0.1.0";
 
 	public function new()
 	{

@@ -76,7 +76,6 @@ class Bundle
 		addBundleEntries(path, entries, ignore);
 		var zip = File.write(zipName, true);
 		var writer = new haxe.zip.Writer(zip);
-		writer.writeCDR();
 		writer.write(entries);
 		return zipName;
 	}
