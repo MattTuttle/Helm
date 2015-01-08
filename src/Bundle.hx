@@ -33,14 +33,17 @@ class Bundle
 			var filePath = path + name;
 			if (FileSystem.isDirectory(filePath))
 			{
-				addBundleEntries(path, list, ignore, name + "/");
+				if (!ignore.match(name + "/"))
+				{
+					addBundleEntries(path, list, ignore, name + "/");
+				}
 			}
 			else
 			{
-				var stat = FileSystem.stat(filePath);
+				// var stat = FileSystem.stat(filePath);
 				var bytes = File.read(filePath, true).readAll();
 				var entry = {
-					fileTime: stat.mtime,
+					fileTime: Date.now(),
 					fileSize: bytes.length,
 					fileName: name,
 					extraFields: null,
@@ -58,6 +61,7 @@ class Bundle
 	static public function make(path:String):String
 	{
 		var info = Repository.loadPackageInfo(path);
+		if (info == null) throw "Not in a package";
 		var rules = readIgnoreFile(path + ".helmignore");
 		if (rules == null)
 		{
@@ -67,16 +71,19 @@ class Bundle
 				rules = [];
 			}
 		}
-		var zipName = info.name + "@" + info.version + ".zip";
-		rules.push(info.name + "@*.zip");
+		var zipName = info.name + "_" + info.version + ".zip";
+		rules.push(info.name + "_*.zip"); // ignore past bundle versions
+		rules.push(".git*");
+		rules.push("svn/");
 
 		var ignore = new EReg("(" + rules.join("|").replace(".", "\\.").replace("*", ".*") + ")", "ig");
 
 		var entries = new List<haxe.zip.Entry>();
-		addBundleEntries(path, entries, ignore);
 		var zip = File.write(zipName, true);
 		var writer = new haxe.zip.Writer(zip);
+		addBundleEntries(path, entries, ignore);
 		writer.write(entries);
 		return zipName;
 	}
+
 }
