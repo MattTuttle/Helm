@@ -29,7 +29,7 @@ class UploadProgress extends Input
 	{
 		_currentBytes += numBytes;
 		var percent = _currentBytes / _totalBytes;
-		var progressLength = 30;
+		var progressLength = 60;
 		var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
 		Logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + DownloadProgress.humanizeBytes(_totalBytes) + "\r", false);
 	}

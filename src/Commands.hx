@@ -17,7 +17,7 @@ class Commands
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), "haxelib.json");
+			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
 			return path == null ? Sys.getCwd() : path;
 		}
 	}
@@ -34,18 +34,29 @@ class Commands
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (args.length == 0)
 		{
-			var libs = Repository.findDependencies(Sys.getCwd());
+			var libs = Repository.findDependencies(getPathTarget());
 
 			// install libraries found
 			for (lib in libs.keys())
 			{
-				Repository.install(lib, libs.get(lib), path);
+				var name = lib;
+				var version:SemVer = libs.get(lib);
+				// if version is null it's probably a git repository
+				if (version == null)
+				{
+					name = libs.get(lib);
+				}
+				Repository.install(name, version, path);
 			}
 		}
 		else
 		{
-			var version = args.length > 1 ? SemVer.ofString(args[1]) : null;
-			Repository.install(args[0], version, path);
+			for (arg in args)
+			{
+				var parts = arg.split("@");
+				var version = parts.length > 1 ? SemVer.ofString(parts[1]) : null;
+				Repository.install(parts[0], version, path);
+			}
 		}
 
 		return true;
@@ -75,6 +86,8 @@ class Commands
 		return true;
 	}
 
+
+
 	@category("information")
 	@alias("l", "ls")
 	static public function list(args:Array<String>):Bool
@@ -89,7 +102,23 @@ class Commands
 		}
 		else
 		{
-			Repository.printPackages(list);
+			// TODO: make this less flaky
+			if (args[0] == "--flat")
+			{
+				function printPackagesFlat(list:Array<PackageInfo>)
+				{
+					for (p in list)
+					{
+						Logger.log(p.fullName);
+						printPackagesFlat(p.packages);
+					}
+				}
+				printPackagesFlat(list);
+			}
+			else
+			{
+				Repository.printPackages(list);
+			}
 		}
 		return true;
 	}
