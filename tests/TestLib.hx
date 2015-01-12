@@ -2,7 +2,9 @@ class TestLib extends haxe.unit.TestCase
 {
 	public function testPackageInfo()
 	{
-		assertTrue(Commands.info(["format"]));
+		var parser = new ArgParser();
+		parser.parse(["format"]);
+		assertTrue(Commands.info(parser));
 	}
 
 	public function testHumanizeBytes()

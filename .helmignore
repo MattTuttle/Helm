@@ -1,6 +1,8 @@
 .git*
-helm
 bin/
+
+tests/
+helm
 build.hxml
 
 .DS_Store

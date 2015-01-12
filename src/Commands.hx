@@ -25,16 +25,14 @@ class Commands
 	@usage("[package [version]]")
 	@alias("i", "isntall")
 	@category("development")
-	static public function install(args:Array<String>):Bool
+	static public function install(parser:ArgParser):Bool
 	{
-		if (args.length > 2) return false;
-
 		var path = getPathTarget();
 
 		// if no packages are given as arguments, search in local directory for dependencies
-		if (args.length == 0)
+		if (parser.complete)
 		{
-			var libs = Repository.findDependencies(getPathTarget());
+			var libs = Repository.findDependencies(path);
 
 			// install libraries found
 			for (lib in libs.keys())
@@ -51,7 +49,7 @@ class Commands
 		}
 		else
 		{
-			for (arg in args)
+			for (arg in parser)
 			{
 				var parts = arg.split("@");
 				var version = parts.length > 1 ? SemVer.ofString(parts[1]) : null;
@@ -63,7 +61,7 @@ class Commands
 	}
 
 	@category("development")
-	static public function outdated(args:Array<String>):Bool
+	static public function outdated(parser:ArgParser):Bool
 	{
 		var outdated = Repository.outdated(getPathTarget());
 		for (item in outdated)
@@ -75,7 +73,7 @@ class Commands
 
 	@category("development")
 	@alias("up", "update")
-	static public function upgrade(args:Array<String>):Bool
+	static public function upgrade(parser:ArgParser):Bool
 	{
 		var path = getPathTarget();
 		var outdated = Repository.outdated(path);
@@ -90,8 +88,9 @@ class Commands
 
 	@category("information")
 	@alias("l", "ls")
-	static public function list(args:Array<String>):Bool
+	static public function list(parser:ArgParser):Bool
 	{
+		parser.parse(); // continue parsing
 		var path = getPathTarget();
 
 		Logger.log(path);
@@ -102,29 +101,31 @@ class Commands
 		}
 		else
 		{
-			// TODO: make this less flaky
-			if (args[0] == "--flat")
+			if (parser.complete)
 			{
-				function printPackagesFlat(list:Array<PackageInfo>)
-				{
-					for (p in list)
-					{
-						Logger.log(p.fullName);
-						printPackagesFlat(p.packages);
-					}
-				}
-				printPackagesFlat(list);
+				Repository.printPackages(list);
 			}
 			else
 			{
-				Repository.printPackages(list);
+				parser.addRule("--flat|-f", function(_) {
+					function printPackagesFlat(list:Array<PackageInfo>)
+					{
+						for (p in list)
+						{
+							Logger.log(p.fullName);
+							printPackagesFlat(p.packages);
+						}
+					}
+					printPackagesFlat(list);
+				});
+				parser.parse();
 			}
 		}
 		return true;
 	}
 
 	@category("development")
-	static public function init(args:Array<String>):Bool
+	static public function init(parser:ArgParser):Bool
 	{
 		// TODO: make this interactive and less crappy...
 		var path = getPathTarget();
@@ -147,23 +148,30 @@ class Commands
 
 	@usage("package")
 	@category("information")
-	static public function which(args:Array<String>):Bool
+	static public function which(parser:ArgParser):Bool
 	{
-		if (args.length < 1) return false;
-
-		var repo = Repository.findPackage(args.shift());
-		var info = Repository.loadPackageInfo(repo);
-		Logger.log(repo + " [" + info.version + "]");
+		for (arg in parser)
+		{
+			var repo = Repository.findPackage(arg);
+			var info = Repository.loadPackageInfo(repo);
+			Logger.log(repo + " [" + info.version + "]");
+		}
 		return true;
 	}
 
 	@usage("package [args ...]")
 	@category("development")
-	static public function run(args:Array<String>):Bool
+	static public function run(parser:ArgParser):Bool
 	{
-		if (args.length < 1) return false;
+		if (parser.complete) return false;
 
-		var name = args.shift();
+		var name = parser.iterator().next();
+
+		var args = new Array<String>();
+		for (arg in parser)
+		{
+			args.push(arg);
+		}
 		var repo = Repository.findPackage(name);
 		var run = "run.n";
 
@@ -194,11 +202,11 @@ class Commands
 
 	@category("development")
 	@alias("rm", "remove")
-	static public function uninstall(args:Array<String>):Bool
+	static public function uninstall(parser:ArgParser):Bool
 	{
 		var path = getPathTarget();
 
-		for (arg in args)
+		for (arg in parser)
 		{
 			var infos = Repository.findPackageIn(arg, path);
 			if (infos.length > 0)
@@ -220,7 +228,7 @@ class Commands
 	}
 
 	@category("misc")
-	static public function clean(args:Array<String>):Bool
+	static public function clean(parser:ArgParser):Bool
 	{
 		var result = Logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
@@ -234,11 +242,11 @@ class Commands
 	@usage("package [package ...]")
 	@category("information")
 	@alias("path")
-	static public function include(args:Array<String>):Bool
+	static public function include(parser:ArgParser):Bool
 	{
-		if (args.length < 1) return false;
+		if (parser.complete) return false;
 
-		for (name in args)
+		for (name in parser)
 		{
 			Repository.printInclude(name);
 		}
@@ -248,9 +256,9 @@ class Commands
 
 	@usage("package [version]")
 	@category("information")
-	static public function info(args:Array<String>):Bool
+	static public function info(parser:ArgParser):Bool
 	{
-		if (args.length == 0)
+		if (parser.complete)
 		{
 			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
 			var info = Repository.loadPackageInfo(path);
@@ -265,7 +273,7 @@ class Commands
 		}
 		else
 		{
-			for (arg in args)
+			for (arg in parser)
 			{
 				var parts = arg.split("@");
 				var info = Repository.server.infos(parts[0]);
@@ -316,7 +324,7 @@ class Commands
 
 	@category("development")
 	@alias("package")
-	static public function bundle(args:Array<String>):Bool
+	static public function bundle(parser:ArgParser):Bool
 	{
 		var path = getPathTarget();
 		Bundle.make(path);
@@ -325,7 +333,7 @@ class Commands
 
 	@category("development")
 	@alias("upload", "submit")
-	static public function publish(args:Array<String>):Bool
+	static public function publish(parser:ArgParser):Bool
 	{
 		var path = getPathTarget();
 		var info = Repository.loadPackageInfo(path);
@@ -345,7 +353,7 @@ class Commands
 
 	@usage("[username] [email]")
 	@category("profile")
-	static public function register(args:Array<String>):Bool
+	static public function register(parser:ArgParser):Bool
 	{
 		var auth = new Auth();
 		auth.register();
@@ -354,29 +362,32 @@ class Commands
 
 	@usage("username")
 	@category("profile")
-	static public function user(args:Array<String>):Bool
+	static public function user(parser:ArgParser):Bool
 	{
-		if (args.length != 1) return false;
+		if (parser.complete) return false;
 
-		var user = Repository.server.user(args[0]);
-		Logger.log(user.fullname + " [" + user.email + "]");
-		Logger.log();
-		Logger.log(L10n.get("packages"));
-		Logger.logList(user.projects);
+		for (arg in parser)
+		{
+			var user = Repository.server.user(arg);
+			Logger.log(user.fullname + " [" + user.email + "]");
+			Logger.log();
+			Logger.log(L10n.get("packages"));
+			Logger.logList(user.projects);
+		}
 
 		return true;
 	}
 
 	@usage("package [package ...]")
 	@category("information")
-	static public function search(args:Array<String>):Bool
+	static public function search(parser:ArgParser):Bool
 	{
-		if (args.length == 0) return false;
+		if (parser.complete) return false;
 
 		var names = new Array<String>();
 
 		// for every argument do a search against haxelib repository
-		for (arg in args)
+		for (arg in parser)
 		{
 			for (result in Repository.server.search(arg))
 			{

@@ -10,7 +10,7 @@ class Command
 	public var name(default, null):String;
 	public var helpText(default, null):String;
 	public var category(default, null):String;
-	public var func(default, null):Array<String>->Bool;
+	public var func(default, null):ArgParser->Bool;
 
 	public function new(name:String, meta:Dynamic)
 	{
@@ -85,91 +85,43 @@ class Helm
 
 	public function process(args:Array<String>):Void
 	{
-		try
+		if (args.length == 0)
 		{
-			if (args.length == 0)
-			{
-				usage();
-			}
-
-			var command = nextArg(args);
-			var result = false;
-
-			if (_commands.exists(command))
-			{
-				result = _commands.get(command).func(args);
-			}
-			else if (_aliases.exists(command))
-			{
-				result = _aliases.get(command).func(args);
-			}
-
-			if (!result)
-			{
-				usage();
-			}
+			usage();
 		}
-		catch (e:Dynamic)
-		{
-			Logger.log(Std.string(e));
-			Logger.log(CallStack.toString(CallStack.exceptionStack()));
-		}
-	}
 
-	private function nextArg(args:Array<String>):String
-	{
-		var arg:String = null;
-		var flags = new Array<String>();
-		while (args.length > 0)
-		{
-			arg = args.shift();
-			if (arg.startsWith("-"))
+		var parser = new ArgParser();
+		parser.addRule("-g|--global", function(_) { Config.useGlobal = true; });
+		parser.addRule("-v|--version", function(_) { Logger.log(VERSION); Sys.exit(0); });
+		parser.addRule("--no-color", function(_) { Logger.COLORIZE = false; });
+		// parser.addRule("-v|--verbose", function(_) { Logger.LEVEL = Verbose; });
+		parser.addRule(null, function(p:ArgParser) {
+			try
 			{
-				if (arg.startsWith("--"))
+				var command = p.current;
+				var result = false;
+
+				if (_commands.exists(command))
 				{
-					flags.push(arg);
+					result = _commands.get(command).func(p);
 				}
-				else
+				else if (_aliases.exists(command))
 				{
-					// convert single dash flags to double dash
-					arg = arg.substr(1);
-					for (i in 0...arg.length)
-					{
-						switch (arg.charAt(i))
-						{
-							case "g":
-								flags.push("--global");
-							case "v":
-								flags.push(args.length == 1 ? "--version" : "--verbose");
-							default:
-								Logger.log("Unknown flag -" + arg.charAt(i));
-						}
-					}
+					result = _aliases.get(command).func(p);
+				}
+
+				if (!result)
+				{
+					usage();
 				}
 			}
-			else
+			catch (e:Dynamic)
 			{
-				break;
+				Logger.log(Std.string(e));
+				Logger.log(CallStack.toString(CallStack.exceptionStack()));
 			}
-		}
-
-		for (flag in flags)
-		{
-			switch (flag)
-			{
-				case "--global":
-					Config.useGlobal = true;
-				case "--version":
-					Logger.log(VERSION);
-					Sys.exit(0);
-				case "--no-color":
-					Logger.COLORIZE = false;
-				case "--verbose":
-					Logger.LEVEL = Verbose;
-			}
-		}
-
-		return arg;
+		});
+		parser.parse(args);
 	}
 
 	static public function main()
