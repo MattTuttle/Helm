@@ -4,11 +4,11 @@ import sys.io.File;
 class L10n
 {
 
-	static public function init(language:String = "en-us")
+	static public function init(locale:String = "en-US")
 	{
 		_strings = new StringMap<String>();
 
-		var content = File.getContent("l10n/" + language + "/strings.xml");
+		var content = File.getContent("l10n/" + locale + "/strings.xml");
 		var root = Xml.parse(content).firstElement();
 		for (string in root.elements())
 		{

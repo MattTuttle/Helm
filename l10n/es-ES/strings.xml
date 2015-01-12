@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<strings>
+	<text key="not_registered"></text>
+	<text key="num_of_bytes"></text>
+	<text key="not_installed"></text>
+	<text key="already_installed"></text>
+	<text key="not_on_server"></text>
+	<text key="installing_package"></text>
+	<text key="unpacking"></text>
+	<text key="invalid_filename"></text>
+
+	<text key="init_project_name"></text>
+	<text key="init_project_description"></text>
+	<text key="init_project_version"></text>
+	<text key="init_project_url"></text>
+	<text key="init_project_license"></text>
+
+	<text key="run_not_enabled"></text>
+	<text key="directory_deleted"></text>
+	<text key="delete_cache_confirm"></text>
+	<text key="cleared_cache"></text>
+	<text key="not_a_package"></text>
+
+	<text key="info_owner"></text>
+	<text key="info_tags"></text>
+	<text key="info_license"></text>
+	<text key="info_version"></text>
+	<text key="info_date"></text>
+	<text key="info_comments"></text>
+	<text key="version_not_found"></text>
+	<text key="info_versions"></text>
+	<text key="packages"></text>
+</strings>

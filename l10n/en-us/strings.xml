@@ -8,5 +8,26 @@
 	<text key="installing_package">Installing $1</text>
 	<text key="unpacking">Unpacking [$1] $2/$3</text>
 	<text key="invalid_filename">Invalid filename: $1</text>
+
 	<text key="init_project_name">Project name: </text>
+	<text key="init_project_description">Description: </text>
+	<text key="init_project_version">Version: </text>
+	<text key="init_project_url">URL: </text>
+	<text key="init_project_license">License: </text>
+
+	<text key="run_not_enabled">Run command not enabled for $1</text>
+	<text key="directory_deleted">Removed $1</text>
+	<text key="delete_cache_confirm">Are you sure you want to delete the cache? [y/N] </text>
+	<text key="cleared_cache">Cleared cache</text>
+	<text key="not_a_package">Not a helm package</text>
+
+	<text key="info_owner">   Owner: $1</text>
+	<text key="info_tags">    Tags: $1</text>
+	<text key="info_license"> License: $1</text>
+	<text key="info_version"> Version: $1</text>
+	<text key="info_date">    Date: $1</text>
+	<text key="info_comments"> Comment: $1</text>
+	<text key="version_not_found">Version $1 not found</text>
+	<text key="info_versions">Versions: (current = $1)</text>
+	<text key="packages">Packages:</text>
 </strings>

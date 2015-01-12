@@ -17,7 +17,7 @@ class Commands
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), "haxelib.json");
+			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
 			return path == null ? Sys.getCwd() : path;
 		}
 	}
@@ -104,10 +104,10 @@ class Commands
 
 		var data = new HaxelibData();
 		data.name = Logger.prompt(L10n.get("init_project_name"));
-		data.description = Logger.prompt("Description: ");
-		data.version = Logger.prompt("Version: ", "0.1.0");
-		data.url = Logger.prompt("URL: ");
-		data.license = Logger.prompt("License: ", "MIT");
+		data.description = Logger.prompt(L10n.get("init_project_description"));
+		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
+		data.url = Logger.prompt(L10n.get("init_project_url"));
+		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
 
 		var out = sys.io.File.write(HaxelibData.JSON);
 		out.writeString(data.toString());
@@ -142,7 +142,7 @@ class Commands
 
 		if (!FileSystem.exists(repo + run))
 		{
-			throw "Run command not enabled for " + name;
+			throw L10n.get("run_not_enabled", [name]);
 		}
 
 		args.insert(0, run);
@@ -184,7 +184,7 @@ class Commands
 					}
 				}
 				Directory.delete(path);
-				Logger.log("Removed " + arg);
+				Logger.log(L10n.get("directory_deleted", [arg]));
 			}
 		}
 		return true;
@@ -193,11 +193,11 @@ class Commands
 	@category("misc")
 	static public function clean(args:Array<String>):Bool
 	{
-		var result = Logger.prompt("Are you sure you want to delete the cache? [y/N] ");
+		var result = Logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
 		{
 			Directory.delete(Config.cachePath);
-			Logger.log("Cleared cache");
+			Logger.log(L10n.get("cleared_cache"));
 		}
 		return true;
 	}
@@ -227,7 +227,7 @@ class Commands
 			var info = Repository.loadPackageInfo(path);
 			if (info == null)
 			{
-				Logger.log("Not a helm package");
+				Logger.log(L10n.get("not_a_package"));
 			}
 			else
 			{
@@ -244,9 +244,9 @@ class Commands
 				Logger.log(info.name + " [" + info.website + "]");
 				Logger.log(info.desc);
 				Logger.log();
-				Logger.log("   Owner: " + info.owner);
-				Logger.log(" License: " + info.license);
-				Logger.log("    Tags: " + info.tags.join(", "));
+				Logger.log(L10n.get("info_owner", [info.owner]));
+				Logger.log(L10n.get("info_license", [info.license]));
+				Logger.log(L10n.get("info_tags", [info.tags.join(", ")]));
 				Logger.log();
 
 				if (parts.length == 2)
@@ -259,20 +259,23 @@ class Commands
 					{
 						if (SemVer.ofString(version.name) == requestedVersion)
 						{
-							Logger.log(" Version: " + version.name);
-							Logger.log("    Date: " + version.date);
-							Logger.log(" Comment: " + version.comments);
+							Logger.log(L10n.get("info_version", [version.name]));
+							Logger.log(L10n.get("info_date", [version.date]));
+							Logger.log(L10n.get("info_comments", [version.comments]));
 							found = true;
 							break;
 						}
 					}
-					if (!found) Logger.log("Version " + requestedVersion + " not found");
+					if (!found)
+					{
+						Logger.log(L10n.get("version_not_found", [requestedVersion]));
+					}
 				}
 				else
 				{
 					var versions = new Array<String>();
 					for (version in info.versions) { versions.push(version.name); }
-					Logger.log("Versions: (current = " + info.curversion + ")");
+					Logger.log(L10n.get("info_versions", [info.curversion]));
 					Logger.logList(versions, false);
 				}
 				Logger.log("-----------");
@@ -329,7 +332,7 @@ class Commands
 		var user = Repository.server.user(args[0]);
 		Logger.log(user.fullname + " [" + user.email + "]");
 		Logger.log();
-		Logger.log("Packages:");
+		Logger.log(L10n.get("packages"));
 		Logger.logList(user.projects);
 
 		return true;
