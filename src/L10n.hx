@@ -8,7 +8,8 @@ class L10n
 	{
 		_strings = new StringMap<String>();
 
-		var content = File.getContent("l10n/" + locale + "/strings.xml");
+		var path = Config.helmPath + "l10n/" + locale + "/strings.xml";
+		var content = sys.FileSystem.exists(path) ? File.getContent(path) : haxe.Resource.getString("en-US");
 		var root = Xml.parse(content).firstElement();
 		for (string in root.elements())
 		{
@@ -18,6 +19,8 @@ class L10n
 
 	static public function get(key:String, ?args:Array<Dynamic>):String
 	{
+		if (_strings == null) init();
+
 		var value = null;
 		var reg = ~/\$([0-9]+)/g;
 		if (_strings.exists(key))

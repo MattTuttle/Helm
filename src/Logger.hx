@@ -13,10 +13,36 @@ class Logger
 
 	static public var OUTPUT:Bool = true;
 	static public var LEVEL:LogLevel = Info;
+	static public var COLORIZE:Bool = true;
 
 	static public function log(msg:String="", newLine:Bool=true, ?level:LogLevel)
 	{
 		if (level == null) level = Info;
+
+		// color escape codes
+		var color = ~/\{([a-z]+)\}/g;
+		if (COLORIZE)
+		{
+			while (color.match(msg))
+			{
+				var escape = switch (color.matched(1)) {
+					case "black": "\x1b[30;1m";
+					case "red": "\x1b[31;1m";
+					case "green": "\x1b[32;1m";
+					case "yellow": "\x1b[33;1m";
+					case "blue": "\x1b[34;1m";
+					case "magenta": "\x1b[35;1m";
+					case "cyan": "\x1b[36;1m";
+					case "white": "\x1b[37;1m";
+					default: "\x1b[0m";
+				};
+				msg = color.matchedLeft() + escape + color.matchedRight();
+			}
+		}
+		else
+		{
+			msg = color.replace(msg, "");
+		}
 
 		if (OUTPUT)
 		{

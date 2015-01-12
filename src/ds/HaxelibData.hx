@@ -18,12 +18,12 @@ class HaxelibData
 	public var contributors:Array<String>;
 	public var releasenote:String;
 	public var url:String;
-	public var dependencies:StringMap<SemVer>;
+	public var dependencies:StringMap<String>;
 	public var version:SemVer;
 
 	public function new()
 	{
-		dependencies = new StringMap<SemVer>();
+		dependencies = new StringMap<String>();
 		contributors = new Array<String>();
 	}
 
@@ -31,10 +31,10 @@ class HaxelibData
 	{
 		// TODO: error handling!!
 		var json = Json.parse(json);
-		dependencies = new StringMap<SemVer>();
 		for (field in Reflect.fields(json.dependencies))
 		{
-			dependencies.set(field, SemVer.ofString(Reflect.field(json.dependencies, field)));
+			var version = Reflect.field(json.dependencies, field);
+			dependencies.set(field, version);
 		}
 		name = json.name;
 		license = json.license;

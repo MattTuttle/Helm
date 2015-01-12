@@ -3,10 +3,9 @@
 	<text key="not_registered">Username is not registered.</text>
 	<text key="num_of_bytes">$1 bytes</text>
 	<text key="not_installed">Package $1 is not installed</text>
-	<text key="already_installed">Package $1 already installed</text>
-	<text key="not_on_server">Could not find package $1@$2</text>
-	<text key="installing_package">Installing $1</text>
-	<text key="unpacking">Unpacking [$1] $2/$3</text>
+	<text key="already_installed">{red}Package $1 already installed{end}</text>
+	<text key="not_on_server">Could not find package {yellow}$1@$2{end}</text>
+	<text key="installing_package">Installing {yellow}$1{end}</text>
 	<text key="invalid_filename">Invalid filename: $1</text>
 
 	<text key="init_project_name">Project name: </text>

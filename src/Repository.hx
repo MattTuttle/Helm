@@ -46,7 +46,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			if (repo.length == 0)
 				throw L10n.get("not_installed", [name]);
 		}
-		// TODO: resolve multiple packages
+		// TODO: resolve multiple packages found, select best one
 		return repo[0].path;
 	}
 
@@ -121,7 +121,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			}
 			var hasChildren = item.packages.length > 0;
 			var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-			Logger.log(start + separator + item.fullName);
+			Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
 
 			if (hasChildren)
 			{
@@ -175,9 +175,9 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 	/**
 	 * Returns a list of project dependencies based on files found in the directory
 	 */
-	static public function findDependencies(dir:String):StringMap<SemVer>
+	static public function findDependencies(dir:String):StringMap<String>
 	{
-		var libs = new StringMap<SemVer>();
+		var libs = new StringMap<String>();
 		for (item in FileSystem.readDirectory(dir))
 		{
 			// search files for libraries to install
@@ -199,7 +199,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 				for (name in data.dependencies.keys())
 				{
 					var version = data.dependencies.get(name);
-					libs.set(name, version != "" ? SemVer.ofString(version) : null);
+					libs.set(name, version);
 				}
 			}
 		}
@@ -249,13 +249,12 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		server.processSubmit(id, auth.username, auth.password);
 	}
 
-	static public function download(name:String, version:SemVer):String
+	static public function download(info:ds.ProjectInfo, version:SemVer):String
 	{
-		var info = server.infos(name);
 		var url = fileURL(info, version);
 		if (url == null)
 		{
-			throw L10n.get("not_on_server", [name, version]);
+			throw L10n.get("not_on_server", [info.name, version]);
 		}
 
 		var filename = url.split("/").pop();
@@ -304,7 +303,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		if (FileSystem.exists(target))
 		{
 			var info = loadPackageInfo(target);
-			if (version == null || version == info.version)
+			if (info != null && (version == null || version == info.version))
 			{
 				Logger.log(L10n.get("already_installed", [info.fullName]));
 				return;
@@ -323,10 +322,12 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			return;
 		}
 
-		Logger.log(L10n.get("installing_package", [name]));
+		var info = server.infos(name);
+		var version = getLatestVersion(info, version);
+		Logger.log(L10n.get("installing_package", [info.name + "@" + version]));
+		var path = download(info, version);
 
-		var path = download(name, version);
-
+		// TODO: if zip fails to read, redownload?
 		var f = File.read(path, true);
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
@@ -339,8 +340,8 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		for (item in zip)
 		{
 			var percent = ++unzippedItems / totalItems;
-			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.floor(20 * percent)), " ", 20);
-			Logger.log(L10n.get("unpacking", [progress, unzippedItems, totalItems]) + "\r", false);
+			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.floor(60 * percent)), " ", 60);
+			Logger.log('[$progress] $unzippedItems/$totalItems\r', false);
 
 			var name = item.fileName;
 			if (name.startsWith(basepath))
@@ -382,10 +383,8 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		}
 	}
 
-	static public function fileURL(info:ProjectInfo, version:SemVer=null):String
+	static private function getLatestVersion(info:ProjectInfo, version:SemVer=null):SemVer
 	{
-		var versionString:String = null;
-
 		if (version == null)
 		{
 			var version:SemVer = info.curversion;
@@ -395,7 +394,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			{
 				version = info.versions[i].name;
 			}
-			versionString = version;
+			return version;
 		}
 		else
 		{
@@ -403,21 +402,22 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			{
 				if (SemVer.ofString(v.name) == version)
 				{
-					versionString = version;
-					break;
+					return version;
 				}
 			}
 		}
-
-		if (versionString != null)
-		{
-			// files stored on server use commas instead of periods
-			versionString = versionString.split(".").join(",");
-
-			// TODO: return this information from the server instead of creating it on the client
-			return url + "files/" + apiVersion + "/" + info.name + "-" + versionString + ".zip";
-		}
 		return null;
+	}
+
+	static private function fileURL(info:ProjectInfo, version:SemVer):String
+	{
+		var versionString:String = version;
+
+		// files stored on server use commas instead of periods
+		versionString = versionString.split(".").join(",");
+
+		// TODO: return this information from the server instead of creating it on the client
+		return url + "files/" + apiVersion + "/" + info.name + "-" + versionString + ".zip";
 	}
 
 }

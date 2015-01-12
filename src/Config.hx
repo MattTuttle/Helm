@@ -15,6 +15,13 @@ class Config
 		return globalPath + "cache/";
 	}
 
+	static public var helmPath(get, never):String;
+	static private function get_helmPath():String
+	{
+		// TODO: verify that this actually exists, assumes it is installed
+		return globalPath + "helm/";
+	}
+
 	static public function load():Void
 	{
 		globalPath = Sys.getEnv("HAXELIB_PATH");

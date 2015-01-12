@@ -54,10 +54,10 @@ class Helm
 
 	public function usage():Void
 	{
-		Logger.log("\x1b[34;1m __ __      _____          __            __ __ ");
+		Logger.log("{yellow} __ __      _____          __            __ __ ");
 		Logger.log("|  |  |    |   __|        |  |          |     |");
 		Logger.log("|     |    |   __|        |  |__        | | | |");
-		Logger.log("|__|__|axe |_____|xtended |_____|ibrary |_|_|_|anager   v" + VERSION + "\x1b[0m");
+		Logger.log("|__|__|{blue}axe {yellow}|_____|{blue}xtended {yellow}|_____|{blue}ibrary {yellow}|_|_|_|{blue}anager   v" + VERSION + "{end}");
 		Logger.log();
 
 		var categories = new StringMap<Array<Command>>();
@@ -69,14 +69,14 @@ class Helm
 		}
 		for (category in categories.keys())
 		{
-			Logger.log("-- " + category + " --");
+			Logger.log("{blue}-- " + category + " --{end}");
 			var list = categories.get(category);
 			list.sort(function(a:Command, b:Command):Int {
 				return (a.name > b.name ? 1 : (a.name < b.name ? -1 : 0));
 			});
 			for (command in list)
 			{
-				Logger.log("    helm " + command.name + " " + command.helpText);
+				Logger.log("    helm {yellow}" + command.name + "{end} " + command.helpText);
 			}
 			Logger.log();
 		}
@@ -92,7 +92,7 @@ class Helm
 				usage();
 			}
 
-			var command = args.shift();
+			var command = nextArg(args);
 			var result = false;
 
 			if (_commands.exists(command))
@@ -112,22 +112,17 @@ class Helm
 		catch (e:Dynamic)
 		{
 			Logger.log(Std.string(e));
-			#if debug
 			Logger.log(CallStack.toString(CallStack.exceptionStack()));
-			#end
 		}
 	}
 
-	static public function main()
+	private function nextArg(args:Array<String>):String
 	{
-		var args = Sys.args();
-		L10n.init();
-		Config.load();
-
-		var list = new Array<String>();
+		var arg:String = null;
 		var flags = new Array<String>();
-		for (arg in args)
+		while (args.length > 0)
 		{
+			arg = args.shift();
 			if (arg.startsWith("-"))
 			{
 				if (arg.startsWith("--"))
@@ -154,7 +149,7 @@ class Helm
 			}
 			else
 			{
-				list.push(arg);
+				break;
 			}
 		}
 
@@ -167,13 +162,23 @@ class Helm
 				case "--version":
 					Logger.log(VERSION);
 					Sys.exit(0);
+				case "--no-color":
+					Logger.COLORIZE = false;
 				case "--verbose":
 					Logger.LEVEL = Verbose;
 			}
 		}
 
+		return arg;
+	}
+
+	static public function main()
+	{
+		L10n.init();
+		Config.load();
+
 		var lib = new Helm();
-		lib.process(list);
+		lib.process(Sys.args());
 	}
 
 	private var _commands:StringMap<Command>;

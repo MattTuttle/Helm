@@ -4,7 +4,7 @@ class TestMain
 	static public function main()
 	{
 		Logger.OUTPUT = false;
-		L10n.init();
+		Config.load();
 
 		var unit = new haxe.unit.TestRunner();
 		unit.add(new TestLib());
