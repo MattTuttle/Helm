@@ -91,11 +91,11 @@ class Helm
 		}
 
 		var parser = new ArgParser();
-		parser.addRule("-g|--global", function(_) { Config.useGlobal = true; });
-		parser.addRule("-v|--version", function(_) { Logger.log(VERSION); Sys.exit(0); });
-		parser.addRule("--no-color", function(_) { Logger.COLORIZE = false; });
-		// parser.addRule("-v|--verbose", function(_) { Logger.LEVEL = Verbose; });
-		parser.addRule(null, function(p:ArgParser) {
+		parser.addRule(function(_) { Config.useGlobal = true; }, ["-g", "--global"]);
+		parser.addRule(function(_) { Logger.log(VERSION); Sys.exit(0); }, ["--version"]);
+		parser.addRule(function(_) { Logger.COLORIZE = false; }, ["--no-color"]);
+		parser.addRule(function(_) { Logger.LEVEL = Verbose; }, ["-v", "--verbose"]);
+		parser.addRule(function(p:ArgParser) {
 			try
 			{
 				var command = p.current;

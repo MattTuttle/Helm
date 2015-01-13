@@ -1,10 +1,24 @@
 class TestArgs extends haxe.unit.TestCase
 {
+
+	public function testNoArgs()
+	{
+		var a = new ArgParser();
+		try
+		{
+			a.parse();
+		}
+		catch (e:String)
+		{
+			assertEquals("Must set args at least once", e);
+		}
+	}
+
 	public function testOrdering()
 	{
 		var flag = false;
 		var a = new ArgParser();
-		a.addRule("-g", function(_) { flag = true; });
+		a.addRule(function(_) { flag = true; }, ["-g"]);
 
 		a.parse(["-g", "ls"]);
 		assertTrue(flag);
@@ -22,7 +36,7 @@ class TestArgs extends haxe.unit.TestCase
 	{
 		var flag = false;
 		var a = new ArgParser();
-		a.addRule("list|ls", function(_) { flag = true; });
+		a.addRule(function(_) { flag = true; }, ["list", "ls"]);
 
 		a.parse(["ls"]);
 		assertTrue(flag);
@@ -38,14 +52,33 @@ class TestArgs extends haxe.unit.TestCase
 	public function testContinue()
 	{
 		var a = new ArgParser();
-		a.addRule("continue", function(p:ArgParser) {
-			assertEquals(p.current, "continue");
+		a.addRule(function(p:ArgParser) {
+			assertEquals("continue", p.current);
 			p.parse();
-			assertEquals(p.current, "hello");
-		});
+			assertEquals("hello", p.current);
+		}, ["continue"]);
 
 		a.parse(["continue", "hello"]);
-		assertEquals(a.current, "hello");
+		assertEquals("hello", a.current);
 		assertTrue(a.complete);
 	}
+
+	public function testArguments()
+	{
+		var a = new ArgParser();
+		a.addRule(function(p:ArgParser) {
+			assertEquals("filename", p.argument);
+		}, ['-o'], true);
+		a.parse(['dostuff', '-o', 'filename']);
+
+		try
+		{
+			a.parse(['hi', '-o']);
+		}
+		catch (e:String)
+		{
+			assertEquals("Expected an argument for -o", e);
+		}
+	}
+
 }

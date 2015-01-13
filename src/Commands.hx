@@ -27,11 +27,10 @@ class Commands
 	@category("development")
 	static public function install(parser:ArgParser):Bool
 	{
-		var path = getPathTarget();
-
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (parser.complete)
 		{
+			var path = getPathTarget();
 			var libs = Repository.findDependencies(path);
 
 			// install libraries found
@@ -49,12 +48,13 @@ class Commands
 		}
 		else
 		{
-			for (arg in parser)
-			{
-				var parts = arg.split("@");
+			// default rule
+			parser.addRule(function(_) {
+				var parts = parser.current.split("@");
 				var version = parts.length > 1 ? SemVer.ofString(parts[1]) : null;
-				Repository.install(parts[0], version, path);
-			}
+				Repository.install(parts[0], version, getPathTarget());
+			});
+			parser.parse();
 		}
 
 		return true;
@@ -84,8 +84,6 @@ class Commands
 		return true;
 	}
 
-
-
 	@category("information")
 	@alias("l", "ls")
 	static public function list(parser:ArgParser):Bool
@@ -107,7 +105,7 @@ class Commands
 			}
 			else
 			{
-				parser.addRule("--flat|-f", function(_) {
+				parser.addRule(function(_) {
 					function printPackagesFlat(list:Array<PackageInfo>)
 					{
 						for (p in list)
@@ -117,7 +115,7 @@ class Commands
 						}
 					}
 					printPackagesFlat(list);
-				});
+				}, ["--flat", "-f"]);
 				parser.parse();
 			}
 		}
