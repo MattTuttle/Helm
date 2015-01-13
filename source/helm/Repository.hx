@@ -329,15 +329,13 @@ class Repository
 	{
 		if (version == null)
 		{
-			var version:VersionInfo = null;
-			// prevent automatic downloads of development versions
-			var i = info.versions.length;
-			while (--i > 0)
+			for (v in info.versions)
 			{
-				if (info.versions[i].value.preRelease != null) continue;
-				version = info.versions[i];
+				if (v.value.preRelease == null)
+				{
+					return v;
+				}
 			}
-			return version;
 		}
 		else
 		{

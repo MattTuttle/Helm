@@ -43,6 +43,9 @@ class Haxelib
 					comments: version.comments
 				});
 			}
+			info.versions.sort(function(a:VersionInfo, b:VersionInfo):Int {
+				return a.value > b.value ? -1 : (a.value < b.value ? 1 : 0);
+			});
 			return info;
 		}
 		catch (e:Dynamic)
