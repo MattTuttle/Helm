@@ -1,4 +1,6 @@
-import ds.SemVer;
+package helm;
+
+import helm.ds.SemVer;
 
 /**
  * Boot/Upgrade HELM without requiring anything installed

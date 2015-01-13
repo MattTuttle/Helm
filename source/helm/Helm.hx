@@ -1,3 +1,5 @@
+package helm;
+
 import haxe.ds.StringMap;
 import haxe.rtti.Meta;
 import haxe.CallStack;
@@ -25,7 +27,7 @@ class Command
 class Helm
 {
 
-	static public var VERSION = ds.SemVer.ofString("0.1.0");
+	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
 
 	public function new()
 	{

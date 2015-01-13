@@ -1,17 +1,21 @@
+import helm.ArgParser;
+
 class TestArgs extends haxe.unit.TestCase
 {
 
 	public function testNoArgs()
 	{
+		var exceptionThrown = false;
 		var a = new ArgParser();
 		try
 		{
 			a.parse();
 		}
-		catch (e:String)
+		catch (e:Dynamic)
 		{
-			assertEquals("Must set args at least once", e);
+			exceptionThrown = true;
 		}
+		assertTrue(exceptionThrown);
 	}
 
 	public function testOrdering()
@@ -71,14 +75,16 @@ class TestArgs extends haxe.unit.TestCase
 		}, ['-o'], true);
 		a.parse(['dostuff', '-o', 'filename']);
 
+		var exceptionThrown = false;
 		try
 		{
 			a.parse(['hi', '-o']);
 		}
-		catch (e:String)
+		catch (e:Dynamic)
 		{
-			assertEquals("Expected an argument for -o", e);
+			exceptionThrown = true;
 		}
+		assertTrue(exceptionThrown);
 	}
 
 }

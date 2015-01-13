@@ -1,6 +1,6 @@
 package haxelib;
 
-import ds.Types;
+import helm.ds.Types;
 
 /**
  * Haxelib site API

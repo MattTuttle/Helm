@@ -1,10 +1,11 @@
+package helm;
+
 import haxe.Http;
 import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
-import ds.Types;
-import ds.SemVer;
-import ds.HaxelibData;
+import helm.ds.Types;
+import helm.ds.SemVer;
 
 using StringTools;
 
@@ -26,10 +27,10 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 
 	static public function loadPackageInfo(path:String):PackageInfo
 	{
-		if (FileSystem.exists(path + HaxelibData.JSON))
+		if (FileSystem.exists(path + haxelib.Data.JSON))
 		{
-			var data = new HaxelibData();
-			data.read(File.getContent(path + HaxelibData.JSON));
+			var data = new haxelib.Data();
+			data.read(File.getContent(path + haxelib.Data.JSON));
 			return new PackageInfo(Std.string(data.name).toLowerCase(),
 				SemVer.ofString(data.version),
 				list(path), path);
@@ -194,7 +195,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			}
 			else if (item.endsWith("json"))
 			{
-				var data = new HaxelibData();
+				var data = new haxelib.Data();
 				data.read(File.getContent(item));
 				for (name in data.dependencies.keys())
 				{
@@ -220,8 +221,8 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			}
 			Logger.log(target);
 			Logger.log("-D " + name);
-			var data = new HaxelibData();
-			data.read(File.getContent(target + HaxelibData.JSON));
+			var data = new haxelib.Data();
+			data.read(File.getContent(target + haxelib.Data.JSON));
 			for (name in data.dependencies.keys())
 			{
 				printInclude(name, target);
@@ -249,7 +250,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		server.processSubmit(id, auth.username, auth.password);
 	}
 
-	static public function download(info:ds.ProjectInfo, version:SemVer):String
+	static public function download(info:helm.ds.ProjectInfo, version:SemVer):String
 	{
 		var url = fileURL(info, version);
 		if (url == null)
@@ -331,8 +332,8 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		var f = File.read(path, true);
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
-		var infos = HaxelibData.readInfos(zip);
-		var basepath = HaxelibData.locateBasePath(zip);
+		var infos = haxelib.Data.readInfos(zip);
+		var basepath = haxelib.Data.locateBasePath(zip);
 		Directory.create(target);
 
 		var totalItems = zip.length,

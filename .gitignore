@@ -1,6 +1,5 @@
 *.n
-helm
 
-bin/
+export/
 libs/
 cache/

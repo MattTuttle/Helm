@@ -1,3 +1,5 @@
+package helm;
+
 import haxe.io.Bytes;
 
 class DownloadProgress extends haxe.io.Output

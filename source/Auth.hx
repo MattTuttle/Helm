@@ -32,7 +32,6 @@ class Auth
 
 	public function register():Void
 	{
-		var proxy = Repository.server;
 		var username_regex = ~/^[a-z0-9_-]{3,32}$/;
 		var email_regex = ~/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 		while (true)
@@ -44,7 +43,7 @@ class Auth
 				continue;
 			}
 
-			if (!proxy.isNewUser(username))
+			if (!Repository.server.isNewUser(username))
 			{
 				Logger.log("Username " + username + " is already taken");
 				continue;
@@ -68,7 +67,7 @@ class Auth
 
 			name = Logger.prompt("Full Name: ");
 
-			proxy.register(username, password, email, name);
+			Repository.server.register(username, password, email, name);
 			break;
 		}
 	}

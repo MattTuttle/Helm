@@ -1,4 +1,4 @@
-package ds;
+package haxelib;
 
 import haxe.Json;
 import haxe.ds.StringMap;
@@ -6,8 +6,9 @@ import haxe.zip.Entry;
 import haxe.zip.Reader;
 import sys.io.File;
 import sys.FileSystem;
+import helm.ds.SemVer;
 
-class HaxelibData
+class Data
 {
 
 	static public var JSON:String = "haxelib.json";
@@ -72,7 +73,7 @@ class HaxelibData
 		throw "No " + JSON + " found";
 	}
 
-	public static function readInfos(zip:List<Entry>):HaxelibData {
+	public static function readInfos(zip:List<Entry>):Data {
 		var infodata = null;
 		for (f in zip)
 		{
@@ -85,7 +86,7 @@ class HaxelibData
 		if (infodata == null)
 			throw JSON + " not found in package";
 
-		var data = new HaxelibData();
+		var data = new Data();
 		data.read(infodata);
 		return data;
 	}

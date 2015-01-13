@@ -1,3 +1,5 @@
+package helm;
+
 import sys.FileSystem;
 import sys.io.File;
 
@@ -71,6 +73,8 @@ class Bundle
 				rules = [];
 			}
 		}
+
+		// TODO: allow for include lines "!"
 		var zipName = info.name + "_" + info.version + ".zip";
 		rules.push(info.name + "_*.zip"); // ignore past bundle versions
 		rules.push(".git*");

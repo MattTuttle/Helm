@@ -1,3 +1,5 @@
+import helm.*;
+
 class TestLib extends haxe.unit.TestCase
 {
 	public function testPackageInfo()

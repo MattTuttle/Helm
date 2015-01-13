@@ -1,4 +1,4 @@
-package ds;
+package helm.ds;
 
 class PackageInfo
 {

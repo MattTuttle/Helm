@@ -1,8 +1,9 @@
+package helm;
+
 import sys.io.File;
 import sys.FileSystem;
-import ds.SemVer;
-import ds.HaxelibData;
-import ds.Types;
+import helm.ds.SemVer;
+import helm.ds.Types;
 
 using StringTools;
 
@@ -17,7 +18,7 @@ class Commands
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
+			var path = Repository.getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
 			return path == null ? Sys.getCwd() : path;
 		}
 	}
@@ -130,14 +131,14 @@ class Commands
 		var info = Repository.loadPackageInfo(path);
 		if (info != null) throw "Package " + info.fullName + " already exists!";
 
-		var data = new HaxelibData();
+		var data = new haxelib.Data();
 		data.name = Logger.prompt(L10n.get("init_project_name"));
 		data.description = Logger.prompt(L10n.get("init_project_description"));
 		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
 		data.url = Logger.prompt(L10n.get("init_project_url"));
 		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
 
-		var out = sys.io.File.write(HaxelibData.JSON);
+		var out = sys.io.File.write(haxelib.Data.JSON);
 		out.writeString(data.toString());
 		out.close();
 
@@ -258,7 +259,7 @@ class Commands
 	{
 		if (parser.complete)
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), HaxelibData.JSON);
+			var path = Repository.getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
 			var info = Repository.loadPackageInfo(path);
 			if (info == null)
 			{

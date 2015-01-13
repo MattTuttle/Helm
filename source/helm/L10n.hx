@@ -1,3 +1,5 @@
+package helm;
+
 import haxe.ds.StringMap;
 import sys.io.File;
 

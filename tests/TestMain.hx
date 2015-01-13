@@ -1,10 +1,9 @@
-
 class TestMain
 {
 	static public function main()
 	{
-		Logger.OUTPUT = false;
-		Config.load();
+		helm.Logger.OUTPUT = false;
+		helm.Config.load();
 
 		var unit = new haxe.unit.TestRunner();
 		unit.add(new TestArgs());

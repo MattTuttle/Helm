@@ -1,4 +1,4 @@
--cp src
+-cp source
 -resource l10n/en-US/strings.xml@en-US
 
 --each
@@ -10,10 +10,14 @@
 --next
 
 -neko run.n
--main Boot
+-main helm.Boot
 
 --next
 
 -neko helm.n
--main Helm
--cmd nekotools boot helm.n && rm helm.n
+-main helm.Helm
+
+--next
+
+-cmd neko helm.n --no-color install lime haxeui
+-cmd lime test neko

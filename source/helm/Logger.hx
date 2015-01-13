@@ -1,3 +1,5 @@
+package helm;
+
 using StringTools;
 
 enum LogLevel
