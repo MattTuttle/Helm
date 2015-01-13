@@ -20,7 +20,7 @@ class Auth
 		while (true)
 		{
 			username = Logger.prompt("Username: ").toLowerCase();
-			if (!Repository.server.isNewUser(username)) break;
+			if (Repository.server.getUserInfo(username) == null) break;
 			Logger.log("Username is not registered.");
 			// TODO: allow registration?
 		}
@@ -45,7 +45,7 @@ class Auth
 				continue;
 			}
 
-			if (!Repository.server.isNewUser(username))
+			if (Repository.server.getUserInfo(username) == null)
 			{
 				Logger.log("Username " + username + " is already taken");
 				continue;

@@ -9,21 +9,14 @@ import helm.ds.SemVer;
 
 using StringTools;
 
-class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
+class Repository
 {
 
 	// TODO: setup a mirror list for multiple repository servers
 	static public var LIB_DIR:String = "libs";
 	static public var NDLL_DIR:String = "ndll";
 
-	static public var url = "http://lib.haxe.org/";
-	static public var apiVersion = "3.0";
-
-	static public var server(get, never):Repository;
-	static private function get_server():Repository
-	{
-		return new Repository(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
-	}
+	static public var server:haxelib.Haxelib = new haxelib.Haxelib();
 
 	static public function loadPackageInfo(path:String):PackageInfo
 	{
@@ -106,45 +99,15 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		return searchPackageList(name, list(target));
 	}
 
-	static public function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>):Void
-	{
-		if (level == null) level = [true];
-
-		var numItems = list.length, i = 0;
-		for (item in list)
-		{
-			i += 1;
-			var start = "";
-			level[level.length - 1] = (i == numItems);
-			for (j in 0...level.length - 1)
-			{
-				start += (level[j] ? "  " : "│ ");
-			}
-			var hasChildren = item.packages.length > 0;
-			var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-			Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
-
-			if (hasChildren)
-			{
-				level.push(true);
-				printPackages(item.packages, level);
-				level.pop();
-			}
-		}
-	}
-
 	static public function outdated(path:String):List<{name:String, current:SemVer, latest:SemVer}>
 	{
 		// TODO: change this to a typedef and include more info
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
 		for (item in list(path))
 		{
-			var info = try {
-				server.infos(item.name);
-			} catch (e:Dynamic) {
-				continue; // ignore local only repositories
-			}
-			var version:SemVer = info.curversion;
+			var info = server.getProjectInfo(item.name);
+			if (info == null) continue;
+			var version:SemVer = info.currentVersion;
 			if (version > item.version)
 			{
 				outdated.add({
@@ -234,31 +197,9 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		}
 	}
 
-	static public function submit(data:haxe.io.Bytes, auth:Auth):Void
+	static public function download(version:helm.ds.VersionInfo):String
 	{
-		var id = server.getSubmitId();
-
-		// TODO: separate from haxelib?
-		var h = new haxe.Http(url);
-		h.onError = function(e) { throw e; };
-		h.onData = function(d) { Logger.log(d); }
-		h.fileTransfert("file", id, new UploadProgress(data), data.length);
-		h.request(true);
-		haxe.remoting.HttpConnection.TIMEOUT = 1000;
-
-		// is there a reason we have to submit the username/password AGAIN?!?
-		server.processSubmit(id, auth.username, auth.password);
-	}
-
-	static public function download(info:helm.ds.ProjectInfo, version:SemVer):String
-	{
-		var url = fileURL(info, version);
-		if (url == null)
-		{
-			throw L10n.get("not_on_server", [info.name, version]);
-		}
-
-		var filename = url.split("/").pop();
+		var filename = version.url.split("/").pop();
 		var cache = Config.cachePath + filename;
 
 		// TODO: allow to redownload with --force argument
@@ -271,7 +212,7 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			// download the file and show progress
 			var out = File.write(downloadPath, true);
 			var progress = new DownloadProgress(out);
-			var http = new Http(url);
+			var http = new Http(version.url);
 			http.onError = function(error) {
 				progress.close();
 			};
@@ -323,10 +264,10 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 			return;
 		}
 
-		var info = server.infos(name);
+		var info = server.getProjectInfo(name);
 		var version = getLatestVersion(info, version);
-		Logger.log(L10n.get("installing_package", [info.name + "@" + version]));
-		var path = download(info, version);
+		Logger.log(L10n.get("installing_package", [info.name + "@" + version.value]));
+		var path = download(version);
 
 		// TODO: if zip fails to read, redownload?
 		var f = File.read(path, true);
@@ -384,16 +325,17 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		}
 	}
 
-	static private function getLatestVersion(info:ProjectInfo, version:SemVer=null):SemVer
+	static private function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo
 	{
 		if (version == null)
 		{
-			var version:SemVer = info.curversion;
+			var version:VersionInfo = null;
 			// prevent automatic downloads of development versions
 			var i = info.versions.length;
-			while (version.preRelease != null && --i > 0)
+			while (--i > 0)
 			{
-				version = info.versions[i].name;
+				if (info.versions[i].value.preRelease != null) continue;
+				version = info.versions[i];
 			}
 			return version;
 		}
@@ -401,24 +343,13 @@ class Repository extends haxe.remoting.Proxy<haxelib.SiteApi>
 		{
 			for (v in info.versions)
 			{
-				if (SemVer.ofString(v.name) == version)
+				if (v.value == version)
 				{
-					return version;
+					return v;
 				}
 			}
 		}
 		return null;
-	}
-
-	static private function fileURL(info:ProjectInfo, version:SemVer):String
-	{
-		var versionString:String = version;
-
-		// files stored on server use commas instead of periods
-		versionString = versionString.split(".").join(",");
-
-		// TODO: return this information from the server instead of creating it on the client
-		return url + "files/" + apiVersion + "/" + info.name + "-" + versionString + ".zip";
 	}
 
 }

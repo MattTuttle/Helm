@@ -39,18 +39,19 @@ typedef UserInfo = {
 }
 
 typedef VersionInfo = {
-	var date:String;
-	var name:String;
+	var date:Date;
+	var value:SemVer;
 	var comments:String;
+	var url:String;
 }
 
 typedef ProjectInfo = {
 	var name:String;
-	var desc:String;
+	var description:String;
 	var website:String;
 	var owner:String;
 	var license:String;
-	var curversion:String;
+	var currentVersion:String;
 	var versions:Array<VersionInfo>;
 	var tags:List<String>;
 }

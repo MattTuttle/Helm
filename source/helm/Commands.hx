@@ -89,6 +89,8 @@ class Commands
 	@alias("l", "ls")
 	static public function list(parser:ArgParser):Bool
 	{
+		var flat = false;
+		parser.addRule(function(_) { flat = true; }, ["--flat", "-f"]);
 		parser.parse(); // continue parsing
 		var path = getPathTarget();
 
@@ -100,24 +102,47 @@ class Commands
 		}
 		else
 		{
-			if (parser.complete)
+			if (flat)
 			{
-				Repository.printPackages(list);
+				function printPackagesFlat(list:Array<PackageInfo>)
+				{
+					for (p in list)
+					{
+						Logger.log(p.fullName);
+						printPackagesFlat(p.packages);
+					}
+				}
+				printPackagesFlat(list);
 			}
 			else
 			{
-				parser.addRule(function(_) {
-					function printPackagesFlat(list:Array<PackageInfo>)
+				function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>)
+				{
+					if (level == null) level = [true];
+
+					var numItems = list.length, i = 0;
+					for (item in list)
 					{
-						for (p in list)
+						i += 1;
+						var start = "";
+						level[level.length - 1] = (i == numItems);
+						for (j in 0...level.length - 1)
 						{
-							Logger.log(p.fullName);
-							printPackagesFlat(p.packages);
+							start += (level[j] ? "  " : "│ ");
+						}
+						var hasChildren = item.packages.length > 0;
+						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
+						Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
+
+						if (hasChildren)
+						{
+							level.push(true);
+							printPackages(item.packages, level);
+							level.pop();
 						}
 					}
-					printPackagesFlat(list);
-				}, ["--flat", "-f"]);
-				parser.parse();
+				}
+				printPackages(list);
 			}
 		}
 		return true;
@@ -275,10 +300,10 @@ class Commands
 			for (arg in parser)
 			{
 				var parts = arg.split("@");
-				var info = Repository.server.infos(parts[0]);
+				var info = Repository.server.getProjectInfo(parts[0]);
 
 				Logger.log(info.name + " [" + info.website + "]");
-				Logger.log(info.desc);
+				Logger.log(info.description);
 				Logger.log();
 				Logger.log(L10n.get("info_owner", [info.owner]));
 				Logger.log(L10n.get("info_license", [info.license]));
@@ -293,9 +318,9 @@ class Commands
 					var found = false;
 					for (version in info.versions)
 					{
-						if (SemVer.ofString(version.name) == requestedVersion)
+						if (version.value == requestedVersion)
 						{
-							Logger.log(L10n.get("info_version", [version.name]));
+							Logger.log(L10n.get("info_version", [version.value]));
 							Logger.log(L10n.get("info_date", [version.date]));
 							Logger.log(L10n.get("info_comments", [version.comments]));
 							found = true;
@@ -310,8 +335,8 @@ class Commands
 				else
 				{
 					var versions = new Array<String>();
-					for (version in info.versions) { versions.push(version.name); }
-					Logger.log(L10n.get("info_versions", [info.curversion]));
+					for (version in info.versions) { versions.push(version.value); }
+					Logger.log(L10n.get("info_versions", [info.currentVersion]));
 					Logger.logList(versions, false);
 				}
 				Logger.log("-----------");
@@ -339,13 +364,12 @@ class Commands
 
 		var auth = new Auth();
 		auth.login();
-		Repository.server.checkDeveloper(info.name, auth.username);
 		var bundleName = Bundle.make(path);
 
 		var zip = File.read(bundleName);
 		var data = zip.readAll();
 
-		Repository.submit(data, auth);
+		Repository.server.submit(info.name, data, auth);
 
 		return true;
 	}
@@ -367,7 +391,7 @@ class Commands
 
 		for (arg in parser)
 		{
-			var user = Repository.server.user(arg);
+			var user = Repository.server.getUserInfo(arg);
 			Logger.log(user.fullname + " [" + user.email + "]");
 			Logger.log();
 			Logger.log(L10n.get("packages"));
@@ -388,7 +412,7 @@ class Commands
 		// for every argument do a search against haxelib repository
 		for (arg in parser)
 		{
-			for (result in Repository.server.search(arg))
+			for (result in Repository.server.findProject(arg))
 			{
 				names.push(result.name);
 			}
