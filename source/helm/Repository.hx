@@ -25,7 +25,7 @@ class Repository
 			var data = new haxelib.Data();
 			data.read(File.getContent(path + haxelib.Data.JSON));
 			return new PackageInfo(Std.string(data.name).toLowerCase(),
-				SemVer.ofString(data.version), data.dependencies, path);
+				SemVer.ofString(data.version), data.dependencies, path, data.mainClass);
 		}
 		return null;
 	}
@@ -37,7 +37,7 @@ class Repository
 		{
 			repo = findPackageIn(name, Config.globalPath);
 			if (repo.length == 0)
-				throw L10n.get("not_installed", [name]);
+				return null;
 		}
 		// TODO: resolve multiple packages found, select best one
 		return repo[0].path;
@@ -154,7 +154,20 @@ class Repository
 						if (line.startsWith("-lib"))
 						{
 							var lib = line.split(" ").pop().split("=");
-							libs.set(lib[0], lib.length > 1 ? SemVer.ofString(lib[1]) : null);
+							libs.set(lib[0], lib.length > 1 ? lib[1] : null);
+						}
+					}
+				}
+				else if (item.endsWith("xml") || item.endsWith("nmml"))
+				{
+					var xml = Xml.parse(File.getContent(item));
+					for (element in xml.firstElement().elements())
+					{
+						if (element.nodeName == "haxelib")
+						{
+							var lib = element.get("name");
+							// TODO: get version from lime xml?
+							libs.set(lib, null);
 						}
 					}
 				}
@@ -171,21 +184,69 @@ class Repository
 		return libs;
 	}
 
+	static public function run(args:Array<String>, path:String, useEnvironment:Bool=false):Int
+	{
+		var info = Repository.loadPackageInfo(path);
+		if (info == null)
+		{
+			Logger.log(L10n.get("not_a_package"));
+			return 1;
+		}
+
+		var command:String;
+		if (info.mainClass != null)
+		{
+			command = "haxe";
+			for (name in info.dependencies.keys())
+			{
+				args.push("-lib");
+				args.push(name);
+			}
+			args.unshift(info.mainClass);
+			args.unshift("--run");
+		}
+		else
+		{
+			command = "neko";
+			if (!FileSystem.exists(path + "run.n"))
+			{
+				Logger.log(L10n.get("run_not_enabled", [info.name]));
+				return 1;
+			}
+			else
+			{
+				args.unshift("run.n");
+			}
+		}
+
+		if (useEnvironment)
+		{
+			Sys.putEnv("HAXELIB_RUN", Sys.getCwd());
+		}
+		else
+		{
+			args.push(Sys.getCwd());
+			Sys.putEnv("HAXELIB_RUN", "1");
+		}
+
+		Sys.setCwd(path);
+		return Sys.command(command, args);
+	}
+
 	static public function printInclude(name:String, target:String=null):Void
 	{
-		if (target == null) target = findPackage(name);
-		else target += LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR;
+		var path = (target == null ? findPackage(name) : LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR);
 
-		if (target != null && FileSystem.exists(target))
+		if (path != null && FileSystem.exists(path))
 		{
-			var lib = target + NDLL_DIR + Directory.SEPARATOR;
+			var lib = path + NDLL_DIR + Directory.SEPARATOR;
 			if (FileSystem.exists(lib))
 			{
 				Logger.log("-L " + lib);
 			}
-			Logger.log(target);
+			Logger.log(path);
 			Logger.log("-D " + name);
-			var info = loadPackageInfo(target);
+			var info = loadPackageInfo(path);
 			for (name in info.dependencies.keys())
 			{
 				printInclude(name, target);
@@ -193,7 +254,7 @@ class Repository
 		}
 		else
 		{
-			throw L10n.get("not_installed", [name]);
+			Logger.log(L10n.get("not_installed", [name]));
 		}
 	}
 

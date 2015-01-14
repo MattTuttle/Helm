@@ -18,6 +18,7 @@ class Data
 	public var description:String;
 	public var contributors:Array<String>;
 	public var releasenote:String;
+	public var mainClass:String;
 	public var url:String;
 	public var dependencies:StringMap<SemVer>;
 	public var version:SemVer;
@@ -42,6 +43,7 @@ class Data
 		description = json.description;
 		contributors = json.contributors;
 		releasenote = json.releasenote;
+		mainClass = json.main;
 		url = json.url;
 		version = SemVer.ofString(json.version);
 	}

@@ -18,20 +18,23 @@ class SemVerData
 	public var preRelease:Null<PreRelease>;
 	public var preReleaseNum:Null<Int>;
 
-	inline public function new(value:String)
+	inline public function new(?value:String)
 	{
-		if (_semVerRegex.match(value))
+		if (value != null)
 		{
-			major = _semVerRegex.matched(1).parseInt();
-			minor = _semVerRegex.matched(2).parseInt();
-			patch = _semVerRegex.matched(3).parseInt();
-			preRelease = switch (_semVerRegex.matched(4)) {
-				case "alpha": Alpha;
-				case "beta": Beta;
-				case "rc": ReleaseCandidate;
-				default: null;
+			if (_semVerRegex.match(value))
+			{
+				major = _semVerRegex.matched(1).parseInt();
+				minor = _semVerRegex.matched(2).parseInt();
+				patch = _semVerRegex.matched(3).parseInt();
+				preRelease = switch (_semVerRegex.matched(4)) {
+					case "alpha": Alpha;
+					case "beta": Beta;
+					case "rc": ReleaseCandidate;
+					default: null;
+				}
+				preReleaseNum = _semVerRegex.matched(5) == null ? null : _semVerRegex.matched(5).parseInt();
 			}
-			preReleaseNum = _semVerRegex.matched(5) == null ? null : _semVerRegex.matched(5).parseInt();
 		}
 	}
 
