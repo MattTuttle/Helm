@@ -1,21 +1,23 @@
 package helm.ds;
 
+import haxe.ds.StringMap;
+
 class PackageInfo
 {
 
 	public var name(default, null):String;
 	public var version(default, null):SemVer;
-	public var packages(default, null):Array<PackageInfo>;
+	public var dependencies(default, null):StringMap<SemVer>;
 	public var path(default, null):String;
 
 	public var fullName(get, never):String;
 	private inline function get_fullName():String { return name + "@" + version; }
 
-	public function new(name, version, packages, path)
+	public function new(name, version, dependencies, path)
 	{
 		this.name = name;
 		this.version = version;
-		this.packages = packages;
+		this.dependencies = dependencies;
 		this.path = path;
 	}
 

@@ -109,7 +109,7 @@ class Commands
 					for (p in list)
 					{
 						Logger.log(p.fullName);
-						printPackagesFlat(p.packages);
+						printPackagesFlat(Repository.list(p.path));
 					}
 				}
 				printPackagesFlat(list);
@@ -130,14 +130,15 @@ class Commands
 						{
 							start += (level[j] ? "  " : "│ ");
 						}
-						var hasChildren = item.packages.length > 0;
+						var packages = Repository.list(item.path);
+						var hasChildren = packages.length > 0;
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
 						Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
 
 						if (hasChildren)
 						{
 							level.push(true);
-							printPackages(item.packages, level);
+							printPackages(packages, level);
 							level.pop();
 						}
 					}
