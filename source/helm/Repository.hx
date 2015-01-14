@@ -12,10 +12,10 @@ using StringTools;
 class Repository
 {
 
-	// TODO: setup a mirror list for multiple repository servers
 	static public var LIB_DIR:String = "libs";
 	static public var NDLL_DIR:String = "ndll";
 
+	// TODO: setup a mirror list for multiple repository servers
 	static public var server:haxelib.Haxelib = new haxelib.Haxelib();
 
 	static public function loadPackageInfo(path:String):PackageInfo
@@ -225,16 +225,13 @@ class Repository
 		return cache;
 	}
 
-	static public function install(name:String, ?version:SemVer, target:String=""):Void
+	static public function installGit(name:String, target:String):Bool
 	{
 		var gitRepository = null,
 			gitBranch = null,
-			path = null;
-		if (name.startsWith("file+"))
-		{
-			path = name.substr(5);
-		}
-		else if (name.startsWith("git+"))
+			installed = false;
+
+		if (name.startsWith("git+"))
 		{
 			var parts = name.split("#");
 			if (parts.length > 1) gitBranch = parts.pop();
@@ -265,7 +262,7 @@ class Repository
 			if (info == null)
 			{
 				Directory.delete(path);
-				throw L10n.get("install_fail");
+				throw L10n.get("not_a_package");
 			}
 			else
 			{
@@ -280,12 +277,28 @@ class Repository
 					Directory.create(installPath);
 				}
 				FileSystem.rename(path, installPath);
+				installed = true;
 			}
-			return;
 		}
+		return installed;
+	}
+
+	static public function install(name:String, ?version:SemVer, target:String=""):Void
+	{
+		var path = null;
+		if (name.startsWith("file+"))
+		{
+			path = name.substr(5);
+		}
+		else if (installGit(name, target)) return;
 
 		// conflict resolution
 		var info = server.getProjectInfo(name);
+		if (info == null)
+		{
+			Logger.log(L10n.get("not_a_package"));
+			return;
+		}
 		var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
 		if (FileSystem.exists(installPath))
 		{
@@ -361,6 +374,7 @@ class Repository
 	{
 		if (version == null)
 		{
+			// TODO: sort versions?
 			for (v in info.versions)
 			{
 				if (v.value.preRelease == null)

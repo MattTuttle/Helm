@@ -7,6 +7,7 @@ The <u>H</u>axe <u>E</u>xtended <u>L</u>ibrary <u>M</u>anager is an alternative 
 * Dependencies are local to a package
 * Single version installed at a time
 * Post/Pre install hooks
+* Localization
 
 ## Installation
 

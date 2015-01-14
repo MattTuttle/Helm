@@ -51,9 +51,18 @@ class Commands
 		{
 			// default rule
 			parser.addRule(function(_) {
-				var parts = parser.current.split("@");
-				var version = parts.length > 1 ? SemVer.ofString(parts[1]) : null;
-				Repository.install(parts[0], version, getPathTarget());
+				var name:String = parser.current,
+					version:SemVer = null;
+
+				// try to split from name@version
+				var parts = name.split("@");
+				if (parts.length == 2)
+				{
+					version = SemVer.ofString(parts[1]);
+					// only use the first part if successfully parsing a version from the second part
+					if (version != null) name = parts[0];
+				}
+				Repository.install(name, version, getPathTarget());
 			});
 			parser.parse();
 		}
@@ -362,16 +371,18 @@ class Commands
 	{
 		var path = getPathTarget();
 		var info = Repository.loadPackageInfo(path);
+		if (info == null)
+		{
+			Logger.log(L10n.get("not_a_package"));
+		}
+		else
+		{
+			var auth = new Auth();
+			auth.login();
+			var bundleName = Bundle.make(path);
 
-		var auth = new Auth();
-		auth.login();
-		var bundleName = Bundle.make(path);
-
-		var zip = File.read(bundleName);
-		var data = zip.readAll();
-
-		Repository.server.submit(info.name, data, auth);
-
+			Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
+		}
 		return true;
 	}
 
