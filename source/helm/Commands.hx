@@ -31,6 +31,7 @@ class Commands
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (parser.complete)
 		{
+			// TODO: fix install git dependency from haxelib.json
 			var path = getPathTarget();
 			var libs = Repository.findDependencies(path);
 
@@ -38,9 +39,9 @@ class Commands
 			for (lib in libs.keys())
 			{
 				var name = lib;
-				var version:SemVer = libs.get(lib);
+				var version:String = libs.get(lib);
 				// if version is null it's probably a git repository
-				if (version == null)
+				if (version != null && SemVer.ofString(version) == null)
 				{
 					name = libs.get(lib);
 				}
@@ -51,9 +52,18 @@ class Commands
 		{
 			// default rule
 			parser.addRule(function(_) {
-				var parts = parser.current.split("@");
-				var version = parts.length > 1 ? SemVer.ofString(parts[1]) : null;
-				Repository.install(parts[0], version, getPathTarget());
+				var name:String = parser.current,
+					version:SemVer = null;
+
+				// try to split from name@version
+				var parts = name.split("@");
+				if (parts.length == 2)
+				{
+					version = SemVer.ofString(parts[1]);
+					// only use the first part if successfully parsing a version from the second part
+					if (version != null) name = parts[0];
+				}
+				Repository.install(name, version, getPathTarget());
 			});
 			parser.parse();
 		}
@@ -111,7 +121,7 @@ class Commands
 					for (p in list)
 					{
 						Logger.log(p.fullName);
-						printPackagesFlat(p.packages);
+						printPackagesFlat(Repository.list(p.path));
 					}
 				}
 				printPackagesFlat(list);
@@ -132,14 +142,15 @@ class Commands
 						{
 							start += (level[j] ? "  " : "│ ");
 						}
-						var hasChildren = item.packages.length > 0;
+						var packages = Repository.list(item.path);
+						var hasChildren = packages.length > 0;
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
 						Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
 
 						if (hasChildren)
 						{
 							level.push(true);
-							printPackages(item.packages, level);
+							printPackages(packages, level);
 							level.pop();
 						}
 					}
@@ -185,44 +196,25 @@ class Commands
 		return true;
 	}
 
-	@usage("package [args ...]")
+	@usage("[--env] package [args ...]")
 	@category("development")
 	static public function run(parser:ArgParser):Bool
 	{
-		if (parser.complete) return false;
+		var useEnvironment = false,
+			path = getPathTarget(),
+			args = new Array<String>();
+		parser.addRule(function(_) { useEnvironment = true; }, ["--env"]);
+		parser.addRule(function(p:ArgParser) {
+			path = Repository.findPackage(p.current);
+			for (arg in parser)
+			{
+				args.push(arg);
+			}
+		});
+		parser.parse();
 
-		var name = parser.iterator().next();
+		Sys.exit(Repository.run(args, path, useEnvironment));
 
-		var args = new Array<String>();
-		for (arg in parser)
-		{
-			args.push(arg);
-		}
-		var repo = Repository.findPackage(name);
-		var run = "run.n";
-
-		// TODO: add ability to run program with haxe command instead of neko
-
-		if (!FileSystem.exists(repo + run))
-		{
-			throw L10n.get("run_not_enabled", [name]);
-		}
-
-		args.insert(0, run);
-
-		// TODO: Use a flag to set the run path as an environment variable instead of the old way
-		if (false)
-		{
-			Sys.putEnv("HAXELIB_RUN", Sys.getCwd());
-		}
-		else
-		{
-			args.push(Sys.getCwd());
-			Sys.putEnv("HAXELIB_RUN", "1");
-		}
-
-		Sys.setCwd(repo);
-		Sys.exit(Sys.command("neko", args));
 		return true;
 	}
 
@@ -363,16 +355,18 @@ class Commands
 	{
 		var path = getPathTarget();
 		var info = Repository.loadPackageInfo(path);
+		if (info == null)
+		{
+			Logger.log(L10n.get("not_a_package"));
+		}
+		else
+		{
+			var auth = new Auth();
+			auth.login();
+			var bundleName = Bundle.make(path);
 
-		var auth = new Auth();
-		auth.login();
-		var bundleName = Bundle.make(path);
-
-		var zip = File.read(bundleName);
-		var data = zip.readAll();
-
-		Repository.server.submit(info.name, data, auth);
-
+			Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
+		}
 		return true;
 	}
 

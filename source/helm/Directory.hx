@@ -63,4 +63,16 @@ class Directory
 		return false;
 	}
 
+	static public function createTemporary():String
+	{
+		var tmp = Sys.getEnv("TEMP");
+		if (tmp == null) tmp = "/tmp";
+		var path:String;
+		do {
+			var crypt = haxe.crypto.Md5.encode(Std.string(Date.now())).substr(0, 10);
+			path = tmp + SEPARATOR + "helm_" + crypt + SEPARATOR;
+		} while (FileSystem.exists(path));
+		return path;
+	}
+
 }

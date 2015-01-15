@@ -18,13 +18,14 @@ class Data
 	public var description:String;
 	public var contributors:Array<String>;
 	public var releasenote:String;
+	public var mainClass:String;
 	public var url:String;
-	public var dependencies:StringMap<String>;
+	public var dependencies:StringMap<SemVer>;
 	public var version:SemVer;
 
 	public function new()
 	{
-		dependencies = new StringMap<String>();
+		dependencies = new StringMap<SemVer>();
 		contributors = new Array<String>();
 	}
 
@@ -34,14 +35,15 @@ class Data
 		var json = Json.parse(json);
 		for (field in Reflect.fields(json.dependencies))
 		{
-			var version = Reflect.field(json.dependencies, field);
-			dependencies.set(field, version);
+			var version:String = Reflect.field(json.dependencies, field);
+			dependencies.set(field, SemVer.ofString(version));
 		}
 		name = json.name;
 		license = json.license;
 		description = json.description;
 		contributors = json.contributors;
 		releasenote = json.releasenote;
+		mainClass = json.main;
 		url = json.url;
 		version = SemVer.ofString(json.version);
 	}
