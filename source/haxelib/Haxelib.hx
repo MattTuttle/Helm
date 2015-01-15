@@ -1,5 +1,6 @@
 package haxelib;
 
+import haxe.crypto.Md5;
 import haxe.io.Bytes;
 import helm.ds.Types;
 import helm.ds.SemVer;
@@ -70,7 +71,13 @@ class Haxelib
 	{
 		try
 		{
-			return _server.user(username);
+			var info = _server.user(username);
+			return {
+				name: info.name,
+				fullName: info.fullname,
+				projects: info.projects,
+				email: info.email
+			};
 		}
 		catch (e:Dynamic)
 		{
@@ -82,7 +89,7 @@ class Haxelib
 	{
 		try
 		{
-			return _server.checkPassword(username, password);
+			return _server.checkPassword(username, Md5.encode(password));
 		}
 		catch (e:Dynamic)
 		{
@@ -94,7 +101,7 @@ class Haxelib
 	{
 		try
 		{
-			return _server.register(username, password, email, name);
+			return _server.register(username, Md5.encode(password), email, name);
 		}
 		catch (e:Dynamic)
 		{

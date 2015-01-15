@@ -64,6 +64,7 @@ class Commands
 	@category("development")
 	static public function outdated(parser:ArgParser):Bool
 	{
+		parser.parse();
 		var outdated = Repository.outdated(getPathTarget());
 		for (item in outdated)
 		{
@@ -76,6 +77,7 @@ class Commands
 	@alias("up", "update")
 	static public function upgrade(parser:ArgParser):Bool
 	{
+		parser.parse();
 		var path = getPathTarget();
 		var outdated = Repository.outdated(path);
 		for (item in outdated)
@@ -392,10 +394,17 @@ class Commands
 		for (arg in parser)
 		{
 			var user = Repository.server.getUserInfo(arg);
-			Logger.log(user.fullname + " [" + user.email + "]");
-			Logger.log();
-			Logger.log(L10n.get("packages"));
-			Logger.logList(user.projects);
+			if (user == null)
+			{
+				Logger.log(arg + " is not registered.");
+			}
+			else
+			{
+				Logger.log(user.fullName + " [" + user.email + "]");
+				Logger.log();
+				Logger.log(L10n.get("packages"));
+				Logger.logList(user.projects);
+			}
 		}
 
 		return true;

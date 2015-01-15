@@ -33,7 +33,7 @@ typedef AuthInfo = {
 
 typedef UserInfo = {
 	var name:String;
-	var fullname:String;
+	var fullName:String;
 	var email:String;
 	var projects:Array<String>;
 }
