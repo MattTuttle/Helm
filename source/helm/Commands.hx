@@ -233,11 +233,9 @@ class Commands
 	@alias("rm", "remove")
 	static public function uninstall(parser:ArgParser):Bool
 	{
-		var path = getPathTarget();
-
-		for (arg in parser)
-		{
-			var infos = Repository.findPackageIn(arg, path);
+		parser.addRule(function(p:ArgParser) {
+			var path = getPathTarget();
+			var infos = Repository.findPackageIn(p.current, path);
 			if (infos.length > 0)
 			{
 				path = null;
@@ -250,9 +248,10 @@ class Commands
 					}
 				}
 				Directory.delete(path);
-				Logger.log(L10n.get("directory_deleted", [arg]));
+				Logger.log(L10n.get("directory_deleted", [p.current]));
 			}
-		}
+		});
+		parser.parse();
 		return true;
 	}
 
