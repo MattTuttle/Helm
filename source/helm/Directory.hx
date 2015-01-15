@@ -75,4 +75,9 @@ class Directory
 		return path;
 	}
 
+	static public function nameFromPath(path:String):String
+	{
+		return (path.endsWith(Directory.SEPARATOR) ? path.substr(0, -1) : path).split(Directory.SEPARATOR).pop();
+	}
+
 }

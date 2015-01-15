@@ -146,4 +146,10 @@ class Logger
 		return result;
 	}
 
+	static public function error(msg:String)
+	{
+		log(msg, true, LogLevel.Error);
+		Sys.exit(1);
+	}
+
 }

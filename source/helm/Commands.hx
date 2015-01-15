@@ -4,6 +4,7 @@ import sys.io.File;
 import sys.FileSystem;
 import helm.ds.SemVer;
 import helm.ds.Types;
+import helm.ds.PackageInfo;
 
 using StringTools;
 
@@ -164,13 +165,23 @@ class Commands
 	@category("development")
 	static public function init(parser:ArgParser):Bool
 	{
-		// TODO: make this interactive and less crappy...
 		var path = getPathTarget();
 		var info = Repository.loadPackageInfo(path);
-		if (info != null) throw "Package " + info.fullName + " already exists!";
+		if (info != null)
+		{
+			Logger.error(L10n.get("package_already_exists", [info.fullName]));
+		}
 
 		var data = new haxelib.Data();
-		data.name = Logger.prompt(L10n.get("init_project_name"));
+
+		// fill in dependencies
+		for (dep in Repository.list(path))
+		{
+			data.dependencies.set(dep.name, dep.version);
+		}
+
+		// data.dependencies
+		data.name = Logger.prompt(L10n.get("init_project_name"), Directory.nameFromPath(path));
 		data.description = Logger.prompt(L10n.get("init_project_description"));
 		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
 		data.url = Logger.prompt(L10n.get("init_project_url"));
@@ -282,12 +293,10 @@ class Commands
 			var info = Repository.loadPackageInfo(path);
 			if (info == null)
 			{
-				Logger.log(L10n.get("not_a_package"));
+				Logger.error(L10n.get("not_a_package"));
 			}
-			else
-			{
-				Logger.log(info.fullName);
-			}
+
+			Logger.log(info.fullName);
 		}
 		else
 		{
@@ -295,6 +304,10 @@ class Commands
 			{
 				var parts = arg.split("@");
 				var info = Repository.server.getProjectInfo(parts[0]);
+				if (info == null)
+				{
+					Logger.error(L10n.get("not_a_package"));
+				}
 
 				Logger.log(info.name + " [" + info.website + "]");
 				Logger.log(info.description);
@@ -357,16 +370,14 @@ class Commands
 		var info = Repository.loadPackageInfo(path);
 		if (info == null)
 		{
-			Logger.log(L10n.get("not_a_package"));
+			Logger.error(L10n.get("not_a_package"));
 		}
-		else
-		{
-			var auth = new Auth();
-			auth.login();
-			var bundleName = Bundle.make(path);
 
-			Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
-		}
+		var auth = new Auth();
+		auth.login();
+		var bundleName = Bundle.make(path);
+
+		Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
 		return true;
 	}
 

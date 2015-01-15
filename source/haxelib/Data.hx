@@ -13,19 +13,19 @@ class Data
 
 	static public var JSON:String = "haxelib.json";
 
-	public var name:String;
-	public var license:String;
-	public var description:String;
+	public var name:String = "";
+	public var license:String = "";
+	public var description:String = "";
 	public var contributors:Array<String>;
-	public var releasenote:String;
-	public var mainClass:String;
-	public var url:String;
-	public var dependencies:StringMap<SemVer>;
+	public var releasenote:String = "";
+	public var mainClass:String = "";
+	public var url:String = "";
+	public var dependencies:StringMap<String>;
 	public var version:SemVer;
 
 	public function new()
 	{
-		dependencies = new StringMap<SemVer>();
+		dependencies = new StringMap<String>();
 		contributors = new Array<String>();
 	}
 
@@ -36,7 +36,7 @@ class Data
 		for (field in Reflect.fields(json.dependencies))
 		{
 			var version:String = Reflect.field(json.dependencies, field);
-			dependencies.set(field, SemVer.ofString(version));
+			dependencies.set(field, version);
 		}
 		name = json.name;
 		license = json.license;
@@ -50,6 +50,11 @@ class Data
 
 	public function toString():String
 	{
+		var deps = new StringMap<String>();
+		for (dep in dependencies.keys())
+		{
+			deps.set(dep, dependencies.get(dep).toString());
+		}
 		var data = {
 			name: name,
 			description: description,
@@ -58,7 +63,7 @@ class Data
 			releasenote: releasenote,
 			url: url,
 			contributors: contributors,
-			dependencies: dependencies
+			dependencies: deps
 		};
 		var json = haxe.Json.stringify(data, null, "\t");
 		return json;

@@ -5,6 +5,7 @@ import haxe.ds.StringMap;
 import sys.io.File;
 import sys.FileSystem;
 import helm.ds.Types;
+import helm.ds.PackageInfo;
 import helm.ds.SemVer;
 
 using StringTools;
@@ -258,7 +259,7 @@ class Repository
 		}
 	}
 
-	static public function download(version:helm.ds.VersionInfo):String
+	static public function download(version:VersionInfo):String
 	{
 		var filename = version.url.split("/").pop();
 		var cache = Config.cachePath + filename;
@@ -309,6 +310,8 @@ class Repository
 
 		if (gitRepository != null)
 		{
+			Logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
+
 			var path = Directory.createTemporary();
 			var args = ["clone"];
 			if (gitBranch != null)
@@ -323,7 +326,7 @@ class Repository
 			if (info == null)
 			{
 				Directory.delete(path);
-				throw L10n.get("not_a_package");
+				Logger.error(L10n.get("not_a_package"));
 			}
 			else
 			{
@@ -357,8 +360,7 @@ class Repository
 		var info = server.getProjectInfo(name);
 		if (info == null)
 		{
-			Logger.log(L10n.get("not_a_package"));
-			return;
+			Logger.error(L10n.get("not_a_package"));
 		}
 		var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
 		if (FileSystem.exists(installPath))
@@ -366,8 +368,7 @@ class Repository
 			var info = loadPackageInfo(installPath);
 			if (info != null && (version == null || version == info.version))
 			{
-				Logger.log(L10n.get("already_installed", [info.fullName]));
-				return;
+				Logger.error(L10n.get("already_installed", [info.fullName]));
 			}
 			else
 			{
@@ -403,7 +404,7 @@ class Repository
 			var name = item.fileName.replace("\\", "/").substr(baseDir.length);
 			if (name.charAt(0) == "/" || name.split("..").length > 1)
 			{
-				throw L10n.get("invalid_filename", [name]);
+				Logger.error(L10n.get("invalid_filename", [name]));
 			}
 
 			var slashIndex = name.lastIndexOf("/") + 1;

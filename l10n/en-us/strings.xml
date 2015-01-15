@@ -3,6 +3,7 @@
 	<text key="not_registered">Username is not registered.</text>
 	<text key="num_of_bytes">$1 bytes</text>
 	<text key="not_installed">Package $1 is not installed</text>
+	<text key="package_already_exists">Package {yellow}$1{end} already exists!</text>
 	<text key="already_installed">{red}Package $1 already installed{end}</text>
 	<text key="not_on_server">Could not find package {yellow}$1@$2{end}</text>
 	<text key="installing_package">Installing {yellow}$1{end}</text>
