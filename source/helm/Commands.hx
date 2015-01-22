@@ -276,7 +276,7 @@ class Commands
 
 		for (name in parser)
 		{
-			Repository.printInclude(name);
+			Repository.printInclude(name.toLowerCase());
 		}
 
 		return true;

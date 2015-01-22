@@ -234,12 +234,14 @@ class Repository
 		return Sys.command(command, args);
 	}
 
-	static public function printInclude(name:String, target:String=null):Void
+	static public function printInclude(name:String):Void
 	{
-		var path = (target == null ? findPackage(name) : LIB_DIR + Directory.SEPARATOR + name + Directory.SEPARATOR);
+		var root = getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
+		var path = hasPackageNamed(root, name) ? root : findPackage(name);
 
 		if (path != null && FileSystem.exists(path))
 		{
+			var info = loadPackageInfo(path);
 			var lib = path + NDLL_DIR + Directory.SEPARATOR;
 			if (FileSystem.exists(lib))
 			{
@@ -247,10 +249,9 @@ class Repository
 			}
 			Logger.log(path);
 			Logger.log("-D " + name);
-			var info = loadPackageInfo(path);
 			for (name in info.dependencies.keys())
 			{
-				printInclude(name, target);
+				printInclude(name);
 			}
 		}
 		else
