@@ -26,7 +26,7 @@ class Repository
 			var data = new haxelib.Data();
 			data.read(File.getContent(path + haxelib.Data.JSON));
 			return new PackageInfo(Std.string(data.name).toLowerCase(),
-				SemVer.ofString(data.version), data.dependencies, path, data.mainClass);
+				SemVer.ofString(data.version), data.dependencies, path, data.classPath, data.mainClass);
 		}
 		return null;
 	}
@@ -247,7 +247,7 @@ class Repository
 			{
 				Logger.log("-L " + lib);
 			}
-			Logger.log(path);
+			Logger.log(path + info.classPath);
 			Logger.log("-D " + name);
 			for (name in info.dependencies.keys())
 			{

@@ -16,6 +16,7 @@ class Data
 	public var name:String = "";
 	public var license:String = "";
 	public var description:String = "";
+	public var classPath:String = "";
 	public var contributors:Array<String>;
 	public var releasenote:String = "";
 	public var mainClass:String = "";
@@ -40,6 +41,7 @@ class Data
 		}
 		name = json.name;
 		license = json.license;
+		classPath = json.classPath;
 		description = json.description;
 		contributors = json.contributors;
 		releasenote = json.releasenote;
@@ -58,6 +60,7 @@ class Data
 		var data = {
 			name: name,
 			description: description,
+			classPath: classPath,
 			version: version.toString(),
 			license: license,
 			releasenote: releasenote,
