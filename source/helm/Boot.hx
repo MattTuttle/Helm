@@ -22,6 +22,7 @@ class Boot
 		}
 		var info = Repository.loadPackageInfo(path);
 
+		// get latest version on server
 		var version:SemVer = try {
 			Repository.server.getProjectInfo(PACKAGE_NAME).currentVersion;
 		} catch (e:Dynamic) {
@@ -37,11 +38,17 @@ class Boot
 
 		if (!sys.FileSystem.exists("helm"))
 		{
-			result = Sys.command("haxe", ["-neko", "helm.n", "-main", "Helm", "-cp", "src"]);
+			// TODO: don't assume haxe and nekotools are installed
+			result = Sys.command("haxe", ["-neko", "helm.n",
+				"-main", "helm.Helm",
+				"-cp", "source",
+				"-resource", "l10n/en-US/strings.xml@en-US"
+			]);
 			result = Sys.command("nekotools", ["boot", "helm.n"]);
 			sys.FileSystem.deleteFile("helm.n");
 		}
 
+		// run the command through the latest version
 		result = Sys.command(path + "helm", Sys.args());
 	}
 }

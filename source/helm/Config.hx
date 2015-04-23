@@ -21,6 +21,7 @@ class Config
 	{
 		if (globalPath == null)
 		{
+			// TODO: get rid of this haxelib stuff
 			var path = Sys.getEnv("HAXELIB_PATH");
 			if (path == null)
 			{
