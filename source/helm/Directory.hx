@@ -7,7 +7,11 @@ using StringTools;
 class Directory
 {
 
-	static public var SEPARATOR:String = "/";
+	static public var SEPARATOR(get, never):String;
+	static private inline function get_SEPARATOR():String
+	{
+		return Config.isWindows ? "\\" : "/";
+	}
 
 	/**
 	 * Create a directory if it doesn't already exist

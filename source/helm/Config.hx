@@ -24,7 +24,6 @@ class Config
 			var path = Sys.getEnv("HAXELIB_PATH");
 			if (path == null)
 			{
-				Directory.SEPARATOR = isWindows ? "\\" : "/";
 				var home = isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
 				if (FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
 				{
