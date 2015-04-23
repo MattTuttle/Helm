@@ -6,7 +6,7 @@ import sys.io.File;
 class Config
 {
 
-	static public var useGlobal:Bool = false;
+	static public var useGlobal:Bool = true;
 	static public var haxelibCompatible:Bool = true;
 
 	@:isVar static public var globalPath(get, null):String;
@@ -34,7 +34,8 @@ class Config
 		var home = Directory.homeDir;
 		var config = {
 			"haxelib_compat": haxelibCompatible,
-			"repo_path": ""
+			"repo_path": "",
+			"install": useGlobal
 		};
 
 		try {
@@ -50,6 +51,7 @@ class Config
 			throw "Could not find or parse hxpm config (expected ~/.hxpmconfig or /etc/hxpm)";
 		}
 
+		useGlobal = config.install;
 		haxelibCompatible = config.haxelib_compat;
 		if (haxelibCompatible)
 		{

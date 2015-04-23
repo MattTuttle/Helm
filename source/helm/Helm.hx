@@ -94,6 +94,7 @@ class Helm
 
 		var parser = new ArgParser();
 		parser.addRule(function(_) { Config.useGlobal = true; }, ["-g", "--global"]);
+		parser.addRule(function(_) { Config.useGlobal = false; }, ["-l", "--local"]);
 		parser.addRule(function(_) { Logger.log(VERSION); Sys.exit(0); }, ["--version"]);
 		parser.addRule(function(_) { Logger.COLORIZE = false; }, ["--no-color"]);
 		parser.addRule(function(_) { Logger.LEVEL = Verbose; }, ["-v", "--verbose"]);
