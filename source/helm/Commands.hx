@@ -5,6 +5,7 @@ import sys.FileSystem;
 import helm.ds.SemVer;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
+import haxelib.Data;
 
 using StringTools;
 
@@ -19,7 +20,7 @@ class Commands
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
+			var path = Repository.getPackageRoot(Sys.getCwd(), Data.JSON);
 			return path == null ? Sys.getCwd() : path;
 		}
 	}
@@ -175,7 +176,7 @@ class Commands
 			Logger.error(L10n.get("package_already_exists", [info.fullName]));
 		}
 
-		var data = new haxelib.Data();
+		var data = new Data();
 
 		// fill in dependencies
 		for (dep in Repository.list(path))
@@ -190,7 +191,7 @@ class Commands
 		data.url = Logger.prompt(L10n.get("init_project_url"));
 		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
 
-		var out = sys.io.File.write(haxelib.Data.JSON);
+		var out = sys.io.File.write(Data.JSON);
 		out.writeString(data.toString());
 		out.close();
 
@@ -290,7 +291,7 @@ class Commands
 	{
 		if (parser.complete)
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
+			var path = Repository.getPackageRoot(Sys.getCwd(), Data.JSON);
 			var info = Repository.loadPackageInfo(path);
 			if (info == null)
 			{
@@ -433,54 +434,48 @@ class Commands
 		return true;
 	}
 
-	@category("development")
-	@alias("upload", "submit")
-	static public function publish(parser:ArgParser):Bool
-	{
-		var path = getPathTarget();
-		var info = Repository.loadPackageInfo(path);
-		if (info == null)
-		{
-			Logger.error(L10n.get("not_a_package"));
-		}
-
-		var auth = new Auth();
-		auth.login();
-		var bundleName = Bundle.make(path);
-
-		Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
-		return true;
-	}
-
-	@usage("[username] [email]")
+	@usage("register [username] [email] | user username | submit")
 	@category("profile")
-	static public function register(parser:ArgParser):Bool
+	static public function haxelib(parser:ArgParser):Bool
 	{
-		var auth = new Auth();
-		auth.register();
-		return true;
-	}
-
-	@usage("username")
-	@category("profile")
-	static public function user(parser:ArgParser):Bool
-	{
-		if (parser.complete) return false;
-
-		for (arg in parser)
+		switch (parser.iterator().next())
 		{
-			var user = Repository.server.getUserInfo(arg);
-			if (user == null)
-			{
-				Logger.log(arg + " is not registered.");
-			}
-			else
-			{
-				Logger.log(user.fullName + " [" + user.email + "]");
-				Logger.log();
-				Logger.log(L10n.get("packages"));
-				Logger.logList(user.projects);
-			}
+			case "register":
+				var auth = new Auth();
+				auth.register();
+			case "user":
+				if (parser.complete) return false;
+
+				for (arg in parser)
+				{
+					var user = Repository.server.getUserInfo(arg);
+					if (user == null)
+					{
+						Logger.log(arg + " is not registered.");
+					}
+					else
+					{
+						Logger.log(user.fullName + " [" + user.email + "]");
+						Logger.log();
+						Logger.log(L10n.get("packages"));
+						Logger.logList(user.projects);
+					}
+				}
+			case "publish", "upload", "submit":
+				var path = getPathTarget();
+				var info = Repository.loadPackageInfo(path);
+				if (info == null)
+				{
+					Logger.error(L10n.get("not_a_package"));
+				}
+
+				var auth = new Auth();
+				auth.login();
+				var bundleName = Bundle.make(path);
+
+				Repository.server.submit(info.name, File.read(bundleName).readAll(), auth);
+			default:
+				return false;
 		}
 
 		return true;
