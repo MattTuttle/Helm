@@ -8,8 +8,6 @@ The <u>H</u>axe <u>E</u>xtended <u>L</u>ibrary <u>M</u>anager is an alternative 
 * Single version installed at a time
 * Initialize a project and pull in dependencies
 
-## Library Management
-
 ### Installing Libraries
 
 Libraries can be installed locally, the default, or globally. Doing so will download the library and unzip it into the appropriate `libs/` folder.
@@ -34,4 +32,12 @@ To get a full listing of the installed libraries use the following command.
 helm list
 # show global libraries (alternate shortcut)
 helm ls -g
+```
+
+### Building with hxml
+
+Since hxml files require haxelib we need to build using helm instead.
+
+```bash
+helm build compile.hxml
 ```

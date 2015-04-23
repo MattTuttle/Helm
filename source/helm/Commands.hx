@@ -269,7 +269,6 @@ class Commands
 
 	@usage("package [package ...]")
 	@category("information")
-	@alias("path")
 	static public function include(parser:ArgParser):Bool
 	{
 		if (parser.complete) return false;
@@ -393,7 +392,8 @@ class Commands
 						}
 						else if (arg.startsWith("-L"))
 						{
-							trace(arg); // ndll
+							args.push("-L");
+							args.push(arg.substr(3));
 						}
 						else
 						{
