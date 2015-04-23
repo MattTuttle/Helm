@@ -3,56 +3,16 @@ package helm;
 import sys.FileSystem;
 import sys.io.File;
 
-using StringTools;
-
 class Config
 {
 
-	static public var useGlobal:Bool = false;
-
-	static public var isWindows(get, never):Bool;
-	static private inline function get_isWindows():Bool
-	{
-		return (Sys.systemName() == "Windows");
-	}
+	static public var useGlobal:Bool = true;
+	static public var haxelibCompatible:Bool = true;
 
 	@:isVar static public var globalPath(get, null):String;
 	static private function get_globalPath():String
 	{
-		if (globalPath == null)
-		{
-			// TODO: get rid of this haxelib stuff
-			var path = Sys.getEnv("HAXELIB_PATH");
-			if (path == null)
-			{
-				var home = isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
-				if (FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
-				{
-					path = File.getContent(home + Directory.SEPARATOR + ".haxelib");
-				}
-				else if (FileSystem.exists("/etc/haxelib"))
-				{
-					path = File.getContent("/etc/haxelib");
-				}
-				else
-				{
-					path = "/usr/local/lib/haxe/";
-				}
-			}
-
-			// make sure the path ends with a slash
-			if (!path.endsWith(Directory.SEPARATOR))
-			{
-				path += Directory.SEPARATOR;
-			}
-
-			if (!(FileSystem.exists(path) && FileSystem.isDirectory(path)))
-			{
-				throw "Invalid package directory " + path;
-			}
-			globalPath = path;
-		}
-
+		if (globalPath == null) load();
 		return globalPath;
 	}
 
@@ -67,6 +27,38 @@ class Config
 	{
 		// TODO: verify that this actually exists, assumes it is installed
 		return globalPath + "helm/";
+	}
+
+	static private function load()
+	{
+		var home = Directory.homeDir;
+		var config = {
+			"haxelib_compat": haxelibCompatible,
+			"repo_path": ""
+		};
+
+		try {
+			if (sys.FileSystem.exists(home + Directory.SEPARATOR + ".hxpmconfig"))
+			{
+				config = haxe.Json.parse(sys.io.File.getContent(home + Directory.SEPARATOR + ".hxpmconfig"));
+			}
+			else if (sys.FileSystem.exists("/etc/hxpm"))
+			{
+				config = haxe.Json.parse(sys.io.File.getContent("/etc/hxpm"));
+			}
+		} catch (e:Dynamic) {
+			throw "Could not find or parse hxpm config (expected ~/.hxpmconfig or /etc/hxpm)";
+		}
+
+		haxelibCompatible = config.haxelib_compat;
+		if (haxelibCompatible)
+		{
+			globalPath = haxelib.Haxelib.path;
+		}
+		else
+		{
+			globalPath = config.repo_path;
+		}
 	}
 
 }

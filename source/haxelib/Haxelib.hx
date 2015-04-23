@@ -4,6 +4,7 @@ import haxe.crypto.Md5;
 import haxe.io.Bytes;
 import helm.ds.Types;
 import helm.ds.SemVer;
+import helm.Directory;
 
 class HaxelibConnection extends haxe.remoting.Proxy<haxelib.SiteApi> {}
 
@@ -16,6 +17,40 @@ class Haxelib
 	public function new()
 	{
 		_server = new HaxelibConnection(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
+	}
+
+	public static var path(get, never):String;
+	private static function get_path():String
+	{
+		var path = Sys.getEnv("HAXELIB_PATH");
+		if (path == null)
+		{
+			var home = Directory.homeDir;
+			if (sys.FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
+			{
+				path = sys.io.File.getContent(home + Directory.SEPARATOR + ".haxelib");
+			}
+			else if (sys.FileSystem.exists("/etc/haxelib"))
+			{
+				path = sys.io.File.getContent("/etc/haxelib");
+			}
+			else
+			{
+				path = "/usr/local/lib/haxe/";
+			}
+		}
+
+		// make sure the path ends with a slash
+		if (!StringTools.endsWith(path, Directory.SEPARATOR))
+		{
+			path += Directory.SEPARATOR;
+		}
+
+		if (!(sys.FileSystem.exists(path) && sys.FileSystem.isDirectory(path)))
+		{
+			throw "Invalid package directory " + path;
+		}
+		return path;
 	}
 
 	public function getProjectInfo(name:String):ProjectInfo

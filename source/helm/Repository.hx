@@ -234,30 +234,32 @@ class Repository
 		return Sys.command(command, args);
 	}
 
-	static public function printInclude(name:String):Void
+	static public function include(name:String):Array<String>
 	{
 		var root = getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
 		var path = hasPackageNamed(root, name) ? root : findPackage(name);
 
+		var result = [];
 		if (path != null && FileSystem.exists(path))
 		{
 			var info = loadPackageInfo(path);
 			var lib = path + NDLL_DIR + Directory.SEPARATOR;
 			if (FileSystem.exists(lib))
 			{
-				Logger.log("-L " + lib);
+				result.push("-L " + lib);
 			}
-			Logger.log(path + info.classPath);
-			Logger.log("-D " + name);
+			result.push(path + info.classPath);
+			result.push("-D " + name);
 			for (name in info.dependencies.keys())
 			{
-				printInclude(name);
+				result = result.concat(include(name));
 			}
 		}
 		else
 		{
 			Logger.log(L10n.get("not_installed", [name]));
 		}
+		return result;
 	}
 
 	static public function download(version:VersionInfo):String

@@ -276,7 +276,7 @@ class Commands
 
 		for (name in parser)
 		{
-			Repository.printInclude(name.toLowerCase());
+			Logger.log(Repository.include(name.toLowerCase()).join("\n"));
 		}
 
 		return true;
@@ -349,6 +349,75 @@ class Commands
 			}
 		}
 
+		return true;
+	}
+
+	@category("development")
+	static public function build(parser:ArgParser):Bool
+	{
+		var hxml = parser.iterator().next();
+		var path = Sys.getCwd() + hxml;
+		var args = [];
+		var runHaxe = function() {
+			if (args.length > 0)
+			{
+				Sys.command("haxe", args);
+				args = [];
+			}
+		};
+		if (FileSystem.exists(path))
+		{
+			var data = File.getContent(path);
+
+			var cwd = path.substring(0, path.lastIndexOf("/"));
+			Sys.setCwd(cwd);
+			for (line in data.split("\n"))
+			{
+				line = line.trim();
+				if (line == "" || line.startsWith("#")) continue;
+				if (line.startsWith("--next"))
+				{
+					runHaxe();
+					continue;
+				}
+
+				if (line.startsWith("-lib"))
+				{
+					var lib = line.substr(4).trim().toLowerCase();
+					for (arg in Repository.include(lib))
+					{
+						if (arg.startsWith("-D"))
+						{
+							args.push("-D");
+							args.push(arg.substr(3));
+						}
+						else if (arg.startsWith("-L"))
+						{
+							trace(arg); // ndll
+						}
+						else
+						{
+							args.push("-cp");
+							args.push(arg);
+						}
+					}
+				}
+				else
+				{
+					var index = line.indexOf(" ");
+					if (index != -1)
+					{
+						args.push(line.substr(0, index));
+						args.push(line.substr(index).trim());
+					}
+					else
+					{
+						args.push(line);
+					}
+				}
+			}
+			runHaxe();
+		}
 		return true;
 	}
 

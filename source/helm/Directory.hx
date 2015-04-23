@@ -10,7 +10,19 @@ class Directory
 	static public var SEPARATOR(get, never):String;
 	static private inline function get_SEPARATOR():String
 	{
-		return Config.isWindows ? "\\" : "/";
+		return isWindows ? "\\" : "/";
+	}
+
+	static public var isWindows(get, never):Bool;
+	static private inline function get_isWindows():Bool
+	{
+		return (Sys.systemName() == "Windows");
+	}
+
+	static public var homeDir(get, never):String;
+	static private inline function get_homeDir():String
+	{
+		return isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
 	}
 
 	/**
