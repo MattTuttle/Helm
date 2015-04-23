@@ -9,53 +9,64 @@ class Config
 {
 
 	static public var useGlobal:Bool = false;
-	static public var globalPath:String;
+
+	static public var isWindows(get, never):Bool;
+	static private inline function get_isWindows():Bool
+	{
+		return (Sys.systemName() == "Windows");
+	}
+
+	@:isVar static public var globalPath(get, null):String;
+	static private function get_globalPath():String
+	{
+		if (globalPath == null)
+		{
+			var path = Sys.getEnv("HAXELIB_PATH");
+			if (path == null)
+			{
+				Directory.SEPARATOR = isWindows ? "\\" : "/";
+				var home = isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
+				if (FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
+				{
+					path = File.getContent(home + Directory.SEPARATOR + ".haxelib");
+				}
+				else if (FileSystem.exists("/etc/haxelib"))
+				{
+					path = File.getContent("/etc/haxelib");
+				}
+				else
+				{
+					path = "/usr/local/lib/haxe/";
+				}
+			}
+
+			// make sure the path ends with a slash
+			if (!path.endsWith(Directory.SEPARATOR))
+			{
+				path += Directory.SEPARATOR;
+			}
+
+			if (!(FileSystem.exists(path) && FileSystem.isDirectory(path)))
+			{
+				throw "Invalid package directory " + path;
+			}
+			globalPath = path;
+		}
+
+		return globalPath;
+	}
 
 	static public var cachePath(get, never):String;
-	static private function get_cachePath():String
+	static private inline function get_cachePath():String
 	{
 		return globalPath + "cache/";
 	}
 
 	static public var helmPath(get, never):String;
-	static private function get_helmPath():String
+	static private inline function get_helmPath():String
 	{
 		// TODO: verify that this actually exists, assumes it is installed
 		return globalPath + "helm/";
-	}
-
-	static public function load():Void
-	{
-		globalPath = Sys.getEnv("HAXELIB_PATH");
-		if (globalPath == null)
-		{
-			var isWindows = (Sys.systemName() == "Windows");
-			Directory.SEPARATOR = isWindows ? "\\" : "/";
-			var home = isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
-			if (FileSystem.exists(home + Directory.SEPARATOR + ".haxelib"))
-			{
-				globalPath = File.getContent(home + Directory.SEPARATOR + ".haxelib");
-			}
-			else if (FileSystem.exists("/etc/haxelib"))
-			{
-				globalPath = File.getContent("/etc/haxelib");
-			}
-			else
-			{
-				globalPath = "/usr/local/lib/haxe/";
-			}
-		}
-
-		// make sure the path ends with a slash
-		if (!globalPath.endsWith(Directory.SEPARATOR))
-		{
-			globalPath += Directory.SEPARATOR;
-		}
-
-		if (!(FileSystem.exists(globalPath) && FileSystem.isDirectory(globalPath)))
-		{
-			throw "Invalid package directory " + globalPath;
-		}
 	}
 
 }

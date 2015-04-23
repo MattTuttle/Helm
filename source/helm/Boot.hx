@@ -14,7 +14,6 @@ class Boot
 	{
 		var result:Int;
 
-		Config.load();
 		// TODO: if package not found, install it
 		var path = try {
 			Repository.findPackage(PACKAGE_NAME);

@@ -3,7 +3,6 @@ class TestMain
 	static public function main()
 	{
 		helm.Logger.OUTPUT = false;
-		helm.Config.load();
 
 		var unit = new haxe.unit.TestRunner();
 		unit.add(new TestArgs());

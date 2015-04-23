@@ -129,7 +129,6 @@ class Helm
 	static public function main()
 	{
 		L10n.init();
-		Config.load();
 
 		var lib = new Helm();
 		lib.process(Sys.args());
