@@ -27,6 +27,11 @@ class ArgParser
 		return _it;
 	}
 
+	public function next():String
+	{
+		return _it.next();
+	}
+
 	public function addRule(func:ArgParserFunc, ?rules:Array<String>, argument:Bool=false)
 	{
 		if (rules == null)

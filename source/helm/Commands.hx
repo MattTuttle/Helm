@@ -358,69 +358,43 @@ class Commands
 	@category("development")
 	static public function build(parser:ArgParser):Bool
 	{
-		var hxml = parser.iterator().next();
+		if (parser.complete) return false;
+		var hxml = parser.next();
 		var path = Sys.getCwd() + hxml;
-		var args = [];
-		var runHaxe = function() {
-			if (args.length > 0)
-			{
-				Sys.command("haxe", args);
-				args = [];
-			}
-		};
 		if (FileSystem.exists(path))
 		{
 			var data = File.getContent(path);
 
 			var cwd = path.substring(0, path.lastIndexOf("/"));
 			Sys.setCwd(cwd);
+			var tmp = ".hxpm_build.hxml";
+			var out = sys.io.File.write(tmp);
 			for (line in data.split("\n"))
 			{
 				line = line.trim();
 				if (line == "" || line.startsWith("#")) continue;
-				if (line.startsWith("--next"))
-				{
-					runHaxe();
-					continue;
-				}
 
 				if (line.startsWith("-lib"))
 				{
 					var lib = line.substr(4).trim().toLowerCase();
 					for (arg in Repository.include(lib))
 					{
-						if (arg.startsWith("-D"))
+						if (arg.startsWith("-D") || arg.startsWith("-L"))
 						{
-							args.push("-D");
-							args.push(arg.substr(3));
-						}
-						else if (arg.startsWith("-L"))
-						{
-							args.push("-L");
-							args.push(arg.substr(3));
+							out.writeString(arg + "\n");
 						}
 						else
 						{
-							args.push("-cp");
-							args.push(arg);
+							out.writeString('-cp $arg\n');
 						}
 					}
+					continue;
 				}
-				else
-				{
-					var index = line.indexOf(" ");
-					if (index != -1)
-					{
-						args.push(line.substr(0, index));
-						args.push(line.substr(index).trim());
-					}
-					else
-					{
-						args.push(line);
-					}
-				}
+				out.writeString(line + "\n");
 			}
-			runHaxe();
+			out.close();
+			Sys.command("haxe", [tmp]);
+			sys.FileSystem.deleteFile(tmp);
 		}
 		return true;
 	}
@@ -438,7 +412,8 @@ class Commands
 	@category("profile")
 	static public function haxelib(parser:ArgParser):Bool
 	{
-		switch (parser.iterator().next())
+		if (parser.complete) return false;
+		switch (parser.next())
 		{
 			case "register":
 				var auth = new Auth();
