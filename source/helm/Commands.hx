@@ -57,12 +57,15 @@ class Commands
 					version:SemVer = null;
 
 				// try to split from name@version
-				var parts = name.split("@");
-				if (parts.length == 2)
+				if (name.indexOf("://") == -1)
 				{
-					version = SemVer.ofString(parts[1]);
-					// only use the first part if successfully parsing a version from the second part
-					if (version != null) name = parts[0];
+					var parts = name.split(":");
+					if (parts.length == 2)
+					{
+						version = SemVer.ofString(parts[1]);
+						// only use the first part if successfully parsing a version from the second part
+						if (version != null) name = parts[0];
+					}
 				}
 				Repository.install(name, version, getPathTarget());
 			});
@@ -79,7 +82,7 @@ class Commands
 		var outdated = Repository.outdated(getPathTarget());
 		for (item in outdated)
 		{
-			Logger.log(item.name + "@" + item.current + " < " + item.latest);
+			Logger.log(item.name + ":" + item.current + " < " + item.latest);
 		}
 		return true;
 	}
@@ -146,7 +149,7 @@ class Commands
 						var packages = Repository.list(item.path);
 						var hasChildren = packages.length > 0;
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-						Logger.log(start + separator + item.name + "{blue}@" + item.version + "{end}");
+						Logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
 
 						if (hasChildren)
 						{
@@ -300,7 +303,7 @@ class Commands
 		{
 			for (arg in parser)
 			{
-				var parts = arg.split("@");
+				var parts = arg.split(":");
 				var info = Repository.server.getProjectInfo(parts[0]);
 				if (info == null)
 				{

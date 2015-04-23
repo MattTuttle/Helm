@@ -379,13 +379,18 @@ class Repository
 			}
 		}
 
-		var version = getLatestVersion(info, version);
-		Logger.log(L10n.get("installing_package", [info.name + "@" + version.value]));
+		var downloadVersion = getLatestVersion(info, version);
+		if (downloadVersion == null)
+		{
+			Logger.error(L10n.get("version_not_found", [Std.string(version)]));
+			return;
+		}
+		Logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
 
 		// download if not installing from a local file
 		if (path == null)
 		{
-			path = download(version);
+			path = download(downloadVersion);
 		}
 
 		// TODO: if zip fails to read, redownload or throw an error?

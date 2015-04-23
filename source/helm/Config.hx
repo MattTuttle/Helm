@@ -6,7 +6,7 @@ import sys.io.File;
 class Config
 {
 
-	static public var useGlobal:Bool = true;
+	static public var useGlobal:Bool = false;
 	static public var haxelibCompatible:Bool = true;
 
 	@:isVar static public var globalPath(get, null):String;
