@@ -1,4 +1,4 @@
-import helm.ArgParser;
+import helm.util.ArgParser;
 
 class TestArgs extends haxe.unit.TestCase
 {

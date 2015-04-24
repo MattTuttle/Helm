@@ -5,6 +5,7 @@ import sys.FileSystem;
 import helm.ds.SemVer;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
+import helm.util.*;
 
 using StringTools;
 
@@ -232,7 +233,7 @@ class Commands
 						path = info.path;
 					}
 				}
-				Directory.delete(path);
+				new Directory(path).delete();
 				Logger.log(L10n.get("directory_deleted", [p.current]));
 			}
 		});
@@ -246,7 +247,7 @@ class Commands
 		var result = Logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
 		{
-			Directory.delete(Config.cachePath);
+			new Directory(Config.cachePath).delete();
 			Logger.log(L10n.get("cleared_cache"));
 		}
 		return true;
@@ -439,6 +440,7 @@ class Commands
 
 	@usage("package [package ...]")
 	@category("information")
+	@alias("find")
 	static public function search(parser:ArgParser):Bool
 	{
 		if (parser.complete) return false;

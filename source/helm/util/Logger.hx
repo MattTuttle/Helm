@@ -1,4 +1,4 @@
-package helm;
+package helm.util;
 
 using StringTools;
 

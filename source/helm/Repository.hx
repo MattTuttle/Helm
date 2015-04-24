@@ -8,6 +8,7 @@ import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
 import helm.http.DownloadProgress;
+import helm.util.*;
 
 using StringTools;
 
@@ -23,6 +24,7 @@ class Repository
 	static public function findPackage(name:String):String
 	{
 		var repo = findPackageIn(name, Sys.getCwd());
+		// fallback, if no package found
 		if (repo.length == 0)
 		{
 			repo = findPackageIn(name, Config.globalPath);
@@ -110,16 +112,15 @@ class Repository
 		return outdated;
 	}
 
-	static public function list(dir:String):Array<PackageInfo>
+	static public function list(path:String):Array<PackageInfo>
 	{
 		var packages = new Array<PackageInfo>();
-		var libs = dir + LIB_DIR + Directory.SEPARATOR;
-		if (FileSystem.exists(libs) && FileSystem.isDirectory(libs))
+		var dir = new Directory(path).add(LIB_DIR);
+		if (dir.exists)
 		{
-			for (item in FileSystem.readDirectory(libs))
+			for (item in FileSystem.readDirectory(dir.path))
 			{
-				var path = libs + item + Directory.SEPARATOR;
-				var info = PackageInfo.load(path);
+				var info = PackageInfo.load(dir.add(item).path);
 				if (info != null) packages.push(info);
 			}
 		}
@@ -260,7 +261,7 @@ class Repository
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cache))
 		{
-			Directory.create(Config.cachePath);
+			new Directory(Config.cachePath).create();
 			// download as different name to prevent loading partial downloads if cancelled
 			var downloadPath = cache.replace("zip", "part");
 
@@ -305,7 +306,8 @@ class Repository
 		{
 			Logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
 
-			var path = Directory.createTemporary();
+			var tmpDir = Directory.createTemporary();
+			var path = tmpDir.path;
 			var args = ["clone"];
 			if (gitBranch != null)
 			{
@@ -318,20 +320,21 @@ class Repository
 			var info = PackageInfo.load(path);
 			if (info == null)
 			{
-				Directory.delete(path);
+				tmpDir.delete();
 				Logger.error(L10n.get("not_a_package"));
 			}
 			else
 			{
 				// rename folder to the name of the project
 				var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
-				if (FileSystem.exists(installPath))
+				var dir = new Directory(installPath);
+				if (dir.exists)
 				{
-					Directory.delete(installPath);
+					dir.delete();
 				}
 				else
 				{
-					Directory.create(installPath);
+					dir.create();
 				}
 				FileSystem.rename(path, installPath);
 				installed = true;
@@ -343,11 +346,16 @@ class Repository
 	static public function install(name:String, ?version:SemVer, target:String=""):Void
 	{
 		var path = null;
-		if (name.startsWith("file+"))
+		// check if installing from a local file
+		if (sys.FileSystem.exists(name))
 		{
-			path = name.substr(5);
+			path = name;
+			// TODO: load project info
 		}
-		else if (installGit(name, target)) return;
+		else if (installGit(name, target))
+		{
+			return;
+		}
 
 		// conflict resolution
 		var info = server.getProjectInfo(name);
@@ -355,17 +363,17 @@ class Repository
 		{
 			Logger.error(L10n.get("not_a_package"));
 		}
-		var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
-		if (FileSystem.exists(installPath))
+		var dir = new Directory(target).add(LIB_DIR).add(info.name);
+		if (dir.exists)
 		{
-			var info = PackageInfo.load(installPath);
+			var info = PackageInfo.load(dir.path);
 			if (info != null && (version == null || version == info.version))
 			{
 				Logger.error(L10n.get("already_installed", [info.fullName]));
 			}
 			else
 			{
-				Directory.delete(installPath);
+				dir.delete();
 			}
 		}
 
@@ -388,7 +396,7 @@ class Repository
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
 		var baseDir = locateBasePath(zip);
-		Directory.create(installPath);
+		dir.create();
 
 		var totalItems = zip.length,
 			unzippedItems = 0;
@@ -406,8 +414,8 @@ class Repository
 			}
 
 			var slashIndex = name.lastIndexOf("/") + 1;
-			var dir = installPath + name.substr(0, slashIndex);
-			Directory.create(dir);
+			var loc = dir.add(name.substr(0, slashIndex));
+			loc.create();
 
 			// skip unzip if not a file
 			if (slashIndex >= name.length)
@@ -416,12 +424,12 @@ class Repository
 			}
 			var file = name.substr(slashIndex);
 			var data = haxe.zip.Reader.unzip(item);
-			File.saveBytes(dir + file, data);
+			File.saveBytes(loc.path + file, data);
 		}
 		Logger.log("\n", false);
 
 		// install any dependencies
-		var info = PackageInfo.load(installPath);
+		var info = PackageInfo.load(dir.path);
 		for (name in info.dependencies.keys())
 		{
 			var version = info.dependencies.get(name);

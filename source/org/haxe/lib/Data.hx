@@ -7,7 +7,7 @@ import haxe.zip.Reader;
 import sys.io.File;
 import sys.FileSystem;
 import helm.ds.SemVer;
-import helm.*;
+import helm.util.*;
 
 class Data
 {
@@ -78,13 +78,13 @@ class Data
 		var data = new Data();
 
 		// fill in dependencies
-		for (dep in Repository.list(path))
+		for (dep in helm.Repository.list(path))
 		{
 			data.dependencies.set(dep.name, dep.version);
 		}
 
 		// data.dependencies
-		data.name = Logger.prompt(L10n.get("init_project_name"), Directory.nameFromPath(path));
+		data.name = Logger.prompt(L10n.get("init_project_name"), new helm.Directory(path).lastFolder);
 		data.description = Logger.prompt(L10n.get("init_project_description"));
 		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
 		data.url = Logger.prompt(L10n.get("init_project_url"));

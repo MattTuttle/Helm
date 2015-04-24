@@ -1,5 +1,7 @@
 package helm;
 
+import helm.util.*;
+
 class Auth
 {
 

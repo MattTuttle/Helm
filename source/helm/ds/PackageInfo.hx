@@ -15,7 +15,7 @@ class PackageInfo
 	public var mainClass(default, null):String;
 
 	public var fullName(get, never):String;
-	private inline function get_fullName():String { return name + "@" + version; }
+	private inline function get_fullName():String { return name + ":" + version; }
 
 	public function new(name:String, version:String, dependencies:StringMap<String>, path:String, classPath:String, mainClass:String)
 	{

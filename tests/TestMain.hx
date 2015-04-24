@@ -2,7 +2,7 @@ class TestMain
 {
 	static public function main()
 	{
-		helm.Logger.OUTPUT = false;
+		helm.util.Logger.OUTPUT = false;
 
 		var unit = new haxe.unit.TestRunner();
 		unit.add(new TestArgs());

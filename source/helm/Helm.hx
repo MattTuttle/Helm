@@ -3,6 +3,7 @@ package helm;
 import haxe.ds.StringMap;
 import haxe.rtti.Meta;
 import haxe.CallStack;
+import helm.util.*;
 
 using StringTools;
 

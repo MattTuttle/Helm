@@ -2,6 +2,7 @@ package helm.http;
 
 import haxe.io.Input;
 import haxe.io.Bytes;
+import helm.util.*;
 
 class UploadProgress extends Input
 {
