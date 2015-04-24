@@ -5,7 +5,6 @@ import sys.FileSystem;
 import helm.ds.SemVer;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
-import haxelib.Data;
 
 using StringTools;
 
@@ -20,7 +19,7 @@ class Commands
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), Data.JSON);
+			var path = Repository.getPackageRoot(Sys.getCwd());
 			return path == null ? Sys.getCwd() : path;
 		}
 	}
@@ -170,31 +169,13 @@ class Commands
 	static public function init(parser:ArgParser):Bool
 	{
 		var path = getPathTarget();
-		var info = Repository.loadPackageInfo(path);
+		var info = PackageInfo.load(path);
 		if (info != null)
 		{
 			Logger.error(L10n.get("package_already_exists", [info.fullName]));
 		}
 
-		var data = new Data();
-
-		// fill in dependencies
-		for (dep in Repository.list(path))
-		{
-			data.dependencies.set(dep.name, dep.version);
-		}
-
-		// data.dependencies
-		data.name = Logger.prompt(L10n.get("init_project_name"), Directory.nameFromPath(path));
-		data.description = Logger.prompt(L10n.get("init_project_description"));
-		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
-		data.url = Logger.prompt(L10n.get("init_project_url"));
-		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
-
-		var out = sys.io.File.write(Data.JSON);
-		out.writeString(data.toString());
-		out.close();
-
+		org.haxe.lib.Data.init(path);
 		return true;
 	}
 
@@ -205,7 +186,7 @@ class Commands
 		for (arg in parser)
 		{
 			var repo = Repository.findPackage(arg);
-			var info = Repository.loadPackageInfo(repo);
+			var info = PackageInfo.load(repo);
 			Logger.log(repo + " [" + info.version + "]");
 		}
 		return true;
@@ -291,8 +272,8 @@ class Commands
 	{
 		if (parser.complete)
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd(), Data.JSON);
-			var info = Repository.loadPackageInfo(path);
+			var path = Repository.getPackageRoot(Sys.getCwd());
+			var info = PackageInfo.load(path);
 			if (info == null)
 			{
 				Logger.error(L10n.get("not_a_package"));
@@ -438,7 +419,7 @@ class Commands
 				}
 			case "publish", "upload", "submit":
 				var path = getPathTarget();
-				var info = Repository.loadPackageInfo(path);
+				var info = PackageInfo.load(path);
 				if (info == null)
 				{
 					Logger.error(L10n.get("not_a_package"));

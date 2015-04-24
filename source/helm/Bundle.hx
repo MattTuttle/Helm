@@ -62,7 +62,7 @@ class Bundle
 
 	static public function make(path:String):String
 	{
-		var info = Repository.loadPackageInfo(path);
+		var info = helm.ds.PackageInfo.load(path);
 		if (info == null) throw "Not in a package";
 		var rules = readIgnoreFile(path + ".helmignore");
 		if (rules == null)

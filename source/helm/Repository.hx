@@ -7,6 +7,7 @@ import sys.FileSystem;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
+import helm.http.DownloadProgress;
 
 using StringTools;
 
@@ -17,19 +18,7 @@ class Repository
 	static public var NDLL_DIR:String = "ndll";
 
 	// TODO: setup a mirror list for multiple repository servers
-	static public var server:haxelib.Haxelib = new haxelib.Haxelib();
-
-	static public function loadPackageInfo(path:String):PackageInfo
-	{
-		if (FileSystem.exists(path + haxelib.Data.JSON))
-		{
-			var data = new haxelib.Data();
-			data.read(File.getContent(path + haxelib.Data.JSON));
-			return new PackageInfo(Std.string(data.name).toLowerCase(),
-				SemVer.ofString(data.version), data.dependencies, path, data.classPath, data.mainClass);
-		}
-		return null;
-	}
+	static public var server:org.haxe.lib.Haxelib = new org.haxe.lib.Haxelib();
 
 	static public function findPackage(name:String):String
 	{
@@ -46,7 +35,7 @@ class Repository
 
 	static private function hasPackageNamed(path:String, name:String):Bool
 	{
-		var info = loadPackageInfo(path);
+		var info = PackageInfo.load(path);
 		return (info != null && info.name == name);
 	}
 
@@ -67,8 +56,9 @@ class Repository
 		return results;
 	}
 
-	static public function getPackageRoot(path:String, find:String):String
+	static public function getPackageRoot(path:String, ?find:String):String
 	{
+		if (find == null) find = org.haxe.lib.Data.JSON;
 		if (path.endsWith("/")) path = path.substr(0, -1);
 		var parts = path.split(Directory.SEPARATOR);
 		while (parts.length > 0)
@@ -90,7 +80,7 @@ class Repository
 		// search in the current directory for a haxelib.json file
 		if (hasPackageNamed(target, name))
 		{
-			return [loadPackageInfo(target)];
+			return [PackageInfo.load(target)];
 		}
 
 		// find a libs directory in the current directory or a parent
@@ -129,7 +119,7 @@ class Repository
 			for (item in FileSystem.readDirectory(libs))
 			{
 				var path = libs + item + Directory.SEPARATOR;
-				var info = loadPackageInfo(path);
+				var info = PackageInfo.load(path);
 				if (info != null) packages.push(info);
 			}
 		}
@@ -142,7 +132,7 @@ class Repository
 	static public function findDependencies(dir:String):StringMap<String>
 	{
 		var libs = new StringMap<String>();
-		var info = loadPackageInfo(dir);
+		var info = PackageInfo.load(dir);
 		if (info == null)
 		{
 			// search files for libraries to install
@@ -187,7 +177,7 @@ class Repository
 
 	static public function run(args:Array<String>, path:String, useEnvironment:Bool=false):Int
 	{
-		var info = Repository.loadPackageInfo(path);
+		var info = PackageInfo.load(path);
 		if (info == null)
 		{
 			Logger.log(L10n.get("not_a_package"));
@@ -236,13 +226,13 @@ class Repository
 
 	static public function include(name:String):Array<String>
 	{
-		var root = getPackageRoot(Sys.getCwd(), haxelib.Data.JSON);
+		var root = getPackageRoot(Sys.getCwd());
 		var path = hasPackageNamed(root, name) ? root : findPackage(name);
 
 		var result = [];
 		if (path != null && FileSystem.exists(path))
 		{
-			var info = loadPackageInfo(path);
+			var info = PackageInfo.load(path);
 			var lib = path + NDLL_DIR + Directory.SEPARATOR;
 			if (FileSystem.exists(lib))
 			{
@@ -325,7 +315,7 @@ class Repository
 			args.push(gitRepository);
 			args.push(path);
 			Sys.command("git", args);
-			var info = loadPackageInfo(path);
+			var info = PackageInfo.load(path);
 			if (info == null)
 			{
 				Directory.delete(path);
@@ -368,7 +358,7 @@ class Repository
 		var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
 		if (FileSystem.exists(installPath))
 		{
-			var info = loadPackageInfo(installPath);
+			var info = PackageInfo.load(installPath);
 			if (info != null && (version == null || version == info.version))
 			{
 				Logger.error(L10n.get("already_installed", [info.fullName]));
@@ -397,7 +387,7 @@ class Repository
 		var f = File.read(path, true);
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
-		var baseDir = haxelib.Data.locateBasePath(zip);
+		var baseDir = locateBasePath(zip);
 		Directory.create(installPath);
 
 		var totalItems = zip.length,
@@ -431,13 +421,26 @@ class Repository
 		Logger.log("\n", false);
 
 		// install any dependencies
-		var info = loadPackageInfo(installPath);
+		var info = PackageInfo.load(installPath);
 		for (name in info.dependencies.keys())
 		{
 			var version = info.dependencies.get(name);
 			// prevent installing a library we already installed (infinite loop)
 			install(name, version, target);
 		}
+	}
+
+	// TODO: search for hxpm.json
+	static private function locateBasePath(zip:List<haxe.zip.Entry>):String
+	{
+		for (f in zip)
+		{
+			if (StringTools.endsWith(f.fileName, org.haxe.lib.Data.JSON))
+			{
+				return f.fileName.substr(0, f.fileName.length - org.haxe.lib.Data.JSON.length);
+			}
+		}
+		throw "No " + org.haxe.lib.Data.JSON + " found";
 	}
 
 	static private function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo

@@ -1,4 +1,4 @@
-package haxelib;
+package org.haxe.lib;
 
 import haxe.Json;
 import haxe.ds.StringMap;
@@ -7,6 +7,7 @@ import haxe.zip.Reader;
 import sys.io.File;
 import sys.FileSystem;
 import helm.ds.SemVer;
+import helm.*;
 
 class Data
 {
@@ -72,33 +73,26 @@ class Data
 		return json;
 	}
 
-	public static function locateBasePath(zip:List<Entry>):String {
-		for (f in zip)
-		{
-			if (StringTools.endsWith(f.fileName, JSON))
-			{
-				return f.fileName.substr(0, f.fileName.length - JSON.length);
-			}
-		}
-		throw "No " + JSON + " found";
-	}
-
-	public static function readInfos(zip:List<Entry>):Data {
-		var infodata = null;
-		for (f in zip)
-		{
-			if (StringTools.endsWith(f.fileName, JSON))
-			{
-				infodata = Reader.unzip(f).toString();
-				break;
-			}
-		}
-		if (infodata == null)
-			throw JSON + " not found in package";
-
+	static public function init(path:String)
+	{
 		var data = new Data();
-		data.read(infodata);
-		return data;
+
+		// fill in dependencies
+		for (dep in Repository.list(path))
+		{
+			data.dependencies.set(dep.name, dep.version);
+		}
+
+		// data.dependencies
+		data.name = Logger.prompt(L10n.get("init_project_name"), Directory.nameFromPath(path));
+		data.description = Logger.prompt(L10n.get("init_project_description"));
+		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
+		data.url = Logger.prompt(L10n.get("init_project_url"));
+		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
+
+		var out = sys.io.File.write(Data.JSON);
+		out.writeString(data.toString());
+		out.close();
 	}
 
 }

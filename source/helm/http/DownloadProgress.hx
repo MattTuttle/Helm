@@ -1,4 +1,4 @@
-package helm;
+package helm.http;
 
 import haxe.io.Bytes;
 

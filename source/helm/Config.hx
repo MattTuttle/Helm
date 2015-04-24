@@ -55,7 +55,7 @@ class Config
 		haxelibCompatible = config.haxelib_compat;
 		if (haxelibCompatible)
 		{
-			globalPath = haxelib.Haxelib.path;
+			globalPath = org.haxe.lib.Haxelib.path;
 		}
 		else
 		{

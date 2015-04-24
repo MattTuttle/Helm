@@ -1,4 +1,4 @@
-package haxelib;
+package org.haxe.lib;
 
 /**
  * Haxelib site API

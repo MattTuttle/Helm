@@ -1,4 +1,5 @@
 import helm.*;
+import helm.http.*;
 
 class TestLib extends haxe.unit.TestCase
 {

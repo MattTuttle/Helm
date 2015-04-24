@@ -1,6 +1,6 @@
 package helm;
 
-import helm.ds.SemVer;
+import helm.ds.*;
 
 /**
  * Boot/Upgrade HELM without requiring anything installed
@@ -20,7 +20,7 @@ class Boot
 		} catch (e:Dynamic) {
 			Config.globalPath + "libs/helm/";
 		}
-		var info = Repository.loadPackageInfo(path);
+		var info = PackageInfo.load(path);
 
 		// get latest version on server
 		var version:SemVer = try {

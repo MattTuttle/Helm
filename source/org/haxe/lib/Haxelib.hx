@@ -1,12 +1,13 @@
-package haxelib;
+package org.haxe.lib;
 
 import haxe.crypto.Md5;
 import haxe.io.Bytes;
 import helm.ds.Types;
 import helm.ds.SemVer;
 import helm.Directory;
+import helm.http.UploadProgress;
 
-class HaxelibConnection extends haxe.remoting.Proxy<haxelib.SiteApi> {}
+class HaxelibConnection extends haxe.remoting.Proxy<org.haxe.lib.SiteApi> {}
 
 class Haxelib
 {
@@ -153,7 +154,7 @@ class Haxelib
 		var h = new haxe.Http(url);
 		h.onError = function(e) { throw e; };
 		h.onData = function(d) { trace(d); }
-		h.fileTransfert("file", id, new helm.UploadProgress(data), data.length);
+		h.fileTransfert("file", id, new UploadProgress(data), data.length);
 		h.request(true);
 		haxe.remoting.HttpConnection.TIMEOUT = 1000;
 
