@@ -9,6 +9,7 @@ class TestMain
 		unit.add(new TestLib());
 		unit.add(new TestSemVer());
 		unit.add(new TestLocalization());
+		unit.add(new TestDataStore());
 		unit.run();
 	}
 }
