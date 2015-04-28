@@ -25,7 +25,7 @@ class Commands
 		}
 	}
 
-	@usage("[package[:version] ...]")
+	@usage("[package[:version]...]")
 	@alias("i", "isntall")
 	@category("development")
 	static public function install(parser:ArgParser):Bool
@@ -193,7 +193,7 @@ class Commands
 		return true;
 	}
 
-	@usage("[--env] package [args ...]")
+	@usage("[--env] package [args...]")
 	@category("development")
 	static public function run(parser:ArgParser):Bool
 	{
@@ -253,7 +253,7 @@ class Commands
 		return true;
 	}
 
-	@usage("package [package ...]")
+	@usage("package...")
 	@category("information")
 	static public function include(parser:ArgParser):Bool
 	{
@@ -267,7 +267,7 @@ class Commands
 		return true;
 	}
 
-	@usage("[package[:version] ...]")
+	@usage("[package[:version]...]")
 	@category("information")
 	static public function info(parser:ArgParser):Bool
 	{

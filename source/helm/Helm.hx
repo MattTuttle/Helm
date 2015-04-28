@@ -104,12 +104,9 @@ class Helm
 		Sys.exit(1);
 	}
 
-	public function process(args:Array<String>):Void
+	public function process(args:Array<String>):Bool
 	{
-		if (args.length == 0)
-		{
-			usage();
-		}
+		var success = false;
 
 		var parser = new ArgParser();
 		parser.addRule(function(_) { Config.useGlobal = true; }, ["-g", "--global"]);
@@ -121,7 +118,6 @@ class Helm
 			try
 			{
 				var command = p.current;
-				var success = false;
 
 				if (_commands.exists(command))
 				{
@@ -131,11 +127,6 @@ class Helm
 				{
 					success = _aliases.get(command).func(p);
 				}
-
-				if (!success)
-				{
-					usage();
-				}
 			}
 			catch (e:Dynamic)
 			{
@@ -144,6 +135,8 @@ class Helm
 			}
 		});
 		parser.parse(args);
+
+		return success;
 	}
 
 	static public function main()
@@ -151,7 +144,10 @@ class Helm
 		L10n.init();
 
 		var lib = new Helm();
-		lib.process(Sys.args());
+		if (!lib.process(Sys.args()))
+		{
+			lib.usage();
+		}
 	}
 
 	private var _commands:StringMap<Command>;
