@@ -27,7 +27,7 @@ class Command
 			else
 			{
 				var sep = "\n        ";
-				this.helpText += "[command]\n      {blue}Commands:{end}" + sep + meta.usage.join(sep);
+				this.helpText += "command\n      {blue}Commands:{end}" + sep + meta.usage.join(sep);
 			}
 		}
 		this.category = meta.category != null ? meta.category.shift() : "";
@@ -73,6 +73,13 @@ class Helm
 		Logger.log("|     |    |   __|        |  |__        | | | |");
 		Logger.log("|__|__|{blue}axe {yellow}|_____|{blue}xtended {yellow}|_____|{blue}ibrary {yellow}|_|_|_|{blue}anager   v" + VERSION + "{end}");
 		Logger.log();
+		Logger.log("{yellow}-g, --global{end}  Use the global library path");
+		// Logger.log("{yellow}-u, --user{end}    Use the user library path");
+		Logger.log("{yellow}-l, --local{end}   Use the local library path");
+		Logger.log("{yellow}-v, --verbose{end} More output for each command");
+		Logger.log("{yellow}--no-color{end}    Removes ANSI color output");
+		Logger.log("{yellow}--version{end}     Print the current version");
+		Logger.log();
 
 		var categories = new StringMap<Array<Command>>();
 		for (command in _commands)
@@ -114,18 +121,18 @@ class Helm
 			try
 			{
 				var command = p.current;
-				var result = false;
+				var success = false;
 
 				if (_commands.exists(command))
 				{
-					result = _commands.get(command).func(p);
+					success = _commands.get(command).func(p);
 				}
 				else if (_aliases.exists(command))
 				{
-					result = _aliases.get(command).func(p);
+					success = _aliases.get(command).func(p);
 				}
 
-				if (!result)
+				if (!success)
 				{
 					usage();
 				}

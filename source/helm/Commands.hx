@@ -25,7 +25,7 @@ class Commands
 		}
 	}
 
-	@usage("[package[:version] package ...]")
+	@usage("[package[:version] ...]")
 	@alias("i", "isntall")
 	@category("development")
 	static public function install(parser:ArgParser):Bool
@@ -338,6 +338,7 @@ class Commands
 	}
 
 	@category("development")
+	@usage("hxml")
 	static public function build(parser:ArgParser):Bool
 	{
 		if (parser.complete) return false;
@@ -349,7 +350,7 @@ class Commands
 
 			var cwd = path.substring(0, path.lastIndexOf("/"));
 			Sys.setCwd(cwd);
-			var tmp = ".hxpm_build.hxml";
+			var tmp = ".helm_build.hxml";
 			var out = sys.io.File.write(tmp);
 			for (line in data.split("\n"))
 			{
@@ -391,7 +392,7 @@ class Commands
 	}
 
 	@usage("register [username] [email]", "user username", "submit")
-	@category("profile")
+	@category("haxelib")
 	static public function haxelib(parser:ArgParser):Bool
 	{
 		if (parser.complete) return false;
@@ -438,7 +439,7 @@ class Commands
 		return true;
 	}
 
-	@usage("package [package ...]")
+	@usage("package...")
 	@category("information")
 	@alias("find")
 	static public function search(parser:ArgParser):Bool
