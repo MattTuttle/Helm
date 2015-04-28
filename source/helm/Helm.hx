@@ -11,14 +11,25 @@ class Command
 {
 
 	public var name(default, null):String;
-	public var helpText(default, null):String;
+	public var helpText(default, null):String = "";
 	public var category(default, null):String;
 	public var func(default, null):ArgParser->Bool;
 
 	public function new(name:String, meta:Dynamic)
 	{
 		this.name = name;
-		this.helpText = meta.usage != null ? meta.usage.shift() : "";
+		if (meta.usage != null)
+		{
+			if (meta.usage.length == 1)
+			{
+				this.helpText = meta.usage.shift();
+			}
+			else
+			{
+				var sep = "\n        ";
+				this.helpText += "[command]\n      {blue}Commands:{end}" + sep + meta.usage.join(sep);
+			}
+		}
 		this.category = meta.category != null ? meta.category.shift() : "";
 		this.func = Reflect.field(Commands, name);
 	}
@@ -79,7 +90,7 @@ class Helm
 			});
 			for (command in list)
 			{
-				Logger.log("    helm {yellow}" + command.name + "{end} " + command.helpText);
+				Logger.log('    helm {yellow}${command.name}{end} ${command.helpText}');
 			}
 			Logger.log();
 		}

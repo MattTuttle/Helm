@@ -25,7 +25,7 @@ class Commands
 		}
 	}
 
-	@usage("[package [version]]")
+	@usage("[package[:version] package ...]")
 	@alias("i", "isntall")
 	@category("development")
 	static public function install(parser:ArgParser):Bool
@@ -267,7 +267,7 @@ class Commands
 		return true;
 	}
 
-	@usage("package [version]")
+	@usage("[package[:version] ...]")
 	@category("information")
 	static public function info(parser:ArgParser):Bool
 	{
@@ -390,7 +390,7 @@ class Commands
 		return true;
 	}
 
-	@usage("register [username] [email] | user username | submit")
+	@usage("register [username] [email]", "user username", "submit")
 	@category("profile")
 	static public function haxelib(parser:ArgParser):Bool
 	{
