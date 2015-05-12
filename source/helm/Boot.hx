@@ -18,19 +18,19 @@ class Boot
 		var path = try {
 			Repository.findPackage(PACKAGE_NAME);
 		} catch (e:Dynamic) {
-			Config.globalPath + "libs/helm/";
-		}
-		var info = PackageInfo.load(path);
+			Config.globalPath + "libs" + Directory.SEPARATOR + PACKAGE_NAME + Directory.SEPARATOR;
+		};
 
 		// get latest version on server
 		var version:SemVer = try {
 			Repository.server.getProjectInfo(PACKAGE_NAME).currentVersion;
 		} catch (e:Dynamic) {
 			"0.0.0";
-		}
+		};
 
 		Sys.setCwd(path);
 
+		var info = PackageInfo.load(path);
 		if (version > info.version)
 		{
 			Repository.install(PACKAGE_NAME, version, path);
@@ -46,6 +46,14 @@ class Boot
 			]);
 			result = Sys.command("nekotools", ["boot", "helm.n"]);
 			sys.FileSystem.deleteFile("helm.n");
+			if (Sys.systemName() == "Windows")
+			{
+				result = Sys.command("setx", ["path", '"%path%;$path\\bin\\"']);
+			}
+			else
+			{
+				result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin"]);
+			}
 		}
 
 		// run the command through the latest version
