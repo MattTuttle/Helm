@@ -341,60 +341,75 @@ class Commands
 	@usage("hxml")
 	static public function build(parser:ArgParser):Bool
 	{
-		if (parser.complete) return false;
-		var hxml = parser.next();
-		var path = Sys.getCwd() + hxml;
-		if (FileSystem.exists(path))
+		var path = Sys.getCwd();
+		if (parser.complete)
 		{
-			var data = File.getContent(path);
-
-			var libs = new Map<String, String>(),
-				devPaths = new Map<String, String>();
-			var cwd = path.substring(0, path.lastIndexOf("/"));
-			Sys.setCwd(cwd);
-			for (line in data.split("\n"))
+			// search for hxml files in the current directory
+			for (file in sys.FileSystem.readDirectory(path))
 			{
-				line = line.trim();
-				if (line == "" || line.startsWith("#")) continue;
-
-				if (line.startsWith("-lib"))
+				if (StringTools.endsWith(file, ".hxml"))
 				{
-					var lib = line.substr(4).trim().toLowerCase();
-					var path = Repository.findPackage(lib);
-					if (path != null) libs.set(lib, path);
+					path += file;
+					break;
 				}
 			}
-			// find current versions of haxelib libraries
-			var process = new sys.io.Process("haxelib", ["list"]);
-			var lib_regex = ~/^([^:]+): (?:[^ ]+ )*\[dev:([^ ]+)\](?:[^ ]+ )*$/;
-			var lines = process.stdout.readAll().toString().split("\n");
-			for (line in lines)
+		}
+		else
+		{
+			path += parser.next();
+		}
+		if (!FileSystem.exists(path)) return false;
+
+		var libs = new Map<String, String>(),
+			devPaths = new Map<String, String>(),
+			data = File.getContent(path);
+
+		// run command where the hxml file is
+		var cwd = path.substring(0, path.lastIndexOf("/"));
+		Sys.setCwd(cwd);
+		// find libraries in the hxml file and try to find their install path
+		for (line in data.split("\n"))
+		{
+			line = line.trim();
+			if (line == "" || line.startsWith("#")) continue;
+
+			if (line.startsWith("-lib"))
 			{
-				if (lib_regex.match(line))
+				var lib = line.substr(4).trim().toLowerCase();
+				var path = Repository.findPackage(lib);
+				if (path != null) libs.set(lib, path);
+			}
+		}
+		// find current versions of haxelib libraries
+		var process = new sys.io.Process("haxelib", ["list"]);
+		var lib_regex = ~/^([^:]+): (?:[^ ]+ )*\[dev:([^ ]+)\](?:[^ ]+ )*$/;
+		var lines = process.stdout.readAll().toString().split("\n");
+		for (line in lines)
+		{
+			if (lib_regex.match(line))
+			{
+				var lib = lib_regex.matched(1).toLowerCase();
+				if (libs.exists(lib))
 				{
-					var lib = lib_regex.matched(1).toLowerCase();
-					if (libs.exists(lib))
-					{
-						devPaths.set(lib, lib_regex.matched(2));
-					}
+					devPaths.set(lib, lib_regex.matched(2));
 				}
 			}
-			// setup haxelib with dev paths
-			for (lib in libs.keys())
-			{
-				var path = libs.get(lib);
-				var process = new sys.io.Process("haxelib", ["dev", lib, path]);
-				process.close();
-			}
-			Sys.command("haxe", [path]);
-			// put everything back to where it was
-			for (lib in libs.keys())
-			{
-				var args = ["dev", lib];
-				if (devPaths.exists(lib)) args.push(devPaths.get(lib));
-				var process = new sys.io.Process("haxelib", args);
-				process.close();
-			}
+		}
+		// setup haxelib with dev paths
+		for (lib in libs.keys())
+		{
+			var path = libs.get(lib);
+			var process = new sys.io.Process("haxelib", ["dev", lib, path]);
+			process.close();
+		}
+		Sys.command("haxe", [path]);
+		// put everything back to where it was
+		for (lib in libs.keys())
+		{
+			var args = ["dev", lib];
+			if (devPaths.exists(lib)) args.push(devPaths.get(lib));
+			var process = new sys.io.Process("haxelib", args);
+			process.close();
 		}
 		return true;
 	}
