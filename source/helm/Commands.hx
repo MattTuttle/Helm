@@ -348,10 +348,10 @@ class Commands
 		{
 			var data = File.getContent(path);
 
+			var libs = new Map<String, String>(),
+				devPaths = new Map<String, String>();
 			var cwd = path.substring(0, path.lastIndexOf("/"));
 			Sys.setCwd(cwd);
-			var tmp = ".helm_build.hxml";
-			var out = sys.io.File.write(tmp);
 			for (line in data.split("\n"))
 			{
 				line = line.trim();
@@ -360,24 +360,41 @@ class Commands
 				if (line.startsWith("-lib"))
 				{
 					var lib = line.substr(4).trim().toLowerCase();
-					for (arg in Repository.include(lib))
-					{
-						if (arg.startsWith("-D") || arg.startsWith("-L"))
-						{
-							out.writeString(arg + "\n");
-						}
-						else
-						{
-							out.writeString('-cp $arg\n');
-						}
-					}
-					continue;
+					var path = Repository.findPackage(lib);
+					if (path != null) libs.set(lib, path);
 				}
-				out.writeString(line + "\n");
 			}
-			out.close();
-			Sys.command("haxe", [tmp]);
-			sys.FileSystem.deleteFile(tmp);
+			// find current versions of haxelib libraries
+			var process = new sys.io.Process("haxelib", ["list"]);
+			var lib_regex = ~/^([^:]+): (?:[^ ]+ )*\[dev:([^ ]+)\](?:[^ ]+ )*$/;
+			var lines = process.stdout.readAll().toString().split("\n");
+			for (line in lines)
+			{
+				if (lib_regex.match(line))
+				{
+					var lib = lib_regex.matched(1).toLowerCase();
+					if (libs.exists(lib))
+					{
+						devPaths.set(lib, lib_regex.matched(2));
+					}
+				}
+			}
+			// setup haxelib with dev paths
+			for (lib in libs.keys())
+			{
+				var path = libs.get(lib);
+				var process = new sys.io.Process("haxelib", ["dev", lib, path]);
+				process.close();
+			}
+			Sys.command("haxe", [path]);
+			// put everything back to where it was
+			for (lib in libs.keys())
+			{
+				var args = ["dev", lib];
+				if (devPaths.exists(lib)) args.push(devPaths.get(lib));
+				var process = new sys.io.Process("haxelib", args);
+				process.close();
+			}
 		}
 		return true;
 	}
