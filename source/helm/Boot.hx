@@ -28,6 +28,7 @@ class Boot
 			"0.0.0";
 		};
 
+		var originalPath = Sys.getCwd();
 		Sys.setCwd(path);
 
 		var info = PackageInfo.load(path);
@@ -53,11 +54,15 @@ class Boot
 			}
 			else
 			{
-				result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin"]);
+				if (!sys.FileSystem.exists("/usr/local/bin/helm"))
+				{
+					result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin"]);
+				}
 			}
 		}
 
 		// run the command through the latest version
+		Sys.setCwd(originalPath);
 		result = Sys.command(path + "helm", Sys.args());
 	}
 }

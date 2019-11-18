@@ -16,8 +16,5 @@
 
 -neko helm.n
 -main helm.Helm
-
-# --next
-
-# -cmd neko helm.n --no-color install lime haxeui
-# -cmd lime test neko -debug
+-cmd nekotools boot helm.n
+-cmd rm helm.n
