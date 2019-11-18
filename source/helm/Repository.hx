@@ -35,7 +35,7 @@ class Repository
 		return repo[0].path;
 	}
 
-	static private function hasPackageNamed(path:String, name:String):Bool
+	static private function hasPackageNamed(path:Path, name:String):Bool
 	{
 		var info = PackageInfo.load(path);
 		return (info != null && info.name == name);
@@ -75,7 +75,7 @@ class Repository
 		return null;
 	}
 
-	static public function findPackageIn(name:String, target:String):Array<PackageInfo>
+	static public function findPackageIn(name:String, target:Path):Array<PackageInfo>
 	{
 		name = name.toLowerCase();
 

@@ -18,7 +18,7 @@ class Boot
 		var path = try {
 			Repository.findPackage(PACKAGE_NAME);
 		} catch (e:Dynamic) {
-			Config.globalPath + "libs" + Directory.SEPARATOR + PACKAGE_NAME + Directory.SEPARATOR;
+			Config.globalPath.join("libs").join(PACKAGE_NAME);
 		};
 
 		// get latest version on server
@@ -39,7 +39,8 @@ class Boot
 		if (!sys.FileSystem.exists("helm"))
 		{
 			// TODO: don't assume haxe and nekotools are installed
-			result = Sys.command("haxe", ["-neko", "helm.n",
+			result = Sys.command("haxe", [
+				"-neko", "helm.n",
 				"-main", "helm.Helm",
 				"-cp", "source",
 				"-resource", "l10n/en-US/strings.xml@en-US"

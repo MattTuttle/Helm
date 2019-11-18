@@ -7,11 +7,11 @@ import helm.ds.SemVer;
 class DataStore
 {
 
-	public function new(?path:String)
+	public function new(?path:Path)
 	{
 		if (path == null)
 		{
-			path = Config.globalPath + "packages.sqlite";
+			path = Config.globalPath.join("packages.sqlite");
 		}
 		_db = Sqlite.open(path);
 		_db.request("CREATE TABLE IF NOT EXISTS packages (

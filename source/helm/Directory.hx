@@ -24,8 +24,8 @@ class Directory
 	/**
 	 * The home directory of user (os specific)
 	 */
-	static public var homeDir(get, never):String;
-	static private function get_homeDir():String
+	static public var homeDir(get, never):Path;
+	static private function get_homeDir():Path
 	{
 		return isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
 	}

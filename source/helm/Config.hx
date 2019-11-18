@@ -9,24 +9,24 @@ class Config
 	static public var useGlobal:Bool = true;
 	static public var haxelibCompatible:Bool = true;
 
-	@:isVar static public var globalPath(get, null):String;
-	static private function get_globalPath():String
+	@:isVar static public var globalPath(get, null):Path;
+	static private function get_globalPath():Path
 	{
 		if (globalPath == null) load();
 		return globalPath;
 	}
 
-	static public var cachePath(get, never):String;
-	static private inline function get_cachePath():String
+	static public var cachePath(get, never):Path;
+	static private inline function get_cachePath():Path
 	{
-		return globalPath + "cache/";
+		return globalPath.join("cache");
 	}
 
-	static public var helmPath(get, never):String;
-	static private inline function get_helmPath():String
+	static public var helmPath(get, never):Path;
+	static private inline function get_helmPath():Path
 	{
 		// TODO: verify that this actually exists, assumes it is installed
-		return globalPath + "helm/";
+		return globalPath.join("helm");
 	}
 
 	static private function load()
