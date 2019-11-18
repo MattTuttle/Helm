@@ -15,7 +15,7 @@ using StringTools;
 class Repository
 {
 
-	static public var LIB_DIR:String = "libs";
+	static public var LIB_DIR:String = "haxe_libs";
 	static public var NDLL_DIR:String = "ndll";
 
 	// TODO: setup a mirror list for multiple repository servers
