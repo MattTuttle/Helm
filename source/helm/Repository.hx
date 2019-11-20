@@ -19,7 +19,11 @@ class Repository
 	static public var NDLL_DIR:String = "ndll";
 
 	// TODO: setup a mirror list for multiple repository servers
+	#if haxelib
 	static public var server:org.haxe.lib.Haxelib = new org.haxe.lib.Haxelib();
+	#else
+	static public var server = new Server();
+	#end
 
 	static public function findPackage(name:String):String
 	{
@@ -58,19 +62,17 @@ class Repository
 		return results;
 	}
 
-	static public function getPackageRoot(path:String, ?find:String):String
+	static public function getPackageRoot(path:Path, ?find:String):String
 	{
 		if (find == null) find = org.haxe.lib.Data.JSON;
-		if (path.endsWith("/")) path = path.substr(0, -1);
-		var parts = path.split(Directory.SEPARATOR);
-		while (parts.length > 0)
+		if (path != "")
 		{
-			path = parts.join(Directory.SEPARATOR) + Directory.SEPARATOR;
-			if (FileSystem.exists(path + find))
+			trace(path);
+			if (FileSystem.exists(path.join(find)))
 			{
 				return path;
 			}
-			parts.pop();
+			path = path.basename();
 		}
 		return null;
 	}

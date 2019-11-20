@@ -13,7 +13,7 @@ class Command
 	public var name(default, null):String;
 	public var helpText(default, null):String = "";
 	public var category(default, null):String;
-	public var func(default, null):ArgParser->Bool;
+	public var call(default, null):ArgParser->Bool;
 
 	public function new(name:String, meta:Dynamic)
 	{
@@ -31,7 +31,7 @@ class Command
 			}
 		}
 		this.category = meta.category != null ? meta.category.shift() : "";
-		this.func = Reflect.field(Commands, name);
+		this.call = Reflect.field(Commands, name);
 	}
 
 }
@@ -45,7 +45,11 @@ class Helm
 	{
 		_commands = new StringMap<Command>();
 		_aliases = new StringMap<Command>();
+		createCommands();
+	}
 
+	function createCommands():Void
+	{
 		// TODO: use a macro instead of runtime metadata??
 		var methods = Meta.getStatics(Commands);
 		for (name in Reflect.fields(methods))
@@ -121,11 +125,15 @@ class Helm
 
 				if (_commands.exists(command))
 				{
-					success = _commands.get(command).func(p);
+					success = _commands.get(command).call(p);
 				}
 				else if (_aliases.exists(command))
 				{
-					success = _aliases.get(command).func(p);
+					success = _aliases.get(command).call(p);
+				}
+				else
+				{
+					// TODO: make suggestion for command?
 				}
 			}
 			catch (e:Dynamic)

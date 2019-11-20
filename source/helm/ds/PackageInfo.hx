@@ -5,8 +5,6 @@ import haxe.ds.StringMap;
 class PackageInfo
 {
 
-	static public var JSON = "hxpm.json";
-
 	public var name(default, null):String;
 	public var version(default, null):SemVer;
 	public var dependencies(default, null):StringMap<String>;
@@ -34,12 +32,12 @@ class PackageInfo
 		this.mainClass = mainClass;
 	}
 
-	static public function load(path:String):PackageInfo
+	static public function load(path:Path):PackageInfo
 	{
-		if (sys.FileSystem.exists(path + org.haxe.lib.Data.JSON))
+		if (sys.FileSystem.exists(path.join(org.haxe.lib.Data.JSON)))
 		{
 			var data = new org.haxe.lib.Data();
-			data.read(sys.io.File.getContent(path + org.haxe.lib.Data.JSON));
+			data.read(sys.io.File.getContent(path.join(org.haxe.lib.Data.JSON)));
 			return new PackageInfo(Std.string(data.name).toLowerCase(),
 				SemVer.ofString(data.version), data.dependencies, path, data.classPath, data.mainClass);
 		}

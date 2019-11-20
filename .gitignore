@@ -1,6 +1,7 @@
 *.n
 /helm
 
-export/
+build/
 libs/
 cache/
+.haxelib/

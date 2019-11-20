@@ -39,23 +39,25 @@ class Config
 		};
 
 		try {
-			if (sys.FileSystem.exists(home + Directory.SEPARATOR + ".hxpmconfig"))
+			if (sys.FileSystem.exists(home + Directory.SEPARATOR + ".helmconfig"))
 			{
-				config = haxe.Json.parse(sys.io.File.getContent(home + Directory.SEPARATOR + ".hxpmconfig"));
+				config = haxe.Json.parse(sys.io.File.getContent(home + Directory.SEPARATOR + ".helmconfig"));
 			}
-			else if (sys.FileSystem.exists("/etc/hxpm"))
+			else if (sys.FileSystem.exists("/etc/helm"))
 			{
-				config = haxe.Json.parse(sys.io.File.getContent("/etc/hxpm"));
+				config = haxe.Json.parse(sys.io.File.getContent("/etc/helm"));
 			}
 		} catch (e:Dynamic) {
-			throw "Could not find or parse hxpm config (expected ~/.hxpmconfig or /etc/hxpm)";
+			throw "Could not find or parse helm config (expected ~/.helmconfig or /etc/helm)";
 		}
 
 		useGlobal = config.install;
 		haxelibCompatible = config.haxelib_compat;
 		if (haxelibCompatible)
 		{
+			#if haxelib
 			globalPath = org.haxe.lib.Haxelib.path;
+			#end
 		}
 		else
 		{

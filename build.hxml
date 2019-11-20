@@ -3,9 +3,7 @@
 
 --each
 
--x TestMain
--cp tests
--cmd rm TestMain.n # cleanup
+-cmd haxe test.hxml
 
 --next
 

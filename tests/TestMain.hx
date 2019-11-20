@@ -1,15 +1,20 @@
+import utest.Runner;
+import utest.ui.Report;
+
 class TestMain
 {
 	static public function main()
 	{
 		helm.util.Logger.OUTPUT = false;
 
-		var unit = new haxe.unit.TestRunner();
-		unit.add(new TestArgs());
-		unit.add(new TestPath());
-		unit.add(new TestLib());
-		unit.add(new TestSemVer());
-		unit.add(new TestLocalization());
-		unit.run();
+		var runner = new Runner();
+		runner.addCase(new TestRepository());
+		runner.addCase(new TestArgs());
+		runner.addCase(new TestPath());
+		runner.addCase(new TestLib());
+		// runner.addCase(new TestSemVer());
+		runner.addCase(new TestLocalization());
+		Report.create(runner);
+		runner.run();
 	}
 }

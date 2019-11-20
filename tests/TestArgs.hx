@@ -1,6 +1,8 @@
 import helm.util.ArgParser;
+import utest.Test;
+import utest.Assert;
 
-class TestArgs extends haxe.unit.TestCase
+class TestArgs extends Test
 {
 
 	public function testNoArgs()
@@ -15,7 +17,7 @@ class TestArgs extends haxe.unit.TestCase
 		{
 			exceptionThrown = true;
 		}
-		assertTrue(exceptionThrown);
+		Assert.isTrue(exceptionThrown);
 	}
 
 	public function testOrdering()
@@ -25,15 +27,15 @@ class TestArgs extends haxe.unit.TestCase
 		a.addRule(function(_) { flag = true; }, ["-g"]);
 
 		a.parse(["-g", "ls"]);
-		assertTrue(flag);
+		Assert.isTrue(flag);
 
 		flag = false; // reset
 		a.parse(["ls", "-g"]);
-		assertTrue(flag);
+		Assert.isTrue(flag);
 
 		flag = false; // reset
 		a.parse(["ls"]);
-		assertFalse(flag);
+		Assert.isFalse(flag);
 	}
 
 	public function testMultipleArgsForOneTarget()
@@ -43,35 +45,35 @@ class TestArgs extends haxe.unit.TestCase
 		a.addRule(function(_) { flag = true; }, ["list", "ls"]);
 
 		a.parse(["ls"]);
-		assertTrue(flag);
+		Assert.isTrue(flag);
 
 		flag = false;
 		a.parse(["lst"]);
-		assertFalse(flag);
+		Assert.isFalse(flag);
 
 		a.parse(["list"]);
-		assertTrue(flag);
+		Assert.isTrue(flag);
 	}
 
 	public function testContinue()
 	{
 		var a = new ArgParser();
 		a.addRule(function(p:ArgParser) {
-			assertEquals("continue", p.current);
+			Assert.equals("continue", p.current);
 			p.parse();
-			assertEquals("hello", p.current);
+			Assert.equals("hello", p.current);
 		}, ["continue"]);
 
 		a.parse(["continue", "hello"]);
-		assertEquals("hello", a.current);
-		assertTrue(a.complete);
+		Assert.equals("hello", a.current);
+		Assert.isTrue(a.complete);
 	}
 
 	public function testArguments()
 	{
 		var a = new ArgParser();
 		a.addRule(function(p:ArgParser) {
-			assertEquals("filename", p.argument);
+			Assert.equals("filename", p.argument);
 		}, ['-o'], true);
 		a.parse(['dostuff', '-o', 'filename']);
 
@@ -84,7 +86,7 @@ class TestArgs extends haxe.unit.TestCase
 		{
 			exceptionThrown = true;
 		}
-		assertTrue(exceptionThrown);
+		Assert.isTrue(exceptionThrown);
 	}
 
 }

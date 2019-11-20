@@ -1,0 +1,6 @@
+-cp source
+-resource l10n/en-US/strings.xml@en-US
+-x TestMain
+-lib utest
+-cp tests
+-cmd rm TestMain.n # cleanup

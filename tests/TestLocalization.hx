@@ -1,12 +1,14 @@
 import helm.util.L10n;
+import utest.Test;
+import utest.Assert;
 
-class TestLocalization extends haxe.unit.TestCase
+class TestLocalization extends Test
 {
 
 	public function testLocale()
 	{
 		L10n.init();
-		assertEquals("Package Hello is not installed", L10n.get("not_installed", ["Hello"]));
+		Assert.equals("Package Hello is not installed", L10n.get("not_installed", ["Hello"]));
 	}
 
 }

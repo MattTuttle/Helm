@@ -7,7 +7,7 @@ import helm.ds.SemVer;
 import helm.Directory;
 import helm.http.UploadProgress;
 
-class HaxelibConnection extends haxe.remoting.Proxy<org.haxe.lib.SiteApi> {}
+#if haxelib
 
 class Haxelib
 {
@@ -17,7 +17,7 @@ class Haxelib
 
 	public function new()
 	{
-		_server = new HaxelibConnection(haxe.remoting.HttpConnection.urlConnect(url + "api/" + apiVersion + "/index.n").api);
+		_server = new Connection();
 	}
 
 	public static var path(get, never):String;
@@ -154,7 +154,7 @@ class Haxelib
 		var h = new haxe.Http(url);
 		h.onError = function(e) { throw e; };
 		h.onData = function(d) { trace(d); }
-		h.fileTransfert("file", id, new UploadProgress(data), data.length);
+		h.fileTransfer("file", id, new UploadProgress(data), data.length);
 		h.request(true);
 		haxe.remoting.HttpConnection.TIMEOUT = 1000;
 
@@ -162,6 +162,8 @@ class Haxelib
 		_server.processSubmit(id, auth.username, auth.password);
 	}
 
-	private var _server:HaxelibConnection;
+	private var _server:Connection;
 
 }
+
+#end

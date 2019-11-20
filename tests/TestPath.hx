@@ -1,64 +1,66 @@
 import helm.Path;
+import utest.Test;
+import utest.Assert;
 
-class TestPath extends haxe.unit.TestCase
+class TestPath extends Test
 {
 	public function testWindowsBasename()
 	{
 		var path:Path = 'C:\\temp\\myfile.html';
-		assertEquals('myfile.html', path.basename());
+		Assert.equals('myfile.html', path.basename());
 	}
 
     public function testPosixBasename()
 	{
 		var path:Path = '/home/user/myfile.html';
-		assertEquals('myfile.html', path.basename());
+		Assert.equals('myfile.html', path.basename());
 	}
 
     public function testBasenameExtension()
     {
         var path:Path = '/home/user/myfile.html';
-        assertEquals('myfile', path.basename('.html'));
-		assertEquals('myfile.html', path.basename('.foo'));
+        Assert.equals('myfile', path.basename('.html'));
+		Assert.equals('myfile.html', path.basename('.foo'));
     }
 
 	public function testDirname()
 	{
 		var path:Path = '/usr/local/bin/command';
-		assertEquals('/usr/local/bin', path.dirname());
+		Assert.equals('/usr/local/bin', path.dirname());
 	}
 
 	public function testDelimeter()
 	{
 		var path:Path = 'D:\\windows\\config.ini';
-		assertEquals('\\', path.delimeter);
+		Assert.equals('\\', path.delimeter);
 	}
 
 	public function testNormalizeDuplicateDelimeters()
 	{
 		var path:Path = 'F:\\\\hi';
-		assertEquals('F:\\hi', path.normalize());
+		Assert.equals('F:\\hi', path.normalize());
 		path = '//test/more///than/one/';
-		assertEquals('/test/more/than/one/', path.normalize());
+		Assert.equals('/test/more/than/one/', path.normalize());
 	}
 
 	public function testNormalizeDots()
 	{
 		var path:Path = '/foo/skip/../bar';
-		assertEquals('/foo/bar', path.normalize());
+		Assert.equals('/foo/bar', path.normalize());
 		path = 'C:\\files\\.\\video.mp4';
-		assertEquals('C:\\files\\video.mp4', path.normalize());
+		Assert.equals('C:\\files\\video.mp4', path.normalize());
 		path = './my/path';
-		assertEquals('./my/path', path.normalize());
+		Assert.equals('./my/path', path.normalize());
 	}
 
 	public function testAppend()
 	{
 		var path:Path = '/foo/bar';
-		assertEquals('/foo/bar/baz', path.join('baz'));
-		assertEquals('/foo/bar/source/Class.hx', path.join('source\\Class.hx'));
+		Assert.equals('/foo/bar/baz', path.join('baz'));
+		Assert.equals('/foo/bar/source/Class.hx', path.join('source\\Class.hx'));
 		// test root path append
 		path = '/';
-		assertEquals('/usr', path.join('usr'));
+		Assert.equals('/usr', path.join('usr'));
 	}
 
 }

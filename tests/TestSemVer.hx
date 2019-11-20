@@ -1,6 +1,8 @@
 import helm.ds.SemVer;
+import utest.Test;
+import utest.Assert;
 
-class TestSemVer extends haxe.unit.TestCase
+class TestSemVer extends Test
 {
 
 	public function testValues()
@@ -8,20 +10,20 @@ class TestSemVer extends haxe.unit.TestCase
 		var a:SemVer = "0.9.43-rc.6",
 			b:SemVer = "0.9.43-rc.6";
 
-		assertEquals(a.major, b.major);
-		assertEquals(0, a.major);
+		Assert.equals(a.major, b.major);
+		Assert.equals(0, a.major);
 
-		assertEquals(a.minor, b.minor);
-		assertEquals(9, a.minor);
+		Assert.equals(a.minor, b.minor);
+		Assert.equals(9, a.minor);
 
-		assertEquals(a.patch, b.patch);
-		assertEquals(43, a.patch);
+		Assert.equals(a.patch, b.patch);
+		Assert.equals(43, a.patch);
 
-		assertEquals(a.preRelease, b.preRelease);
-		assertEquals(PreRelease.ReleaseCandidate, a.preRelease);
+		Assert.equals(a.preRelease, b.preRelease);
+		Assert.equals(PreRelease.ReleaseCandidate, a.preRelease);
 
-		assertEquals(a.preReleaseNum, b.preReleaseNum);
-		assertEquals(6, a.preReleaseNum);
+		Assert.equals(a.preReleaseNum, b.preReleaseNum);
+		Assert.equals(6, a.preReleaseNum);
 	}
 
 	public function testComparison()
@@ -35,29 +37,29 @@ class TestSemVer extends haxe.unit.TestCase
 			g:SemVer = "4.7.2",
 			h:SemVer = "1.1.0-alpha.2";
 
-		assertTrue(a < b);
-		assertTrue(a <= b);
-		assertTrue(a > c);
-		assertTrue(a == a);
-		assertTrue(a != c);
-		assertFalse(b == c);
-		assertTrue(d > c);
-		assertTrue(c < d);
-		assertTrue(c <= d);
-		assertTrue(a >= d);
-		assertTrue(e > c);
-		assertFalse(c >= e);
-		assertTrue(c < e);
-		assertFalse(e <= c);
-		assertTrue(f < a);
-		assertFalse(f > c);
-		assertTrue(g > f);
-		assertFalse(a > g);
-		assertFalse(g < c);
-		assertTrue(f <= g);
-		assertTrue(e == h);
-		assertFalse(e != h);
-		assertTrue(e != c);
+		Assert.isTrue(a < b);
+		Assert.isTrue(a <= b);
+		Assert.isTrue(a > c);
+		Assert.isTrue(a == a);
+		Assert.isTrue(a != c);
+		Assert.isFalse(b == c);
+		Assert.isTrue(d > c);
+		Assert.isTrue(c < d);
+		Assert.isTrue(c <= d);
+		Assert.isTrue(a >= d);
+		Assert.isTrue(e > c);
+		Assert.isFalse(c >= e);
+		Assert.isTrue(c < e);
+		Assert.isFalse(e <= c);
+		Assert.isTrue(f < a);
+		Assert.isFalse(f > c);
+		Assert.isTrue(g > f);
+		Assert.isFalse(a > g);
+		Assert.isFalse(g < c);
+		Assert.isTrue(f <= g);
+		Assert.isTrue(e == h);
+		Assert.isFalse(e != h);
+		Assert.isTrue(e != c);
 	}
 
 	public function testNull()
@@ -65,16 +67,16 @@ class TestSemVer extends haxe.unit.TestCase
 		var a:SemVer = "1.1.0",
 			b:SemVer = null;
 
-		assertFalse(a == null);
-		assertFalse(null == a);
-		assertTrue(b == null);
-		assertTrue(null == b);
+		Assert.isFalse(a == null);
+		Assert.isFalse(null == a);
+		Assert.isTrue(b == null);
+		Assert.isTrue(null == b);
 	}
 
 	public function testToString()
 	{
 		var a:SemVer = "1.0.0-alpha.1";
-		assertEquals("1.0.0-alpha.1", a.toString());
+		Assert.equals("1.0.0-alpha.1", a.toString());
 	}
 
 }
