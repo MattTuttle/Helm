@@ -10,7 +10,7 @@ class L10n
 	{
 		_strings = new StringMap<String>();
 
-		var path = Config.helmPath + "l10n/" + locale + "/strings.xml";
+		var path = Config.helmPath.join("l10n").join(locale).join("/strings.xml");
 		var content = sys.FileSystem.exists(path) ? File.getContent(path) : haxe.Resource.getString("en-US");
 		var root = Xml.parse(content).firstElement();
 		for (string in root.elements())

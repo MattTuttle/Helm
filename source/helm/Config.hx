@@ -39,9 +39,10 @@ class Config
 		};
 
 		try {
-			if (sys.FileSystem.exists(home + Directory.SEPARATOR + ".helmconfig"))
+			var path = home.join(".helmconfig");
+			if (sys.FileSystem.exists(path))
 			{
-				config = haxe.Json.parse(sys.io.File.getContent(home + Directory.SEPARATOR + ".helmconfig"));
+				config = haxe.Json.parse(sys.io.File.getContent(path));
 			}
 			else if (sys.FileSystem.exists("/etc/helm"))
 			{
