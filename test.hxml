@@ -1,6 +1,8 @@
 -cp source
 -resource l10n/en-US/strings.xml@en-US
+-D test
 -x TestMain
 -lib utest
+-lib argparse
 -cp tests
 -cmd rm TestMain.n # cleanup

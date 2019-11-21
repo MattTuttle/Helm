@@ -4,6 +4,8 @@ import haxe.ds.StringMap;
 import haxe.rtti.Meta;
 import haxe.CallStack;
 import helm.util.*;
+import argparse.ArgParser;
+import argparse.Namespace;
 
 using StringTools;
 
@@ -13,7 +15,7 @@ class Command
 	public var name(default, null):String;
 	public var helpText(default, null):String = "";
 	public var category(default, null):String;
-	public var call(default, null):ArgParser->Bool;
+	public var call(default, null):Namespace->Bool;
 
 	public function new(name:String, meta:Dynamic)
 	{
@@ -113,23 +115,32 @@ class Helm
 		var success = false;
 
 		var parser = new ArgParser();
-		parser.addRule(function(_) { Config.useGlobal = true; }, ["-g", "--global"]);
-		parser.addRule(function(_) { Config.useGlobal = false; }, ["-l", "--local"]);
-		parser.addRule(function(_) { Logger.log(VERSION); Sys.exit(0); }, ["--version"]);
-		parser.addRule(function(_) { Logger.COLORIZE = false; }, ["--no-color"]);
-		parser.addRule(function(_) { Logger.LEVEL = Verbose; }, ["-v", "--verbose"]);
-		parser.addRule(function(p:ArgParser) {
+		parser.addArgument({flags: ["--global", "-g"] });
+		parser.addArgument({flags: "--version" });
+		parser.addArgument({flags: "--no-color"});
+		parser.addArgument({flags: ["-v", "--verbose"]});
+		parser.addArgument({flags: "command"});
+		var result = parser.parse(args);
+
+		if (result.exists("version")) {
+			Logger.log(VERSION);
+			Sys.exit(0);
+		}
+
+		Logger.COLORIZE = !result.exists("no-color");
+		Logger.LEVEL = result.exists("verbose") ? Verbose : Warning;
+
+		for (command in result.get("command"))
+		{
 			try
 			{
-				var command = p.current;
-
 				if (_commands.exists(command))
 				{
-					success = _commands.get(command).call(p);
+					success = _commands.get(command).call(result);
 				}
 				else if (_aliases.exists(command))
 				{
-					success = _aliases.get(command).call(p);
+					success = _aliases.get(command).call(result);
 				}
 				else
 				{
@@ -141,8 +152,7 @@ class Helm
 				Logger.log(Std.string(e));
 				Logger.log(CallStack.toString(CallStack.exceptionStack()));
 			}
-		});
-		parser.parse(args);
+		}
 
 		return success;
 	}

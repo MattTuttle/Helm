@@ -1,4 +1,5 @@
 -cp source
+-lib argparse
 -resource l10n/en-US/strings.xml@en-US
 
 --each

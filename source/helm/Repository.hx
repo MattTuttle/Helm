@@ -2,8 +2,8 @@ package helm;
 
 import haxe.Http;
 import haxe.ds.StringMap;
-import sys.io.File;
-import sys.FileSystem;
+import helm.io.File;
+import helm.io.FileSystem;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;

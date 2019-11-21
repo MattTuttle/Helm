@@ -9,7 +9,6 @@ class TestMain
 
 		var runner = new Runner();
 		runner.addCase(new TestRepository());
-		runner.addCase(new TestArgs());
 		runner.addCase(new TestPath());
 		runner.addCase(new TestLib());
 		// runner.addCase(new TestSemVer());

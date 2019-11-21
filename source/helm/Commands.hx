@@ -2,6 +2,7 @@ package helm;
 
 import sys.io.File;
 import sys.FileSystem;
+import argparse.Namespace;
 import helm.ds.SemVer;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
@@ -28,7 +29,7 @@ class Commands
 	@usage("[package[:version]...]")
 	@alias("i", "isntall")
 	@category("development")
-	static public function install(parser:ArgParser):Bool
+	static public function install(parser:Namespace):Bool
 	{
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (parser.complete)
@@ -77,7 +78,7 @@ class Commands
 	}
 
 	@category("development")
-	static public function outdated(parser:ArgParser):Bool
+	static public function outdated(parser:Namespace):Bool
 	{
 		parser.parse();
 		var outdated = Repository.outdated(getPathTarget());
@@ -90,7 +91,7 @@ class Commands
 
 	@category("development")
 	@alias("up", "update")
-	static public function upgrade(parser:ArgParser):Bool
+	static public function upgrade(parser:Namespace):Bool
 	{
 		parser.parse();
 		var path = getPathTarget();
@@ -104,7 +105,7 @@ class Commands
 
 	@category("information")
 	@alias("l", "ls")
-	static public function list(parser:ArgParser):Bool
+	static public function list(parser:Namespace):Bool
 	{
 		var flat = false;
 		parser.addRule(function(_) { flat = true; }, ["--flat", "-f"]);
@@ -167,7 +168,7 @@ class Commands
 	}
 
 	@category("development")
-	static public function init(parser:ArgParser):Bool
+	static public function init(parser:Namespace):Bool
 	{
 		var path = getPathTarget();
 		var info = PackageInfo.load(path);
@@ -182,7 +183,7 @@ class Commands
 
 	@usage("package")
 	@category("information")
-	static public function which(parser:ArgParser):Bool
+	static public function which(parser:Namespace):Bool
 	{
 		for (arg in parser)
 		{
@@ -195,13 +196,13 @@ class Commands
 
 	@usage("[--env] package [args...]")
 	@category("development")
-	static public function run(parser:ArgParser):Bool
+	static public function run(parser:Namespace):Bool
 	{
 		var useEnvironment = false,
 			path = getPathTarget(),
 			args = new Array<String>();
 		parser.addRule(function(_) { useEnvironment = true; }, ["--env"]);
-		parser.addRule(function(p:ArgParser) {
+		parser.addRule(function(p:Namespace) {
 			path = Repository.findPackage(p.current);
 			for (arg in parser)
 			{
@@ -217,9 +218,9 @@ class Commands
 
 	@category("development")
 	@alias("rm", "remove")
-	static public function uninstall(parser:ArgParser):Bool
+	static public function uninstall(parser:Namespace):Bool
 	{
-		parser.addRule(function(p:ArgParser) {
+		parser.addRule(function(p:Namespace) {
 			var path = getPathTarget();
 			var infos = Repository.findPackageIn(p.current, path);
 			if (infos.length > 0)
@@ -242,7 +243,7 @@ class Commands
 	}
 
 	@category("misc")
-	static public function clean(parser:ArgParser):Bool
+	static public function clean(parser:Namespace):Bool
 	{
 		var result = Logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
@@ -255,7 +256,7 @@ class Commands
 
 	@usage("package...")
 	@category("information")
-	static public function include(parser:ArgParser):Bool
+	static public function include(parser:Namespace):Bool
 	{
 		if (parser.complete) return false;
 
@@ -269,7 +270,7 @@ class Commands
 
 	@usage("[package[:version]...]")
 	@category("information")
-	static public function info(parser:ArgParser):Bool
+	static public function info(parser:Namespace):Bool
 	{
 		if (parser.complete)
 		{
@@ -339,7 +340,7 @@ class Commands
 
 	@category("development")
 	@usage("hxml")
-	static public function build(parser:ArgParser):Bool
+	static public function build(parser:Namespace):Bool
 	{
 		var path = Sys.getCwd();
 		if (parser.complete)
@@ -416,7 +417,7 @@ class Commands
 
 	@category("development")
 	@alias("package")
-	static public function bundle(parser:ArgParser):Bool
+	static public function bundle(parser:Namespace):Bool
 	{
 		var path = getPathTarget();
 		Bundle.make(path);
@@ -425,7 +426,7 @@ class Commands
 
 	@usage("register [username] [email]", "user username", "submit")
 	@category("haxelib")
-	static public function haxelib(parser:ArgParser):Bool
+	static public function haxelib(parser:Namespace):Bool
 	{
 		if (parser.complete) return false;
 		switch (parser.next())
@@ -474,7 +475,7 @@ class Commands
 	@usage("package...")
 	@category("information")
 	@alias("find")
-	static public function search(parser:ArgParser):Bool
+	static public function search(parser:Namespace):Bool
 	{
 		if (parser.complete) return false;
 
