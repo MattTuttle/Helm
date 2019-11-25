@@ -1,9 +1,9 @@
 -cp source
+-cp tests
 -resource l10n/en-US/strings.xml@en-US
 -D test
--x TestMain
+-main TestMain
+--interp
 -lib utest
 -lib compiletime
 -lib argparse
--cp tests
--cmd rm TestMain.n # cleanup

@@ -73,7 +73,7 @@ class Data
 		return json;
 	}
 
-	static public function init(path:String)
+	static public function init(path:String, logger:Logger)
 	{
 		var data = new Data();
 
@@ -84,11 +84,11 @@ class Data
 		}
 
 		// data.dependencies
-		data.name = Logger.prompt(L10n.get("init_project_name"), new helm.Directory(path).lastFolder);
-		data.description = Logger.prompt(L10n.get("init_project_description"));
-		data.version = Logger.prompt(L10n.get("init_project_version"), "0.1.0");
-		data.url = Logger.prompt(L10n.get("init_project_url"));
-		data.license = Logger.prompt(L10n.get("init_project_license"), "MIT");
+		data.name = logger.prompt(L10n.get("init_project_name"), new helm.Directory(path).lastFolder);
+		data.description = logger.prompt(L10n.get("init_project_description"));
+		data.version = logger.prompt(L10n.get("init_project_version"), "0.1.0");
+		data.url = logger.prompt(L10n.get("init_project_url"));
+		data.license = logger.prompt(L10n.get("init_project_license"), "MIT");
 
 		var out = sys.io.File.write(Data.JSON);
 		out.writeString(data.toString());

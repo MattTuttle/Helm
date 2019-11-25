@@ -34,21 +34,21 @@ class Haxelib implements Command
 						var user = Repository.server.getUserInfo(arg);
 						if (user == null)
 						{
-							Logger.log(arg + " is not registered.");
+							Helm.logger.log(arg + " is not registered.");
 						}
 						else
 						{
-							Logger.log(user.fullName + " [" + user.email + "]");
-							Logger.log();
-							Logger.log(L10n.get("packages"));
-							Logger.logList(user.projects);
+							Helm.logger.log(user.fullName + " [" + user.email + "]");
+							Helm.logger.log();
+							Helm.logger.log(L10n.get("packages"));
+							Helm.logger.logList(user.projects);
 						}
 					}
 				case "publish", "upload", "submit":
 					var info = PackageInfo.load(path);
 					if (info == null)
 					{
-						Logger.error(L10n.get("not_a_package"));
+						Helm.logger.error(L10n.get("not_a_package"));
 					}
 
 					var auth = new Auth();

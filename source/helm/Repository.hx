@@ -182,7 +182,7 @@ class Repository
 		var info = PackageInfo.load(path);
 		if (info == null)
 		{
-			Logger.log(L10n.get("not_a_package"));
+			Helm.logger.log(L10n.get("not_a_package"));
 			return 1;
 		}
 
@@ -203,7 +203,7 @@ class Repository
 			command = "neko";
 			if (!FileSystem.exists(path + "run.n"))
 			{
-				Logger.log(L10n.get("run_not_enabled", [info.name]));
+				Helm.logger.log(L10n.get("run_not_enabled", [info.name]));
 				return 1;
 			}
 			else
@@ -249,7 +249,7 @@ class Repository
 		}
 		else
 		{
-			Logger.log(L10n.get("not_installed", [name]));
+			Helm.logger.log(L10n.get("not_installed", [name]));
 		}
 		return result;
 	}
@@ -305,7 +305,7 @@ class Repository
 
 		if (gitRepository != null)
 		{
-			Logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
+			Helm.logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
 
 			var tmpDir = Directory.createTemporary();
 			var path = tmpDir.path;
@@ -322,7 +322,7 @@ class Repository
 			if (info == null)
 			{
 				tmpDir.delete();
-				Logger.error(L10n.get("not_a_package"));
+				Helm.logger.error(L10n.get("not_a_package"));
 			}
 			else
 			{
@@ -362,7 +362,7 @@ class Repository
 		var info = server.getProjectInfo(name);
 		if (info == null)
 		{
-			Logger.error(L10n.get("not_a_package"));
+			Helm.logger.error(L10n.get("not_a_package"));
 		}
 		var dir = new Directory(target).add(LIB_DIR).add(info.name);
 		if (dir.exists)
@@ -370,7 +370,7 @@ class Repository
 			var info = PackageInfo.load(dir.path);
 			if (info != null && (version == null || version == info.version))
 			{
-				Logger.error(L10n.get("already_installed", [info.fullName]));
+				Helm.logger.error(L10n.get("already_installed", [info.fullName]));
 			}
 			else
 			{
@@ -381,10 +381,10 @@ class Repository
 		var downloadVersion = getLatestVersion(info, version);
 		if (downloadVersion == null)
 		{
-			Logger.error(L10n.get("version_not_found", [Std.string(version)]));
+			Helm.logger.error(L10n.get("version_not_found", [Std.string(version)]));
 			return;
 		}
-		Logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
+		Helm.logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
 
 		// download if not installing from a local file
 		if (path == null)
@@ -405,13 +405,13 @@ class Repository
 		{
 			var percent = ++unzippedItems / totalItems;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Math.floor(60 * percent)), " ", 60);
-			Logger.log('[$progress] $unzippedItems/$totalItems\r', false);
+			Helm.logger.log('[$progress] $unzippedItems/$totalItems\r', false);
 
 			// strip first directory if any
 			var name = item.fileName.replace("\\", "/").substr(baseDir.length);
 			if (name.charAt(0) == "/" || name.split("..").length > 1)
 			{
-				Logger.error(L10n.get("invalid_filename", [name]));
+				Helm.logger.error(L10n.get("invalid_filename", [name]));
 			}
 
 			var slashIndex = name.lastIndexOf("/") + 1;
@@ -427,7 +427,7 @@ class Repository
 			var data = haxe.zip.Reader.unzip(item);
 			File.saveBytes(loc.path + file, data);
 		}
-		Logger.log("\n", false);
+		Helm.logger.log("\n", false);
 
 		// install any dependencies
 		var info = PackageInfo.load(dir.path);

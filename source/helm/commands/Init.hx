@@ -18,10 +18,10 @@ class Init implements Command
 		var info = PackageInfo.load(path);
 		if (info != null)
 		{
-			Logger.error(L10n.get("package_already_exists", [info.fullName]));
+			Helm.logger.error(L10n.get("package_already_exists", [info.fullName]));
 		}
 
-		org.haxe.lib.Data.init(path);
+		org.haxe.lib.Data.init(path, Helm.logger);
 		return true;
 	}
 }

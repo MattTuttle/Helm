@@ -32,8 +32,8 @@ class CommandCall
 		}
 		catch (e:Dynamic)
 		{
-			Logger.log(Std.string(e));
-			Logger.log(CallStack.toString(CallStack.exceptionStack()));
+			Helm.logger.log(Std.string(e));
+			Helm.logger.log(CallStack.toString(CallStack.exceptionStack()));
 		}
 		return false;
 	}
@@ -106,7 +106,7 @@ class Commands
 		}
 		for (category in categories.keys())
 		{
-			Logger.log("{blue}-- " + category + " --{end}");
+			Helm.logger.log("{blue}-- " + category + " --{end}");
 			var list = categories.get(category);
 			list.sort(function(a:CommandCall, b:CommandCall):Int {
                 var aName = a.aliases[0];
@@ -115,9 +115,9 @@ class Commands
 			});
 			for (command in list)
 			{
-				Logger.log('    helm {yellow}${command.aliases[0]}{end} ${command.helpText}');
+				Helm.logger.log('    helm {yellow}${command.aliases[0]}{end} ${command.helpText}');
 			}
-			Logger.log();
+			Helm.logger.log();
 		}
 	}
 

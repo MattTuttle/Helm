@@ -34,7 +34,7 @@ class UploadProgress extends Input
 		var percent = _currentBytes / _totalBytes;
 		var progressLength = 60;
 		var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
-		Logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + DownloadProgress.humanizeBytes(_totalBytes) + "\r", false);
+		Helm.logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + DownloadProgress.humanizeBytes(_totalBytes) + "\r", false);
 	}
 
 	private var _input:Input;

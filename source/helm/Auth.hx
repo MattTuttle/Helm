@@ -16,10 +16,10 @@ class Auth
 	{
 		while (true)
 		{
-			username = Logger.prompt("Username: ").toLowerCase();
+			username = Helm.logger.prompt("Username: ").toLowerCase();
 			if (Repository.server.getUserInfo(username) != null) break;
-			Logger.log(username + " is not registered.");
-			var result = Logger.prompt("Would you like to register it? [y/N] ");
+			Helm.logger.log(username + " is not registered.");
+			var result = Helm.logger.prompt("Would you like to register it? [y/N] ");
 			if (~/^y(es)?$/.match(result.toLowerCase()))
 			{
 				register(username);
@@ -28,9 +28,9 @@ class Auth
 		}
 		while (true)
 		{
-			password = Logger.prompt("Password: ", true);
+			password = Helm.logger.prompt("Password: ", true);
 			if (Repository.server.checkPassword(username, password)) break;
-			Logger.log("Invalid password.");
+			Helm.logger.log("Invalid password.");
 		}
 	}
 
@@ -43,15 +43,15 @@ class Auth
 		{
 			while (true)
 			{
-				username = Logger.prompt("Username: ").toLowerCase();
+				username = Helm.logger.prompt("Username: ").toLowerCase();
 
 				if (!username_regex.match(username))
 				{
-					Logger.log("Invalid username. Must be alphanumeric and 3-32 characters long.");
+					Helm.logger.log("Invalid username. Must be alphanumeric and 3-32 characters long.");
 				}
 				else if (Repository.server.getUserInfo(username) != null)
 				{
-					Logger.log("Username " + username + " is already taken");
+					Helm.logger.log("Username " + username + " is already taken");
 				}
 				else
 				{
@@ -66,20 +66,20 @@ class Auth
 
 		while (true)
 		{
-			password = Logger.prompt("Password: ", true);
-			var confirm = Logger.prompt("Confirm Password: ", true);
+			password = Helm.logger.prompt("Password: ", true);
+			var confirm = Helm.logger.prompt("Confirm Password: ", true);
 			if (password == confirm) break;
-			Logger.log("Passwords didn't match.");
+			Helm.logger.log("Passwords didn't match.");
 		}
 
 		while (true)
 		{
-			email = Logger.prompt("Email: ");
+			email = Helm.logger.prompt("Email: ");
 			if (email_regex.match(email)) break;
-			Logger.log("Invalid email address.");
+			Helm.logger.log("Invalid email address.");
 		}
 
-		name = Logger.prompt("Full Name: ");
+		name = Helm.logger.prompt("Full Name: ");
 
 		Repository.server.register(username, password, email, name);
 	}

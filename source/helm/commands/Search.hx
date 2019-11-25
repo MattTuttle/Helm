@@ -30,7 +30,7 @@ class Search implements Command
 			}
 
 			// print names in columns sorted alphabetically
-			Logger.logList(names);
+			Helm.logger.logList(names);
 
 			return true;
 		}

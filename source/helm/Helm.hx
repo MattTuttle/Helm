@@ -1,5 +1,6 @@
 package helm;
 
+import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
 import argparse.Namespace;
 import helm.commands.Command;
@@ -11,6 +12,7 @@ class Helm
 {
 
 	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
+	static public var logger = new Logger(Sys.stdout());
 
 	public function new()
 	{
@@ -19,18 +21,18 @@ class Helm
 
 	public function usage():Void
 	{
-		Logger.log("{yellow} __ __      _____          __            __ __ ");
-		Logger.log("|  |  |    |   __|        |  |          |     |");
-		Logger.log("|     |    |   __|        |  |__        | | | |");
-		Logger.log("|__|__|{blue}axe {yellow}|_____|{blue}xtended {yellow}|_____|{blue}ibrary {yellow}|_|_|_|{blue}anager   v" + VERSION + "{end}");
-		Logger.log();
-		Logger.log("{yellow}-g, --global{end}  Use the global library path");
-		// Logger.log("{yellow}-u, --user{end}    Use the user library path");
-		Logger.log("{yellow}-l, --local{end}   Use the local library path");
-		Logger.log("{yellow}-v, --verbose{end} More output for each command");
-		Logger.log("{yellow}--no-color{end}    Removes ANSI color output");
-		Logger.log("{yellow}--version{end}     Print the current version");
-		Logger.log();
+		Helm.logger.log("{yellow} __ __      _____          __            __ __ ");
+		Helm.logger.log("|  |  |    |   __|        |  |          |     |");
+		Helm.logger.log("|     |    |   __|        |  |__        | | | |");
+		Helm.logger.log("|__|__|{blue}axe {yellow}|_____|{blue}xtended {yellow}|_____|{blue}ibrary {yellow}|_|_|_|{blue}anager   v" + VERSION + "{end}");
+		Helm.logger.log();
+		Helm.logger.log("{yellow}-g, --global{end}  Use the global library path");
+		// Helm.logger.log("{yellow}-u, --user{end}    Use the user library path");
+		Helm.logger.log("{yellow}-l, --local{end}   Use the local library path");
+		Helm.logger.log("{yellow}-v, --verbose{end} More output for each command");
+		Helm.logger.log("{yellow}--no-color{end}    Removes ANSI color output");
+		Helm.logger.log("{yellow}--version{end}     Print the current version");
+		Helm.logger.log();
 
 		Commands.print();
 		Sys.exit(1);
@@ -82,15 +84,16 @@ class Helm
 		parser.addArgument({flags: "--no-color"});
 		parser.addArgument({flags: ["-v", "--verbose"]});
 		parser.addArgument({flags: "command"});
-		var result = parser.parse(args);
+		var result = parser.parse(args, false);
 
 		if (result.exists("version")) {
-			Logger.log(VERSION);
+			Helm.logger.log(VERSION);
 			Sys.exit(0);
 		}
 
-		Logger.COLORIZE = !result.exists("no-color");
-		Logger.LEVEL = result.exists("verbose") ? Verbose : Warning;
+		var logLevel:LogLevel = result.exists("verbose") ? Verbose : Warning;
+		var colorize = !result.exists("no-color");
+		Helm.logger = new Logger(Sys.stdout(), logLevel, colorize);
 
 		return runCommands(parser, args);
 	}

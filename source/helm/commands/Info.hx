@@ -25,10 +25,10 @@ class Info implements Command
 			var info = PackageInfo.load(path);
 			if (info == null)
 			{
-				Logger.error(L10n.get("not_a_package"));
+				Helm.logger.error(L10n.get("not_a_package"));
 			}
 
-			Logger.log(info.fullName);
+			Helm.logger.log(info.fullName);
 		}
 		else
 		{
@@ -38,16 +38,16 @@ class Info implements Command
 				var info = Repository.server.getProjectInfo(parts[0]);
 				if (info == null)
 				{
-					Logger.error(L10n.get("not_a_package"));
+					Helm.logger.error(L10n.get("not_a_package"));
 				}
 
-				Logger.log(info.name + " [" + info.website + "]");
-				Logger.log(info.description);
-				Logger.log();
-				Logger.log(L10n.get("info_owner", [info.owner]));
-				Logger.log(L10n.get("info_license", [info.license]));
-				Logger.log(L10n.get("info_tags", [info.tags.join(", ")]));
-				Logger.log();
+				Helm.logger.log(info.name + " [" + info.website + "]");
+				Helm.logger.log(info.description);
+				Helm.logger.log();
+				Helm.logger.log(L10n.get("info_owner", [info.owner]));
+				Helm.logger.log(L10n.get("info_license", [info.license]));
+				Helm.logger.log(L10n.get("info_tags", [info.tags.join(", ")]));
+				Helm.logger.log();
 
 				if (parts.length == 2)
 				{
@@ -59,26 +59,26 @@ class Info implements Command
 					{
 						if (version.value == requestedVersion)
 						{
-							Logger.log(L10n.get("info_version", [version.value]));
-							Logger.log(L10n.get("info_date", [version.date]));
-							Logger.log(L10n.get("info_comments", [version.comments]));
+							Helm.logger.log(L10n.get("info_version", [version.value]));
+							Helm.logger.log(L10n.get("info_date", [version.date]));
+							Helm.logger.log(L10n.get("info_comments", [version.comments]));
 							found = true;
 							break;
 						}
 					}
 					if (!found)
 					{
-						Logger.log(L10n.get("version_not_found", [requestedVersion]));
+						Helm.logger.log(L10n.get("version_not_found", [requestedVersion]));
 					}
 				}
 				else
 				{
 					var versions = new Array<String>();
 					for (version in info.versions) { versions.push(version.value); }
-					Logger.log(L10n.get("info_versions", [info.currentVersion]));
-					Logger.logList(versions, false);
+					Helm.logger.log(L10n.get("info_versions", [info.currentVersion]));
+					Helm.logger.logList(versions, false);
 				}
-				Logger.log("-----------");
+				Helm.logger.log("-----------");
 			}
 		}
 

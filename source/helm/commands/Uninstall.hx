@@ -31,7 +31,7 @@ class Uninstall implements Command
                     }
                 }
                 new Directory(path).delete();
-                Logger.log(L10n.get("directory_deleted", [packageName]));
+                Helm.logger.log(L10n.get("directory_deleted", [packageName]));
             }
         }
         return true;

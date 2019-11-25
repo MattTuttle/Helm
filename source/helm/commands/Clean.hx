@@ -15,11 +15,11 @@ class Clean implements Command
 
 	public function run(args:Namespace, path:Path):Bool
 	{
-		var result = Logger.prompt(L10n.get("delete_cache_confirm"));
+		var result = Helm.logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
 		{
 			new Directory(Config.cachePath).delete();
-			Logger.log(L10n.get("cleared_cache"));
+			Helm.logger.log(L10n.get("cleared_cache"));
 		}
 		return true;
 	}

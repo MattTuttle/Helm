@@ -18,11 +18,11 @@ class List implements Command
 	{
 		var flat = args.exists("flat");
 
-		Logger.log(path);
+		Helm.logger.log(path);
 		var list = Repository.list(path);
 		if (list.length == 0)
 		{
-			Logger.log("└── (empty)");
+			Helm.logger.log("└── (empty)");
 		}
 		else
 		{
@@ -32,7 +32,7 @@ class List implements Command
 				{
 					for (p in list)
 					{
-						Logger.log(p.fullName);
+						Helm.logger.log(p.fullName);
 						printPackagesFlat(Repository.list(p.path));
 					}
 				}
@@ -57,7 +57,7 @@ class List implements Command
 						var packages = Repository.list(item.path);
 						var hasChildren = packages.length > 0;
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-						Logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
+						Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
 
 						if (hasChildren)
 						{

@@ -1,5 +1,6 @@
 package helm.util;
 
+import haxe.io.Output;
 using StringTools;
 
 enum LogLevel
@@ -13,17 +14,25 @@ enum LogLevel
 class Logger
 {
 
-	static public var OUTPUT:Bool = true;
-	static public var LEVEL:LogLevel = Info;
-	static public var COLORIZE:Bool = true;
+	public final level:LogLevel;
+	public final colorize:Bool;
+	public final writer:Output;
 
-	static public function log(msg:String="", newLine:Bool=true, ?level:LogLevel)
+	public function new(writer:Output, level:LogLevel = Info, colorize:Bool = true)
 	{
+		this.level = level;
+		this.colorize = colorize;
+		this.writer = writer;
+	}
+
+	public function log(msg:String="", newLine:Bool=true, ?level:LogLevel)
+	{
+		trace(level);
 		if (level == null) level = Info;
 
 		// color escape codes
 		var color = ~/\{([a-z]+)\}/g;
-		if (COLORIZE)
+		if (colorize)
 		{
 			while (color.match(msg))
 			{
@@ -46,17 +55,11 @@ class Logger
 			msg = color.replace(msg, "");
 		}
 
-		if (OUTPUT)
+		if (newLine)
 		{
-			if (newLine)
-			{
-				Sys.println(msg);
-			}
-			else
-			{
-				Sys.print(msg);
-			}
+			msg = msg + "\n";
 		}
+		writer.writeString(msg);
 	}
 
 	/**
@@ -64,7 +67,7 @@ class Logger
 	 * @param list a list/array of strings to print
 	 * @ascending which diretion to sort the list
 	 */
-	static public function logList(list:Iterable<String>, ascending:Bool = true):Void
+	public function logList(list:Iterable<String>, ascending:Bool = true):Void
 	{
 		var maxLength = 0, col = 0;
 		var array = new Array<String>();
@@ -96,7 +99,7 @@ class Logger
 			out += item.rpad(" ", maxLength);
 		}
 		if (col > 0) out += "\n"; // add newline, if not at beginning of line
-		if (OUTPUT) Sys.print(out);
+		writer.writeString(out);
 	}
 
 	/**
@@ -105,7 +108,7 @@ class Logger
 	 * @param secure whether or not to show user input (default = false)
 	 * @return the user input value
 	 */
-	static public function prompt(msg:String, secure:Bool = false, ?defaultValue:String):String
+	public function prompt(msg:String, secure:Bool = false, ?defaultValue:String):String
 	{
 		var result = null;
 		log(msg, false);
@@ -146,7 +149,7 @@ class Logger
 		return result;
 	}
 
-	static public function error(msg:String)
+	public function error(msg:String)
 	{
 		log(msg, true, LogLevel.Error);
 		Sys.exit(1);

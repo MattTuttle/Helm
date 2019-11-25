@@ -16,7 +16,7 @@ class Outdated implements Command
 		var outdated = Repository.outdated(path);
 		for (item in outdated)
 		{
-			Logger.log(item.name + ":" + item.current + " < " + item.latest);
+			Helm.logger.log(item.name + ":" + item.current + " < " + item.latest);
 		}
 		return true;
 	}

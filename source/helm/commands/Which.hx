@@ -22,7 +22,7 @@ class Which implements Command
 		{
 			var repo = Repository.findPackage(arg);
 			var info = PackageInfo.load(repo);
-			Logger.log(repo + " [" + info.version + "]");
+			Helm.logger.log(repo + " [" + info.version + "]");
 		}
 		return true;
 	}

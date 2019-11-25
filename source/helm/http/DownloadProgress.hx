@@ -29,14 +29,14 @@ class DownloadProgress extends haxe.io.Output
 		_currentBytes += numBytes;
 		if (_totalBytes == 0)
 		{
-			Logger.log(_currentBytes + " bytes\r", false);
+			Helm.logger.log(_currentBytes + " bytes\r", false);
 		}
 		else
 		{
 			var percent = _currentBytes / _totalBytes;
 			var progressLength = 60;
 			var progress = StringTools.rpad(StringTools.lpad(">", "-", Std.int(progressLength * percent)), " ", progressLength);
-			Logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r", false);
+			Helm.logger.log("[" + progress + "] " + Std.int(percent * 100) + "% of " + _totalText + "\r", false);
 		}
 	}
 
@@ -57,7 +57,7 @@ class DownloadProgress extends haxe.io.Output
 	{
 		super.close();
 		_fileOutput.close();
-		Logger.log();
+		Helm.logger.log();
 	}
 
 	public override function prepare(numBytes:Int):Void
