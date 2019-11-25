@@ -7,7 +7,7 @@ class TestLocalization extends Test
 
 	public function testLocale()
 	{
-		L10n.init();
+		L10n.init("en-US");
 		Assert.equals("Package Hello is not installed", L10n.get("not_installed", ["Hello"]));
 	}
 

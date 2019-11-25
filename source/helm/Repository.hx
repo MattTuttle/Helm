@@ -2,8 +2,8 @@ package helm;
 
 import haxe.Http;
 import haxe.ds.StringMap;
-import helm.io.File;
-import helm.io.FileSystem;
+import sys.io.File;
+import sys.FileSystem;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
@@ -67,7 +67,6 @@ class Repository
 		if (find == null) find = org.haxe.lib.Data.JSON;
 		if (path != "")
 		{
-			trace(path);
 			if (FileSystem.exists(path.join(find)))
 			{
 				return path;

@@ -1,5 +1,6 @@
 -cp source
 -lib argparse
+-lib compiletime
 -resource l10n/en-US/strings.xml@en-US
 
 --each
@@ -16,4 +17,8 @@
 -neko helm.n
 -main helm.Helm
 -cmd nekotools boot helm.n
--cmd rm helm.n
+# -cmd rm helm.n
+
+--next
+
+-cmd neko helm.n

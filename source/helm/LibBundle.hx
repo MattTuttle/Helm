@@ -5,7 +5,7 @@ import sys.io.File;
 
 using StringTools;
 
-class Bundle
+class LibBundle
 {
 
 	static private function readIgnoreFile(path:String):Array<String>

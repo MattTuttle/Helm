@@ -3,6 +3,7 @@
 -D test
 -x TestMain
 -lib utest
+-lib compiletime
 -lib argparse
 -cp tests
 -cmd rm TestMain.n # cleanup
