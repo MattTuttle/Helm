@@ -14,10 +14,10 @@ class Upgrade implements Command
 
 	public function run(args:Namespace, path:Path):Bool
 	{
-		var outdated = Repository.outdated(path);
+		var outdated = Helm.repository.outdated(path);
 		for (item in outdated)
 		{
-			Repository.install(item.name, item.latest, path);
+			Helm.repository.install(item.name, item.latest, path);
 		}
 		return true;
 	}

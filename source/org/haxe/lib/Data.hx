@@ -7,6 +7,7 @@ import haxe.zip.Reader;
 import sys.io.File;
 import sys.FileSystem;
 import helm.ds.SemVer;
+import helm.Helm;
 import helm.util.*;
 
 class Data
@@ -78,7 +79,7 @@ class Data
 		var data = new Data();
 
 		// fill in dependencies
-		for (dep in helm.Repository.list(path))
+		for (dep in Helm.repository.list(path))
 		{
 			data.dependencies.set(dep.name, dep.version);
 		}

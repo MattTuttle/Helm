@@ -54,7 +54,7 @@ class Build implements Command
 			if (line.startsWith("-lib"))
 			{
 				var lib = line.substr(4).trim().toLowerCase();
-				var path = Repository.findPackage(lib);
+				var path = Helm.repository.findPackage(lib);
 				if (path != null) libs.set(lib, path);
 			}
 		}

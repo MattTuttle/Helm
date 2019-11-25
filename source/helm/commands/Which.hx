@@ -20,7 +20,7 @@ class Which implements Command
 
 		for (arg in args.get("package"))
 		{
-			var repo = Repository.findPackage(arg);
+			var repo = Helm.repository.findPackage(arg);
 			var info = PackageInfo.load(repo);
 			Helm.logger.log(repo + " [" + info.version + "]");
 		}

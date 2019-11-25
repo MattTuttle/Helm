@@ -22,7 +22,7 @@ class Install implements Command
 		if (packages.length == 0)
 		{
 			// TODO: fix install git dependency from haxelib.json
-			var libs = Repository.findDependencies(path);
+			var libs = Helm.repository.findDependencies(path);
 
 			// install libraries found
 			for (lib in libs.keys())
@@ -34,7 +34,7 @@ class Install implements Command
 				{
 					name = libs.get(lib);
 				}
-				Repository.install(name, version, path);
+				Helm.repository.install(name, version, path);
 			}
 		}
 		else
@@ -55,7 +55,7 @@ class Install implements Command
 						if (version != null) name = parts[0];
 					}
 				}
-				Repository.install(name, version, path);
+				Helm.repository.install(name, version, path);
 			}
 		}
 

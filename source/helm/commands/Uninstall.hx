@@ -18,7 +18,7 @@ class Uninstall implements Command
     {
         for (packageName in args.get("packages"))
         {
-            var infos = Repository.findPackageIn(packageName, path);
+            var infos = Helm.repository.findPackageIn(packageName, path);
             if (infos.length > 0)
             {
                 var path:String = null;

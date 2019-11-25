@@ -16,14 +16,14 @@ class Boot
 
 		// TODO: if package not found, install it
 		var path = try {
-			Repository.findPackage(PACKAGE_NAME);
+			Helm.repository.findPackage(PACKAGE_NAME);
 		} catch (e:Dynamic) {
 			Config.globalPath.join("libs").join(PACKAGE_NAME);
 		};
 
 		// get latest version on server
 		var version:SemVer = try {
-			Repository.server.getProjectInfo(PACKAGE_NAME).currentVersion;
+			Helm.server.getProjectInfo(PACKAGE_NAME).currentVersion;
 		} catch (e:Dynamic) {
 			"0.0.0";
 		};
@@ -34,7 +34,7 @@ class Boot
 		var info = PackageInfo.load(path);
 		if (version > info.version)
 		{
-			Repository.install(PACKAGE_NAME, version, path);
+			Helm.repository.install(PACKAGE_NAME, version, path);
 		}
 
 		if (!sys.FileSystem.exists("helm"))

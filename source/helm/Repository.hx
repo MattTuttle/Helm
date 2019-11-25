@@ -18,14 +18,12 @@ class Repository
 	static public var LIB_DIR:String = "haxe_libs";
 	static public var NDLL_DIR:String = "ndll";
 
-	// TODO: setup a mirror list for multiple repository servers
-	#if haxelib
-	static public var server:org.haxe.lib.Haxelib = new org.haxe.lib.Haxelib();
-	#else
-	static public var server = new Server();
-	#end
+	public function new()
+	{
 
-	static public function findPackage(name:String):String
+	}
+
+	public function findPackage(name:String):String
 	{
 		var repo = findPackageIn(name, Sys.getCwd());
 		// fallback, if no package found
@@ -39,13 +37,13 @@ class Repository
 		return repo[0].path;
 	}
 
-	static private function hasPackageNamed(path:Path, name:String):Bool
+	function hasPackageNamed(path:Path, name:String):Bool
 	{
 		var info = PackageInfo.load(path);
 		return (info != null && info.name == name);
 	}
 
-	static private function searchPackageList(name:String, l:Array<PackageInfo>):Array<PackageInfo>
+	function searchPackageList(name:String, l:Array<PackageInfo>):Array<PackageInfo>
 	{
 		var results = new Array<PackageInfo>();
 		for (item in l)
@@ -62,7 +60,7 @@ class Repository
 		return results;
 	}
 
-	static public function getPackageRoot(path:Path, ?find:String):String
+	public function getPackageRoot(path:Path, ?find:String):String
 	{
 		if (find == null) find = org.haxe.lib.Data.JSON;
 		if (path != "")
@@ -76,7 +74,7 @@ class Repository
 		return null;
 	}
 
-	static public function findPackageIn(name:String, target:Path):Array<PackageInfo>
+	public function findPackageIn(name:String, target:Path):Array<PackageInfo>
 	{
 		name = name.toLowerCase();
 
@@ -92,13 +90,13 @@ class Repository
 		return searchPackageList(name, list(target));
 	}
 
-	static public function outdated(path:String):List<{name:String, current:SemVer, latest:SemVer}>
+	public function outdated(path:String):List<{name:String, current:SemVer, latest:SemVer}>
 	{
 		// TODO: change this to a typedef and include more info
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
 		for (item in list(path))
 		{
-			var info = server.getProjectInfo(item.name);
+			var info = Helm.server.getProjectInfo(item.name);
 			if (info == null) continue;
 			var version:SemVer = info.currentVersion;
 			if (version > item.version)
@@ -113,7 +111,7 @@ class Repository
 		return outdated;
 	}
 
-	static public function list(path:String):Array<PackageInfo>
+	public function list(path:String):Array<PackageInfo>
 	{
 		var packages = new Array<PackageInfo>();
 		var dir = new Directory(path).add(LIB_DIR);
@@ -131,7 +129,7 @@ class Repository
 	/**
 	 * Returns a list of project dependencies based on files found in the directory
 	 */
-	static public function findDependencies(dir:String):StringMap<String>
+	public function findDependencies(dir:String):StringMap<String>
 	{
 		var libs = new StringMap<String>();
 		var info = PackageInfo.load(dir);
@@ -177,7 +175,7 @@ class Repository
 		return libs;
 	}
 
-	static public function run(args:Array<String>, path:String, useEnvironment:Bool=false):Int
+	public function run(args:Array<String>, path:String, useEnvironment:Bool=false):Int
 	{
 		var info = PackageInfo.load(path);
 		if (info == null)
@@ -226,7 +224,7 @@ class Repository
 		return Sys.command(command, args);
 	}
 
-	static public function include(name:String):Array<String>
+	public function include(name:String):Array<String>
 	{
 		var root = getPackageRoot(Sys.getCwd());
 		var path = hasPackageNamed(root, name) ? root : findPackage(name);
@@ -254,7 +252,7 @@ class Repository
 		return result;
 	}
 
-	static public function download(version:VersionInfo):String
+	public function download(version:VersionInfo):String
 	{
 		var filename = version.url.split("/").pop();
 		var cache = Config.cachePath + filename;
@@ -282,7 +280,7 @@ class Repository
 		return cache;
 	}
 
-	static public function installGit(name:String, target:String):Bool
+	public function installGit(name:String, target:String):Bool
 	{
 		var gitRepository = null,
 			gitBranch = null,
@@ -344,7 +342,7 @@ class Repository
 		return installed;
 	}
 
-	static public function install(name:String, ?version:SemVer, target:String=""):Void
+	public function install(name:String, ?version:SemVer, target:String=""):Void
 	{
 		var path = null;
 		// check if installing from a local file
@@ -359,7 +357,7 @@ class Repository
 		}
 
 		// conflict resolution
-		var info = server.getProjectInfo(name);
+		var info = Helm.server.getProjectInfo(name);
 		if (info == null)
 		{
 			Helm.logger.error(L10n.get("not_a_package"));
@@ -440,7 +438,7 @@ class Repository
 	}
 
 	// TODO: search for hxpm.json
-	static private function locateBasePath(zip:List<haxe.zip.Entry>):String
+	function locateBasePath(zip:List<haxe.zip.Entry>):String
 	{
 		for (f in zip)
 		{
@@ -452,7 +450,7 @@ class Repository
 		throw "No " + org.haxe.lib.Data.JSON + " found";
 	}
 
-	static private function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo
+	function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo
 	{
 		if (version == null)
 		{

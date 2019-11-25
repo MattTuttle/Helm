@@ -13,7 +13,7 @@ class Outdated implements Command
 
 	public function run(args:Namespace, path:Path):Bool
 	{
-		var outdated = Repository.outdated(path);
+		var outdated = Helm.repository.outdated(path);
 		for (item in outdated)
 		{
 			Helm.logger.log(item.name + ":" + item.current + " < " + item.latest);

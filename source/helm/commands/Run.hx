@@ -21,14 +21,14 @@ class Run implements Command
 
 		for (name in args.get("package"))
         {
-			path = Repository.findPackage(name);
+			path = Helm.repository.findPackage(name);
 			for (arg in args.get("args"))
 			{
 				arguments.push(arg);
 			}
 		}
 
-		Sys.exit(Repository.run(arguments, path, useEnvironment));
+		Sys.exit(Helm.repository.run(arguments, path, useEnvironment));
 
 		return true;
 	}

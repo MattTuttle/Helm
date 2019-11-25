@@ -19,7 +19,7 @@ class Include implements Command
 
 		for (name in args.get("includes"))
 		{
-			Helm.logger.log(Repository.include(name.toLowerCase()).join("\n"));
+			Helm.logger.log(Helm.repository.include(name.toLowerCase()).join("\n"));
 		}
 
 		return true;

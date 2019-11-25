@@ -18,18 +18,15 @@ class Logger
 	public final colorize:Bool;
 	public final writer:Output;
 
-	public function new(writer:Output, level:LogLevel = Info, colorize:Bool = true)
+	public function new(writer:Output, level:LogLevel=Info, colorize:Bool=true)
 	{
 		this.level = level;
 		this.colorize = colorize;
 		this.writer = writer;
 	}
 
-	public function log(msg:String="", newLine:Bool=true, ?level:LogLevel)
+	public function log(msg:String="", newLine:Bool=true, level:LogLevel=Info)
 	{
-		trace(level);
-		if (level == null) level = Info;
-
 		// color escape codes
 		var color = ~/\{([a-z]+)\}/g;
 		if (colorize)

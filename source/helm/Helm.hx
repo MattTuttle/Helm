@@ -2,10 +2,6 @@ package helm;
 
 import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
-import argparse.Namespace;
-import helm.commands.Command;
-import haxe.ds.StringMap;
-import haxe.CallStack;
 import helm.util.*;
 
 class Helm
@@ -13,6 +9,13 @@ class Helm
 
 	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
 	static public var logger = new Logger(Sys.stdout());
+	static public var repository = new Repository();
+	// TODO: setup a mirror list for multiple repository servers
+	#if haxelib
+	static public var server:org.haxe.lib.Haxelib = new org.haxe.lib.Haxelib();
+	#else
+	static public var server = new Server();
+	#end
 
 	public function new()
 	{
@@ -46,8 +49,9 @@ class Helm
 		}
 		else
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd());
-			return path == null ? Sys.getCwd() : path;
+			var cwd = Sys.getCwd(); // current working directory
+			var path = Helm.repository.getPackageRoot(cwd);
+			return path == null ? cwd : path;
 		}
 	}
 
@@ -60,6 +64,7 @@ class Helm
 			return false;
 		}
 
+		var path = getPathTarget();
 		for (commandName in result.get("command"))
 		{
 			var command = Commands.getCommand(commandName);
@@ -68,7 +73,7 @@ class Helm
 			{
 				command.start(parser);
 				var result = parser.parse(args);
-				var success = command.call(result, getPathTarget());
+				var success = command.call(result, path);
 				if (!success) return false;
 			}
 		}
@@ -86,14 +91,14 @@ class Helm
 		parser.addArgument({flags: "command"});
 		var result = parser.parse(args, false);
 
+		var logLevel:LogLevel = result.exists("verbose") ? Verbose : Warning;
+		var colorize = !result.exists("no-color");
+		Helm.logger = new Logger(Sys.stdout(), logLevel, colorize);
+
 		if (result.exists("version")) {
 			Helm.logger.log(VERSION);
 			Sys.exit(0);
 		}
-
-		var logLevel:LogLevel = result.exists("verbose") ? Verbose : Warning;
-		var colorize = !result.exists("no-color");
-		Helm.logger = new Logger(Sys.stdout(), logLevel, colorize);
 
 		return runCommands(parser, args);
 	}

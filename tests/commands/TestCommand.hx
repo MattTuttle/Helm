@@ -13,7 +13,7 @@ class TestCommand extends Test
     public function setup()
     {
         output = new BytesOutput();
-        Helm.logger = new Logger(output);
+        Helm.logger = new Logger(output, Verbose, false);
         // Helm.repository = new HaxelibRepo();
     }
 

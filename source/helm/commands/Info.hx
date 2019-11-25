@@ -21,7 +21,7 @@ class Info implements Command
         var packages = args.get('packages');
 		if (packages.length == 0)
 		{
-			var path = Repository.getPackageRoot(Sys.getCwd());
+			var path = Helm.repository.getPackageRoot(Sys.getCwd());
 			var info = PackageInfo.load(path);
 			if (info == null)
 			{
@@ -35,7 +35,7 @@ class Info implements Command
 			for (arg in packages)
 			{
 				var parts = arg.split(":");
-				var info = Repository.server.getProjectInfo(parts[0]);
+				var info = Helm.server.getProjectInfo(parts[0]);
 				if (info == null)
 				{
 					Helm.logger.error(L10n.get("not_a_package"));
