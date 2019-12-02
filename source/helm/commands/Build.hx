@@ -27,7 +27,7 @@ class Build implements Command
 		else
 		{
 			// search for hxml files in the current directory
-			for (file in sys.FileSystem.readDirectory(path))
+			for (file in FileSystem.readDirectory(path))
 			{
 				if (StringTools.endsWith(file, ".hxml"))
 				{

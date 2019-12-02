@@ -1,4 +1,4 @@
-package org.haxe.lib;
+package helm.haxelib;
 
 import haxe.Json;
 import haxe.ds.StringMap;
@@ -74,7 +74,7 @@ class Data
 		return json;
 	}
 
-	static public function init(path:String, logger:Logger)
+	static public function init(path:Path, logger:Logger)
 	{
 		var data = new Data();
 
@@ -85,7 +85,7 @@ class Data
 		}
 
 		// data.dependencies
-		data.name = logger.prompt(L10n.get("init_project_name"), new helm.Directory(path).lastFolder);
+		data.name = logger.prompt(L10n.get("init_project_name"), path.dirname());
 		data.description = logger.prompt(L10n.get("init_project_description"));
 		data.version = logger.prompt(L10n.get("init_project_version"), "0.1.0");
 		data.url = logger.prompt(L10n.get("init_project_url"));

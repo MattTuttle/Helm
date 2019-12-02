@@ -1,6 +1,7 @@
 package helm.ds;
 
 import haxe.ds.StringMap;
+import helm.haxelib.Data;
 
 class PackageInfo
 {
@@ -15,29 +16,22 @@ class PackageInfo
 	public var fullName(get, never):String;
 	private inline function get_fullName():String { return name + ":" + version; }
 
-	public function new(name:String, version:String, dependencies:StringMap<String>, path:String, classPath:String, mainClass:String)
+	public function new(name:String, version:String, dependencies:StringMap<String>, path:String, classPath:Path, mainClass:String)
 	{
 		this.name = name;
 		this.version = version;
 		this.dependencies = dependencies;
 		this.path = path;
-		if (classPath != null)
-		{
-			this.classPath = classPath;
-			if (!StringTools.endsWith(classPath, Directory.SEPARATOR))
-			{
-				this.classPath += Directory.SEPARATOR;
-			}
-		}
+		this.classPath = classPath;
 		this.mainClass = mainClass;
 	}
 
 	static public function load(path:Path):PackageInfo
 	{
-		if (sys.FileSystem.exists(path.join(org.haxe.lib.Data.JSON)))
+		if (sys.FileSystem.exists(path.join(Data.JSON)))
 		{
-			var data = new org.haxe.lib.Data();
-			data.read(sys.io.File.getContent(path.join(org.haxe.lib.Data.JSON)));
+			var data = new Data();
+			data.read(sys.io.File.getContent(path.join(Data.JSON)));
 			return new PackageInfo(Std.string(data.name).toLowerCase(),
 				SemVer.ofString(data.version), data.dependencies, path, data.classPath, data.mainClass);
 		}

@@ -1,7 +1,8 @@
 package helm.commands;
 
-import helm.util.L10n;
 import helm.ds.PackageInfo;
+import helm.haxelib.Data;
+import helm.util.L10n;
 import argparse.ArgParser;
 import argparse.Namespace;
 
@@ -20,7 +21,7 @@ class Init implements Command
 			Helm.logger.error(L10n.get("package_already_exists", [info.fullName]));
 		}
 
-		org.haxe.lib.Data.init(path, Helm.logger);
+		Data.init(path, Helm.logger);
 		return true;
 	}
 }

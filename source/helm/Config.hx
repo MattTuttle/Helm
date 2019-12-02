@@ -8,7 +8,7 @@ class Config
 	@:isVar static public var globalPath(get, null):Path;
 	static private function get_globalPath():Path
 	{
-		return Directory.homeDir.join(".helm");
+		return FileSystem.homeDir.join(".helm");
 	}
 
 	static public var cachePath(get, never):Path;

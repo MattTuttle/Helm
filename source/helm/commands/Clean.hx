@@ -1,5 +1,6 @@
 package helm.commands;
 
+import helm.FileSystem;
 import helm.util.L10n;
 import argparse.ArgParser;
 import argparse.Namespace;
@@ -17,7 +18,7 @@ class Clean implements Command
 		var result = Helm.logger.prompt(L10n.get("delete_cache_confirm"));
 		if (~/^y(es)?$/.match(result.toLowerCase()))
 		{
-			new Directory(Config.cachePath).delete();
+			FileSystem.delete(Config.cachePath);
 			Helm.logger.log(L10n.get("cleared_cache"));
 		}
 		return true;

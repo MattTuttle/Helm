@@ -29,7 +29,7 @@ class Uninstall implements Command
                         path = info.path;
                     }
                 }
-                new Directory(path).delete();
+                FileSystem.delete(path);
                 Helm.logger.log(L10n.get("directory_deleted", [packageName]));
             }
         }

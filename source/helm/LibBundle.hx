@@ -26,9 +26,9 @@ class LibBundle
 		return null;
 	}
 
-	static private function addBundleEntries(path:String, list:List<haxe.zip.Entry>, ignore:EReg, fileName:String=""):Void
+	static private function addBundleEntries(path:Path, list:List<haxe.zip.Entry>, ignore:EReg, fileName:String=""):Void
 	{
-		for (file in FileSystem.readDirectory(path + fileName))
+		for (file in FileSystem.readDirectory(path.join(fileName)))
 		{
 			if (ignore.match(file)) continue;
 			var name = fileName + file;

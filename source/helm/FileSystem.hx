@@ -1,16 +1,11 @@
 package helm;
 
-import sys.FileSystem;
+import sys.FileSystem as FS;
 
 using StringTools;
 
-class Directory
+class FileSystem
 {
-
-	/**
-	 * The directory path
-	 */
-	public var path(default, null):String;
 
 	/**
 	 * The separator character to use between folders (/ vs \)
@@ -36,45 +31,17 @@ class Directory
 		return (Sys.systemName() == "Windows");
 	}
 
-	public function new(path:String)
-	{
-		this.path = path;
-	}
-
-	/**
-	 * Returns the directory as a path string
-	 */
-	public function toString():String
-	{
-		return path;
-	}
-
-	/**
-	 * Add a segment to the path
-	 * @param String segment The segment to add
-	 * @return a new Directory instance
-	 */
-	public function add(segment:String):Directory
-	{
-		return new Directory(this.path + segment + SEPARATOR);
-	}
-
 	/**
 	 * True if directory exists and is a directory
 	 */
-	public var exists(get, never):Bool;
-	private inline function get_exists():Bool
+	static public function exists(path:Path):Bool
 	{
-		return FileSystem.exists(path) && FileSystem.isDirectory(path);
+		return FS.exists(path) && FS.isDirectory(path);
 	}
 
-	/**
-	 * Name of the last folder in the path
-	 */
-	public var lastFolder(get, never):String;
-	private function get_lastFolder():String
+	static public function rename(oldPath:Path, newPath:Path):Void
 	{
-		return path.substr(0, -1).split(SEPARATOR).pop();
+		FS.rename(oldPath, newPath);
 	}
 
 	/**
@@ -82,13 +49,13 @@ class Directory
 	 * @param path the directory's path
 	 * @return if the directory is successfully created
 	 */
-	public function create():Bool
+	static public function create(path:Path):Bool
 	{
-		if (!exists)
+		if (!FileSystem.exists(path))
 		{
 			try
 			{
-				FileSystem.createDirectory(path);
+				FS.createDirectory(path);
 			}
 			catch (e:Dynamic)
 			{
@@ -104,42 +71,46 @@ class Directory
 	 * @param path the directory's path
 	 * @return if the directory is successfully deleted
 	 */
-	public function delete(recursive:Bool=true, ?path:String):Bool
+	static public function delete(path:Path, recursive:Bool=true):Bool
 	{
-		if (path == null) path = this.path;
-		if (exists)
+		if (FileSystem.exists(path))
 		{
-			if (!path.endsWith(Directory.SEPARATOR))
+			if (!path.endsWith(FileSystem.SEPARATOR))
 			{
-				path += Directory.SEPARATOR;
+				path = path + FileSystem.SEPARATOR;
 			}
 
 			if (recursive)
 			{
-				for (item in FileSystem.readDirectory(path))
+				for (item in FS.readDirectory(path))
 				{
-					var newPath = path + item;
-					if (FileSystem.isDirectory(newPath))
+					var newPath = path.join(item);
+					if (FS.isDirectory(newPath))
 					{
-						delete(recursive, newPath);
+						FileSystem.delete(newPath, recursive);
 					}
 					else
 					{
-						FileSystem.deleteFile(newPath);
+						FS.deleteFile(newPath);
 					}
 				}
 			}
-			FileSystem.deleteDirectory(path);
+			FS.deleteDirectory(path);
 			return true;
 		}
 		return false;
+	}
+
+	static public function readDirectory(path:Path):Array<String>
+	{
+		return FS.exists(path) ? FS.readDirectory(path) : [];
 	}
 
 	/**
 	 * Create a temporary folder
 	 * @return A Directory object with the created temp path
 	 */
-	static public function createTemporary():Directory
+	static public function createTemporary():Path
 	{
 		var tmp = Sys.getEnv("TEMP");
 		if (tmp == null) tmp = "/tmp";
@@ -147,8 +118,8 @@ class Directory
 		do {
 			var crypt = haxe.crypto.Md5.encode(Std.string(Date.now())).substr(0, 10);
 			path = tmp + SEPARATOR + "helm_" + crypt + SEPARATOR;
-		} while (FileSystem.exists(path));
-		return new Directory(path);
+		} while (FS.exists(path));
+		return path;
 	}
 
 }

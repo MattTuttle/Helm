@@ -3,11 +3,12 @@ package helm;
 import haxe.Http;
 import haxe.ds.StringMap;
 import sys.io.File;
-import sys.FileSystem;
+import helm.FileSystem;
 import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
 import helm.http.DownloadProgress;
+import helm.haxelib.Data;
 import helm.util.*;
 
 using StringTools;
@@ -62,7 +63,7 @@ class Repository
 
 	public function getPackageRoot(path:Path, ?find:String):String
 	{
-		if (find == null) find = org.haxe.lib.Data.JSON;
+		if (find == null) find = Data.JSON;
 		if (path != "")
 		{
 			if (FileSystem.exists(path.join(find)))
@@ -85,7 +86,7 @@ class Repository
 		}
 
 		// find a libs directory in the current directory or a parent
-		target = getPackageRoot(target, LIB_DIR + Directory.SEPARATOR);
+		target = getPackageRoot(target, LIB_DIR);
 
 		return searchPackageList(name, list(target));
 	}
@@ -111,17 +112,14 @@ class Repository
 		return outdated;
 	}
 
-	public function list(path:String):Array<PackageInfo>
+	public function list(path:Path):Array<PackageInfo>
 	{
 		var packages = new Array<PackageInfo>();
-		var dir = new Directory(path).add(LIB_DIR);
-		if (dir.exists)
+		var dir = path.join(LIB_DIR);
+		for (item in FileSystem.readDirectory(dir))
 		{
-			for (item in FileSystem.readDirectory(dir.path))
-			{
-				var info = PackageInfo.load(dir.add(item).path);
-				if (info != null) packages.push(info);
-			}
+			var info = PackageInfo.load(dir.join(item));
+			if (info != null) packages.push(info);
 		}
 		return packages;
 	}
@@ -227,13 +225,13 @@ class Repository
 	public function include(name:String):Array<String>
 	{
 		var root = getPackageRoot(Sys.getCwd());
-		var path = hasPackageNamed(root, name) ? root : findPackage(name);
+		var path:Path = hasPackageNamed(root, name) ? root : findPackage(name);
 
 		var result = [];
 		if (path != null && FileSystem.exists(path))
 		{
 			var info = PackageInfo.load(path);
-			var lib = path + NDLL_DIR + Directory.SEPARATOR;
+			var lib = path.join(NDLL_DIR);
 			if (FileSystem.exists(lib))
 			{
 				result.push("-L " + lib);
@@ -260,7 +258,7 @@ class Repository
 		// TODO: allow to redownload with --force argument
 		if (!FileSystem.exists(cache))
 		{
-			new Directory(Config.cachePath).create();
+			FileSystem.create(Config.cachePath);
 			// download as different name to prevent loading partial downloads if cancelled
 			var downloadPath = cache.replace("zip", "part");
 
@@ -280,7 +278,7 @@ class Repository
 		return cache;
 	}
 
-	public function installGit(name:String, target:String):Bool
+	public function installGit(name:String, target:Path):Bool
 	{
 		var gitRepository = null,
 			gitBranch = null,
@@ -305,8 +303,8 @@ class Repository
 		{
 			Helm.logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
 
-			var tmpDir = Directory.createTemporary();
-			var path = tmpDir.path;
+			var tmpDir = FileSystem.createTemporary();
+			var path = tmpDir;
 			var args = ["clone"];
 			if (gitBranch != null)
 			{
@@ -319,21 +317,20 @@ class Repository
 			var info = PackageInfo.load(path);
 			if (info == null)
 			{
-				tmpDir.delete();
+				FileSystem.delete(tmpDir);
 				Helm.logger.error(L10n.get("not_a_package"));
 			}
 			else
 			{
 				// rename folder to the name of the project
-				var installPath = target + LIB_DIR + Directory.SEPARATOR + info.name + Directory.SEPARATOR;
-				var dir = new Directory(installPath);
-				if (dir.exists)
+				var installPath = target.join(LIB_DIR).join(info.name);
+				if (FileSystem.exists(installPath))
 				{
-					dir.delete();
+					FileSystem.delete(installPath);
 				}
 				else
 				{
-					dir.create();
+					FileSystem.create(installPath);
 				}
 				FileSystem.rename(path, installPath);
 				installed = true;
@@ -342,8 +339,9 @@ class Repository
 		return installed;
 	}
 
-	public function install(name:String, ?version:SemVer, target:String=""):Void
+	public function install(name:String, ?version:SemVer, ?target:Path):Void
 	{
+		if (target == null) target = "";
 		var path = null;
 		// check if installing from a local file
 		if (sys.FileSystem.exists(name))
@@ -362,17 +360,17 @@ class Repository
 		{
 			Helm.logger.error(L10n.get("not_a_package"));
 		}
-		var dir = new Directory(target).add(LIB_DIR).add(info.name);
-		if (dir.exists)
+		var dir = target.join(LIB_DIR).join(info.name);
+		if (FileSystem.exists(dir))
 		{
-			var info = PackageInfo.load(dir.path);
+			var info = PackageInfo.load(dir);
 			if (info != null && (version == null || version == info.version))
 			{
 				Helm.logger.error(L10n.get("already_installed", [info.fullName]));
 			}
 			else
 			{
-				dir.delete();
+				FileSystem.delete(dir);
 			}
 		}
 
@@ -395,7 +393,7 @@ class Repository
 		var zip = haxe.zip.Reader.readZip(f);
 		f.close();
 		var baseDir = locateBasePath(zip);
-		dir.create();
+		FileSystem.create(dir);
 
 		var totalItems = zip.length,
 			unzippedItems = 0;
@@ -413,8 +411,8 @@ class Repository
 			}
 
 			var slashIndex = name.lastIndexOf("/") + 1;
-			var loc = dir.add(name.substr(0, slashIndex));
-			loc.create();
+			var loc = dir.join(name.substr(0, slashIndex));
+			FileSystem.create(loc);
 
 			// skip unzip if not a file
 			if (slashIndex >= name.length)
@@ -423,12 +421,12 @@ class Repository
 			}
 			var file = name.substr(slashIndex);
 			var data = haxe.zip.Reader.unzip(item);
-			File.saveBytes(loc.path + file, data);
+			File.saveBytes(loc.join(file), data);
 		}
 		Helm.logger.log("\n", false);
 
 		// install any dependencies
-		var info = PackageInfo.load(dir.path);
+		var info = PackageInfo.load(dir);
 		for (name in info.dependencies.keys())
 		{
 			var version = info.dependencies.get(name);
@@ -442,12 +440,12 @@ class Repository
 	{
 		for (f in zip)
 		{
-			if (StringTools.endsWith(f.fileName, org.haxe.lib.Data.JSON))
+			if (StringTools.endsWith(f.fileName, Data.JSON))
 			{
-				return f.fileName.substr(0, f.fileName.length - org.haxe.lib.Data.JSON.length);
+				return f.fileName.substr(0, f.fileName.length - Data.JSON.length);
 			}
 		}
-		throw "No " + org.haxe.lib.Data.JSON + " found";
+		throw "No " + Data.JSON + " found";
 	}
 
 	function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo
