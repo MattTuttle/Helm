@@ -1,7 +1,6 @@
 package helm.commands;
 
 import helm.ds.PackageInfo;
-import helm.util.Logger;
 import argparse.ArgParser;
 import argparse.Namespace;
 

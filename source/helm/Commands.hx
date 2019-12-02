@@ -5,7 +5,6 @@ import argparse.ArgParser;
 import haxe.ds.StringMap;
 import helm.commands.Command;
 import haxe.rtti.Meta;
-import helm.util.Logger;
 import haxe.CallStack;
 
 class CommandCall

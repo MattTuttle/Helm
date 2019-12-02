@@ -2,7 +2,6 @@ package helm.commands;
 
 import helm.ds.SemVer;
 import helm.util.L10n;
-import helm.util.Logger;
 import helm.ds.PackageInfo;
 import argparse.ArgParser;
 import argparse.Namespace;

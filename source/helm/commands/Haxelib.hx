@@ -3,7 +3,6 @@ package helm.commands;
 import sys.io.File;
 import helm.ds.PackageInfo;
 import helm.util.L10n;
-import helm.util.Logger;
 import argparse.ArgParser;
 import argparse.Namespace;
 

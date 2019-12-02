@@ -57,7 +57,7 @@ class Helm
 
 	function runCommands(parser:ArgParser, args:Array<String>):Bool
 	{
-		var result = parser.parse(args);
+		var result = parser.parse(args, false);
 
 		if (!result.exists("command"))
 		{
