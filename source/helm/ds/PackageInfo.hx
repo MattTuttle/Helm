@@ -29,7 +29,7 @@ class PackageInfo
 	static public function load(path:Path):PackageInfo
 	{
 		var dataPath = path.join(Data.JSON);
-		if (FileSystem.exists(dataPath))
+		if (FileSystem.isFile(dataPath))
 		{
 			var data = new Data();
 			data.read(dataPath);

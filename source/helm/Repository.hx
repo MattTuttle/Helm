@@ -68,7 +68,7 @@ class Repository
 		// TODO: better string checking?
 		while (path != "" && path != "/")
 		{
-			if (FileSystem.exists(path.join(find)))
+			if (FileSystem.isFile(path.join(find)) || FileSystem.isDirectory(path.join(find)))
 			{
 				return path;
 			}
@@ -197,7 +197,7 @@ class Repository
 		return libs;
 	}
 
-	public function run(args:Array<String>, path:String, useEnvironment:Bool=false):Int
+	public function run(args:Array<String>, path:Path, useEnvironment:Bool=false):Int
 	{
 		var info = PackageInfo.load(path);
 		if (info == null)
@@ -221,7 +221,7 @@ class Repository
 		else
 		{
 			command = "neko";
-			if (!FileSystem.exists(path + "run.n"))
+			if (!FileSystem.isFile(path.join("run.n")))
 			{
 				Helm.logger.log(L10n.get("run_not_enabled", [info.name]));
 				return 1;
@@ -257,11 +257,11 @@ class Repository
 		var path:Path = hasPackageNamed(root, name) ? root : findPackage(name);
 
 		var result = [];
-		if (path != null && FileSystem.exists(path))
+		if (path != null && FileSystem.isDirectory(path))
 		{
 			var info = PackageInfo.load(path);
 			var lib = path.join(NDLL_DIR);
-			if (FileSystem.exists(lib))
+			if (FileSystem.isDirectory(lib))
 			{
 				result.push("-L " + lib);
 			}
@@ -285,7 +285,7 @@ class Repository
 		var cache = Config.cachePath + filename;
 
 		// TODO: allow to redownload with --force argument
-		if (!FileSystem.exists(cache))
+		if (!FileSystem.isDirectory(cache))
 		{
 			FileSystem.create(Config.cachePath);
 			// download as different name to prevent loading partial downloads if cancelled
@@ -353,7 +353,7 @@ class Repository
 			{
 				// rename folder to the name of the project
 				var installPath = target.join(LIB_DIR).join(info.name);
-				if (FileSystem.exists(installPath))
+				if (FileSystem.isDirectory(installPath))
 				{
 					FileSystem.delete(installPath);
 				}
@@ -390,7 +390,7 @@ class Repository
 			Helm.logger.error(L10n.get("not_a_package"));
 		}
 		var dir = target.join(LIB_DIR).join(info.name);
-		if (FileSystem.exists(dir))
+		if (FileSystem.isDirectory(dir))
 		{
 			var info = PackageInfo.load(dir);
 			if (info != null && (version == null || version == info.version))

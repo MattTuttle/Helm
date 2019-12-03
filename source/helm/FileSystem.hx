@@ -40,14 +40,6 @@ class FileSystem
 		return (Sys.systemName() == "Windows");
 	}
 
-	/**
-	 * True if directory exists and is a directory
-	 */
-	static public inline function exists(path:Path):Bool
-	{
-		return FS.exists(path);
-	}
-
 	static public inline function isFile(path:Path):Bool
 	{
 		return FS.exists(path) && !FS.isDirectory(path);
@@ -70,7 +62,7 @@ class FileSystem
 	 */
 	static public function create(path:Path):Bool
 	{
-		if (!FileSystem.exists(path))
+		if (!isDirectory(path))
 		{
 			try
 			{
@@ -92,7 +84,7 @@ class FileSystem
 	 */
 	static public function delete(path:Path, recursive:Bool=true):Bool
 	{
-		if (FileSystem.exists(path))
+		if (isDirectory(path))
 		{
 			if (!path.endsWith(FileSystem.SEPARATOR))
 			{
@@ -103,18 +95,15 @@ class FileSystem
 			{
 				for (item in FS.readDirectory(path))
 				{
-					var newPath = path.join(item);
-					if (FS.isDirectory(newPath))
-					{
-						FileSystem.delete(newPath, recursive);
-					}
-					else
-					{
-						FS.deleteFile(newPath);
-					}
+					delete(path.join(item), recursive);
 				}
 			}
 			FS.deleteDirectory(path);
+			return true;
+		}
+		else if (isFile(path))
+		{
+			FS.deleteFile(path);
 			return true;
 		}
 		return false;

@@ -33,7 +33,7 @@ class Data
 
 	public function read(path:Path):Bool
 	{
-		if (FileSystem.exists(path))
+		if (FileSystem.isFile(path))
 		{
 			try
 			{
