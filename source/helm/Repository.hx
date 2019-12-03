@@ -114,13 +114,35 @@ class Repository
 		return outdated;
 	}
 
+	function getPackageInfo(path:Path):Null<PackageInfo>
+	{
+		if (FileSystem.isFile(path.join(".current")))
+		{
+			var version = File.getContent(path.join(".current")).trim().replace(".", ",");
+			if (FileSystem.isDirectory(path.join(version)))
+			{
+				return PackageInfo.load(path.join(version));
+			}
+		}
+		if (FileSystem.isFile(path.join(".dev")))
+		{
+			path = File.getContent(path.join(".dev"));
+			if (FileSystem.isDirectory(path))
+			{
+				return PackageInfo.load(path);
+			}
+		}
+		return null;
+	}
+
 	public function list(path:Path):Array<PackageInfo>
 	{
 		var packages = new Array<PackageInfo>();
 		var dir = path.join(LIB_DIR);
 		for (item in FileSystem.readDirectory(dir))
 		{
-			var info = PackageInfo.load(dir.join(item));
+			var libPath = dir.join(item);
+			var info = getPackageInfo(libPath);
 			if (info != null) packages.push(info);
 		}
 		return packages;

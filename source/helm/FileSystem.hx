@@ -43,7 +43,17 @@ class FileSystem
 	/**
 	 * True if directory exists and is a directory
 	 */
-	static public function exists(path:Path):Bool
+	static public inline function exists(path:Path):Bool
+	{
+		return FS.exists(path);
+	}
+
+	static public inline function isFile(path:Path):Bool
+	{
+		return FS.exists(path) && !FS.isDirectory(path);
+	}
+
+	static public inline function isDirectory(path:Path):Bool
 	{
 		return FS.exists(path) && FS.isDirectory(path);
 	}

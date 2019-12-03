@@ -5,7 +5,6 @@ import haxe.ds.StringMap;
 import haxe.zip.Entry;
 import haxe.zip.Reader;
 import sys.io.File;
-import sys.FileSystem;
 import helm.ds.SemVer;
 import helm.Helm;
 import helm.util.*;
@@ -32,24 +31,36 @@ class Data
 		contributors = new Array<String>();
 	}
 
-	public function read(json:String)
+	public function read(path:Path):Bool
 	{
-		// TODO: error handling!!
-		var json = Json.parse(json);
-		for (field in Reflect.fields(json.dependencies))
+		if (FileSystem.exists(path))
 		{
-			var version:String = Reflect.field(json.dependencies, field);
-			dependencies.set(field, version);
+			try
+			{
+				var data = File.getContent(path);
+				var json = Json.parse(data);
+				for (field in Reflect.fields(json.dependencies))
+				{
+					var version:String = Reflect.field(json.dependencies, field);
+					dependencies.set(field, version);
+				}
+				name = json.name;
+				license = json.license;
+				classPath = json.classPath;
+				description = json.description;
+				contributors = json.contributors;
+				releasenote = json.releasenote;
+				mainClass = json.main;
+				url = json.url;
+				version = SemVer.ofString(json.version);
+				return true;
+			}
+			catch (e:Dynamic)
+			{
+				return false;
+			}
 		}
-		name = json.name;
-		license = json.license;
-		classPath = json.classPath;
-		description = json.description;
-		contributors = json.contributors;
-		releasenote = json.releasenote;
-		mainClass = json.main;
-		url = json.url;
-		version = SemVer.ofString(json.version);
+		return false;
 	}
 
 	public function toString():String
