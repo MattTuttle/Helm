@@ -40,7 +40,7 @@ class TestPath extends Test
 		var path:Path = 'F:\\\\hi';
 		Assert.equals('F:\\hi', path.normalize());
 		path = '//test/more///than/one/';
-		Assert.equals('/test/more/than/one/', path.normalize());
+		Assert.equals('/test/more/than/one', path.normalize());
 	}
 
 	public function testNormalizeDots()

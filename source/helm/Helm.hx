@@ -1,5 +1,6 @@
 package helm;
 
+import helm.repository.Server;
 import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
 import helm.util.*;
@@ -11,11 +12,8 @@ class Helm
 	static public var logger = new Logger(Sys.stdout());
 	static public var repository = new Repository();
 	// TODO: setup a mirror list for multiple repository servers
-	#if haxelib
-	static public var server:org.haxe.lib.Haxelib = new org.haxe.lib.Haxelib();
-	#else
-	static public var server = new Server();
-	#end
+
+	static public var server:Server = new helm.repository.Haxelib();
 
 	public function new()
 	{

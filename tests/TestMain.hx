@@ -22,7 +22,7 @@ class TestMain
 		runner.addCase(new TestLocalization());
 
 		// commands
-		runner.addCase(new TestCommand(Init));
+		// runner.addCase(new TestCommand(Init));
 		runner.addCase(new TestCommand(Search, ["flixel"]));
 
 		Report.create(runner);

@@ -1,9 +1,9 @@
-package helm;
+package helm.repository;
 
 import helm.ds.Types;
 import haxe.io.Bytes;
 
-class Server
+class Dummy
 {
     public function new()
     {
@@ -35,8 +35,8 @@ class Server
 
     }
 
-    public function findProject(name:String):List<{ name : String, id : Int }>
+    public function search(name:String):Array<String>
     {
-        return new List();
+        return [];
     }
 }

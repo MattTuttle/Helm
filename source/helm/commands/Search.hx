@@ -22,9 +22,9 @@ class Search implements Command
 			// for every argument do a search against haxelib repository
 			for (arg in args.get("package"))
 			{
-				for (result in Helm.server.findProject(arg))
+				for (result in Helm.server.search(arg))
 				{
-					names.push(result.name);
+					names.push(result);
 				}
 			}
 
