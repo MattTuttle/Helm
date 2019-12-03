@@ -122,7 +122,7 @@ class FileSystem
 
 	static public function readDirectory(path:Path):Array<String>
 	{
-		return FS.exists(path) ? FS.readDirectory(path) : [];
+		return isDirectory(path) ? FS.readDirectory(path) : [];
 	}
 
 	/**
