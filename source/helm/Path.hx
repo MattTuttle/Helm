@@ -49,13 +49,7 @@ abstract Path(String) to String
             {
                 result.pop();
             }
-            else if (part == '') // remove empty paths, except first and last
-            {
-                if (i == 0 || i == parts.length - 1) {
-                    result.push(part);
-                }
-            }
-            else if (part == '.') // remove single dot paths, unless it comes first
+            else if (part == '' || part == '.') // remove empty paths, except first and last
             {
                 if (i == 0) {
                     result.push(part);

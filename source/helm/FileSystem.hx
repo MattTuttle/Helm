@@ -22,7 +22,16 @@ class FileSystem
 	static public var homeDir(get, never):Path;
 	static private function get_homeDir():Path
 	{
-		return isWindows ? Sys.getEnv("HOMEDRIVE") + Sys.getEnv("HOMEPATH") : Sys.getEnv("HOME");
+		var path:Path = if (isWindows)
+		{
+			var home:Path = Sys.getEnv("HOMEDRIVE");
+			home.join(Sys.getEnv("HOMEPATH"));
+		}
+		else
+		{
+			Sys.getEnv("HOME");
+		}
+		return path.normalize();
 	}
 
 	static private var isWindows(get, never):Bool;
@@ -119,6 +128,7 @@ class FileSystem
 			var crypt = haxe.crypto.Md5.encode(Std.string(Date.now())).substr(0, 10);
 			path = tmp + SEPARATOR + "helm_" + crypt + SEPARATOR;
 		} while (FS.exists(path));
+		FS.createDirectory(path);
 		return path;
 	}
 

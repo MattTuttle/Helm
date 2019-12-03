@@ -28,7 +28,7 @@ class Boot
 			"0.0.0";
 		};
 
-		var originalPath = Sys.getCwd();
+		var originalPath:Path = Sys.getCwd();
 		Sys.setCwd(path);
 
 		var info = PackageInfo.load(path);

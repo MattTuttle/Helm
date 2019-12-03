@@ -85,7 +85,7 @@ class Data
 		}
 
 		// data.dependencies
-		data.name = logger.prompt(L10n.get("init_project_name"), path.dirname());
+		data.name = logger.prompt(L10n.get("init_project_name"), path.basename());
 		data.description = logger.prompt(L10n.get("init_project_description"));
 		data.version = logger.prompt(L10n.get("init_project_version"), "0.1.0");
 		data.url = logger.prompt(L10n.get("init_project_url"));

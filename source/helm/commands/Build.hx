@@ -18,11 +18,12 @@ class Build implements Command
 
 	public function run(args:Namespace, path:Path):Bool
 	{
-		var path = Sys.getCwd();
+		var originalPath:Path = Sys.getCwd();
+		path = originalPath.normalize();
 
 		if (args.exists("hxml"))
 		{
-            path += args.get("hxml").shift();
+            path = path.join(args.get("hxml").shift());
 		}
 		else
 		{
@@ -31,7 +32,7 @@ class Build implements Command
 			{
 				if (StringTools.endsWith(file, ".hxml"))
 				{
-					path += file;
+					path = path.join(file);
 					break;
 				}
 			}
@@ -43,7 +44,7 @@ class Build implements Command
 			data = File.getContent(path);
 
 		// run command where the hxml file is
-		var cwd = path.substring(0, path.lastIndexOf("/"));
+		var cwd = path.dirname();
 		Sys.setCwd(cwd);
 		// find libraries in the hxml file and try to find their install path
 		for (line in data.split("\n"))
@@ -89,6 +90,7 @@ class Build implements Command
 			var process = new sys.io.Process("haxelib", args);
 			process.close();
 		}
+		Sys.setCwd(originalPath);
 		return true;
 	}
 }

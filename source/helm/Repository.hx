@@ -16,7 +16,7 @@ using StringTools;
 class Repository
 {
 
-	static public var LIB_DIR:String = "haxe_libs";
+	static public var LIB_DIR:String = ".haxelib";
 	static public var NDLL_DIR:String = "ndll";
 
 	public function new()
@@ -64,15 +64,17 @@ class Repository
 	public function getPackageRoot(path:Path, ?find:String):String
 	{
 		if (find == null) find = Data.JSON;
-		if (path != "")
+		var original = path;
+		// TODO: better string checking?
+		while (path != "" && path != "/")
 		{
 			if (FileSystem.exists(path.join(find)))
 			{
 				return path;
 			}
-			path = path.basename();
+			path = path.dirname();
 		}
-		return null;
+		return original;
 	}
 
 	public function findPackageIn(name:String, target:Path):Array<PackageInfo>
@@ -218,13 +220,18 @@ class Repository
 			Sys.putEnv("HAXELIB_RUN", "1");
 		}
 
+		var originalPath = Sys.getCwd();
 		Sys.setCwd(path);
-		return Sys.command(command, args);
+		var result = Sys.command(command, args);
+		Sys.setCwd(originalPath);
+		return result;
 	}
 
 	public function include(name:String):Array<String>
 	{
-		var root = getPackageRoot(Sys.getCwd());
+		var cwd:Path = Sys.getCwd();
+		cwd = cwd.normalize();
+		var root = getPackageRoot(cwd);
 		var path:Path = hasPackageNamed(root, name) ? root : findPackage(name);
 
 		var result = [];

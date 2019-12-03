@@ -49,7 +49,8 @@ class Helm
 		}
 		else
 		{
-			var cwd = Sys.getCwd(); // current working directory
+			var cwd:Path = Sys.getCwd(); // current working directory
+			cwd = cwd.normalize(); // cwd has a nasty habit of including a trailing slash
 			var path = Helm.repository.getPackageRoot(cwd);
 			return path == null ? cwd : path;
 		}
