@@ -12,6 +12,17 @@ import helm.haxelib.Data;
 
 using StringTools;
 
+enum InstallType {
+	FilePath(path:Path);
+	Git(url:String, branch:Null<String>);
+	Haxelib;
+}
+
+typedef InstallDetail = {
+	name:String,
+	type:InstallType
+};
+
 class Installer
 {
 
@@ -19,43 +30,23 @@ class Installer
 
 	public function new() {}
 
-	function installGit(name:String, ?target:Path):Bool
+	function installGit(name:String, url:String, branch:String, ?target:Path):Bool
 	{
 		if (target == null) target = Config.globalPath;
-		var gitRepository = null,
-			gitBranch = null;
 
-		if (name.startsWith("git+"))
-		{
-			var parts = name.split("#");
-			if (parts.length > 1) gitBranch = parts.pop();
-			gitRepository = parts[0].substr(4);
-			name = gitRepository.substr(gitRepository.lastIndexOf("/") + 1).replace(".git", "");
-		}
-		else if (name.split("/").length == 2) // <User>/<Repository>
-		{
-			var parts = name.split("#");
-			if (parts.length > 1) gitBranch = parts.pop();
-			gitRepository = "https://github.com/" + parts[0] + ".git";
-			name = parts[0].split("/").pop();
-		}
-
-		if (gitRepository == null)
-		{
-			return false;
-		}
-		Helm.logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
+		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
 
 		var tmpDir = FileSystem.createTemporary();
 		var path = tmpDir;
 		var args = ["clone"];
-		if (gitBranch != null)
+		if (branch != null)
 		{
 			args.push("-b");
-			args.push(gitBranch);
+			args.push(branch);
 		}
-		args.push(gitRepository);
+		args.push(url);
 		args.push(path);
+		// TODO: better handling when git not installed
 		Sys.command("git", args);
 		var info = PackageInfo.load(path);
 		if (info == null)
@@ -198,7 +189,7 @@ class Installer
 		}
 	}
 
-	public function libraryIsInstalled(name:String, ?version:SemVer, ?target:Path):Bool
+	function libraryIsInstalled(name:String, ?version:SemVer, ?target:Path):Bool
 	{
 		var packages = Helm.repository.findPackagesIn(name, target);
 		for (info in packages)
@@ -211,23 +202,49 @@ class Installer
 		return false;
 	}
 
-	public function install(name:String, ?version:SemVer, ?target:Path):Void
+	function parsePackageString(name:String):InstallDetail
 	{
-		if (!libraryIsInstalled(name, version, target))
+		var type = Haxelib;
+		if (name.startsWith("git+"))
 		{
-			// check if installing from a local file
-			if (FileSystem.isDirectory(name))
-			{
-				trace(name, " is the path to install");
-				// TODO: load project info
-			}
-			else if (installGit(name, target))
-			{
-				return;
-			}
-
-			installDownload(name, version, target);
+			var parts = name.split("#");
+			var branch = null;
+			if (parts.length > 1) branch = parts.pop();
+			var url = parts[0].substr(4);
+			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
+			type = Git(url, branch);
 		}
+		else if (name.split("/").length == 2) // <User>/<Repository>
+		{
+			var parts = name.split("#");
+			var branch = null;
+			if (parts.length > 1) branch = parts.pop();
+			var url = "https://github.com/" + parts[0] + ".git";
+			name = parts[0].split("/").pop();
+			type = Git(url, branch);
+		}
+		return {
+			name: name,
+			type: type
+		}
+	}
+
+	public function install(packageRequest:String, ?version:SemVer, ?target:Path):Bool
+	{
+		var detail = parsePackageString(packageRequest);
+		if (!libraryIsInstalled(detail.name, version, target))
+		{
+			switch (detail.type)
+			{
+				case FilePath(path):
+					// TODO: load project info
+				case Git(url, branch):
+					return installGit(detail.name, url, branch, target);
+				case Haxelib:
+					return installDownload(detail.name, version, target);
+			}
+		}
+		return false;
 	}
 
 	function locateBasePath(zip:List<haxe.zip.Entry>):String
