@@ -179,6 +179,12 @@ class Installer
 		unpackFile(path, installDir);
 		saveCurrentFile(dir);
 
+		installDependencies(installDir, target);
+		return true;
+	}
+
+	function installDependencies(installDir:Path, target:Path)
+	{
 		// install any dependencies
 		var info = PackageInfo.load(installDir);
 		if (info != null && info.dependencies != null)
@@ -190,23 +196,38 @@ class Installer
 				install(name, version, target);
 			}
 		}
-		return true;
+	}
+
+	public function libraryIsInstalled(name:String, ?version:SemVer, ?target:Path):Bool
+	{
+		var packages = Helm.repository.findPackagesIn(name, target);
+		for (info in packages)
+		{
+			if (version == null || info.version == version)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function install(name:String, ?version:SemVer, ?target:Path):Void
 	{
-		// check if installing from a local file
-		if (FileSystem.isDirectory(name))
+		if (!libraryIsInstalled(name, version, target))
 		{
-			trace(name, " is the path to install");
-			// TODO: load project info
-		}
-		else if (installGit(name, target))
-		{
-			return;
-		}
+			// check if installing from a local file
+			if (FileSystem.isDirectory(name))
+			{
+				trace(name, " is the path to install");
+				// TODO: load project info
+			}
+			else if (installGit(name, target))
+			{
+				return;
+			}
 
-		installDownload(name, version, target);
+			installDownload(name, version, target);
+		}
 	}
 
 	function locateBasePath(zip:List<haxe.zip.Entry>):String
