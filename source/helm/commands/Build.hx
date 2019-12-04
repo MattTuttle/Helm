@@ -1,7 +1,5 @@
 package helm.commands;
 
-import sys.FileSystem;
-import sys.io.File;
 import argparse.Namespace;
 import argparse.ArgParser;
 
@@ -13,84 +11,37 @@ class Build implements Command
 {
     public function start(parser:ArgParser)
     {
-        parser.addArgument({flags: "hxml"});
+        parser.addArgument({flags: "hxml", numArgs: '?'});
     }
 
 	public function run(args:Namespace, path:Path):Bool
 	{
-		var originalPath:Path = Sys.getCwd();
-		path = originalPath.normalize();
+		var result = true;
 
 		if (args.exists("hxml"))
 		{
-            path = path.join(args.get("hxml").shift());
+			result = buildHxmlFile(path.join(args.get("hxml").shift()));
 		}
 		else
 		{
-			// search for hxml files in the current directory
+			// build all hxml files in the current directory
 			for (file in FileSystem.readDirectory(path))
 			{
-				if (StringTools.endsWith(file, ".hxml"))
+				if (StringTools.endsWith(file, ".hxml") && !buildHxmlFile(path.join(file)))
 				{
-					path = path.join(file);
-					break;
+					result = false;
 				}
 			}
 		}
-		if (!FileSystem.exists(path)) return false;
+		return result;
+	}
 
-		var libs = new Map<String, String>(),
-			devPaths = new Map<String, String>(),
-			data = File.getContent(path);
-
-		// run command where the hxml file is
-		var cwd = path.dirname();
-		Sys.setCwd(cwd);
-		// find libraries in the hxml file and try to find their install path
-		for (line in data.split("\n"))
+	function buildHxmlFile(path:Path):Bool
+	{
+		if (FileSystem.isFile(path))
 		{
-			line = line.trim();
-			if (line == "" || line.startsWith("#")) continue;
-
-			if (line.startsWith("-lib"))
-			{
-				var lib = line.substr(4).trim().toLowerCase();
-				var path = Helm.repository.findPackage(lib);
-				if (path != null) libs.set(lib, path);
-			}
+			return Sys.command("haxe", [path]) == 0;
 		}
-		// find current versions of haxelib libraries
-		var process = new sys.io.Process("haxelib", ["list"]);
-		var lib_regex = ~/^([^:]+): (?:[^ ]+ )*\[dev:([^ ]+)\](?:[^ ]+ )*$/;
-		var lines = process.stdout.readAll().toString().split("\n");
-		for (line in lines)
-		{
-			if (lib_regex.match(line))
-			{
-				var lib = lib_regex.matched(1).toLowerCase();
-				if (libs.exists(lib))
-				{
-					devPaths.set(lib, lib_regex.matched(2));
-				}
-			}
-		}
-		// setup haxelib with dev paths
-		for (lib in libs.keys())
-		{
-			var path = libs.get(lib);
-			var process = new sys.io.Process("haxelib", ["dev", lib, path]);
-			process.close();
-		}
-		Sys.command("haxe", [path]);
-		// put everything back to where it was
-		for (lib in libs.keys())
-		{
-			var args = ["dev", lib];
-			if (devPaths.exists(lib)) args.push(devPaths.get(lib));
-			var process = new sys.io.Process("haxelib", args);
-			process.close();
-		}
-		Sys.setCwd(originalPath);
-		return true;
+		return false;
 	}
 }
