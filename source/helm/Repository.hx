@@ -197,58 +197,6 @@ class Repository
 		return libs;
 	}
 
-	public function run(args:Array<String>, path:Path, useEnvironment:Bool=false):Int
-	{
-		var info = PackageInfo.load(path);
-		if (info == null)
-		{
-			Helm.logger.log(L10n.get("not_a_package"));
-			return 1;
-		}
-
-		var command:String;
-		if (info.mainClass != null)
-		{
-			command = "haxe";
-			for (name in info.dependencies.keys())
-			{
-				args.push("-lib");
-				args.push(name);
-			}
-			args.unshift(info.mainClass);
-			args.unshift("--run");
-		}
-		else
-		{
-			command = "neko";
-			if (!FileSystem.isFile(path.join("run.n")))
-			{
-				Helm.logger.log(L10n.get("run_not_enabled", [info.name]));
-				return 1;
-			}
-			else
-			{
-				args.unshift("run.n");
-			}
-		}
-
-		if (useEnvironment)
-		{
-			Sys.putEnv("HAXELIB_RUN", Sys.getCwd());
-		}
-		else
-		{
-			args.push(Sys.getCwd());
-			Sys.putEnv("HAXELIB_RUN", "1");
-		}
-
-		var originalPath = Sys.getCwd();
-		Sys.setCwd(path);
-		var result = Sys.command(command, args);
-		Sys.setCwd(originalPath);
-		return result;
-	}
-
 	public function include(name:String):Array<String>
 	{
 		var cwd:Path = Sys.getCwd();

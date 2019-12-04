@@ -68,13 +68,17 @@ class Helm
 		{
 			var command = Commands.getCommand(commandName);
 
-			if (command != null)
+			// if a command can't be found, try it as a run command
+			if (command == null)
 			{
-				command.start(parser);
-				var result = parser.parse(args);
-				var success = command.call(result, path);
-				if (!success) return false;
+				command = Commands.getCommand("run");
+				args.unshift("run");
 			}
+
+			command.start(parser);
+			var result = parser.parse(args);
+			var success = command.call(result, path);
+			if (!success) return false;
 		}
 
 		return true;

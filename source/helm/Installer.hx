@@ -15,14 +15,15 @@ using StringTools;
 class Installer
 {
 
+	var versionDir = "helm";
+
 	public function new() {}
 
 	function installGit(name:String, ?target:Path):Bool
 	{
 		if (target == null) target = Config.globalPath;
 		var gitRepository = null,
-			gitBranch = null,
-			installed = false;
+			gitBranch = null;
 
 		if (name.startsWith("git+"))
 		{
@@ -39,49 +40,60 @@ class Installer
 			name = parts[0].split("/").pop();
 		}
 
-		if (gitRepository != null)
+		if (gitRepository == null)
 		{
-			Helm.logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
-
-			var tmpDir = FileSystem.createTemporary();
-			var path = tmpDir;
-			var args = ["clone"];
-			if (gitBranch != null)
-			{
-				args.push("-b");
-				args.push(gitBranch);
-			}
-			args.push(gitRepository);
-			args.push(path);
-			Sys.command("git", args);
-			var info = PackageInfo.load(path);
-			if (info == null)
-			{
-				FileSystem.delete(tmpDir);
-				Helm.logger.error(L10n.get("not_a_package"));
-			}
-			else
-			{
-				// rename folder to the name of the project
-				var installPath = target.join(Repository.LIB_DIR).join(info.name);
-				if (FileSystem.isDirectory(installPath))
-				{
-					FileSystem.delete(installPath);
-				}
-				else
-				{
-					FileSystem.createDirectory(installPath);
-				}
-				FileSystem.rename(path, installPath);
-				installed = true;
-			}
+			return false;
 		}
-		return installed;
+		Helm.logger.log(L10n.get("installing_package", [name + "@" + gitRepository]));
+
+		var tmpDir = FileSystem.createTemporary();
+		var path = tmpDir;
+		var args = ["clone"];
+		if (gitBranch != null)
+		{
+			args.push("-b");
+			args.push(gitBranch);
+		}
+		args.push(gitRepository);
+		args.push(path);
+		Sys.command("git", args);
+		var info = PackageInfo.load(path);
+		if (info == null)
+		{
+			FileSystem.delete(tmpDir);
+			Helm.logger.error(L10n.get("not_a_package"));
+		}
+		else
+		{
+			var installPath = getInstallPath(target, info.name);
+			moveToRepository(path, installPath.join(versionDir));
+			saveCurrentFile(installPath);
+			return true;
+		}
+		return false;
+	}
+
+	function getInstallPath(target:Path, name:String)
+	{
+		return target.join(Repository.LIB_DIR).join(name);
+	}
+
+	function moveToRepository(path:Path, installPath:Path)
+	{
+		if (FileSystem.isDirectory(installPath))
+		{
+			FileSystem.delete(installPath);
+		}
+		else
+		{
+			FileSystem.createDirectory(installPath);
+		}
+		FileSystem.rename(path, installPath);
 	}
 
 	function checkInstalled(version:SemVer, target:Path, info:ProjectInfo):Path
 	{
-		var dir = target.join(Repository.LIB_DIR).join(info.name);
+		var dir = getInstallPath(target, info.name);
 		if (FileSystem.isDirectory(dir))
 		{
 			var info = PackageInfo.load(dir);
@@ -96,6 +108,11 @@ class Installer
 			}
 		}
 		return dir;
+	}
+
+	function saveCurrentFile(dir:Path)
+	{
+		File.saveContent(dir.join(".current"), "helm");
 	}
 
 	function unpackFile(zipfile:Path, target:Path)
@@ -158,10 +175,9 @@ class Installer
 		}
 
 		// TODO: if zip fails to read, redownload or throw an error?
-		var versionDir = "helm";
 		var installDir = dir.join(versionDir);
 		unpackFile(path, installDir);
-		File.saveContent(dir.join(".current"), versionDir);
+		saveCurrentFile(dir);
 
 		// install any dependencies
 		var info = PackageInfo.load(installDir);
@@ -209,14 +225,14 @@ class Installer
 	public function download(version:VersionInfo):String
 	{
 		var filename = version.url.split("/").pop();
-		var cache = Config.cachePath + filename;
+		var cacheFile = Config.cachePath.join(filename);
 
 		// TODO: allow to redownload with --force argument
-		if (!FileSystem.isDirectory(cache))
+		if (!FileSystem.isFile(cacheFile))
 		{
 			FileSystem.createDirectory(Config.cachePath);
 			// download as different name to prevent loading partial downloads if cancelled
-			var downloadPath = cache.replace("zip", "part");
+			var downloadPath = cacheFile.replace("zip", "part");
 
 			// download the file and show progress
 			var out = File.write(downloadPath, true);
@@ -228,10 +244,10 @@ class Installer
 			http.customRequest(false, progress);
 
 			// move file from the downloads folder to cache (prevents corrupt zip files if cancelled)
-			FileSystem.rename(downloadPath, cache);
+			FileSystem.rename(downloadPath, cacheFile);
 		}
 
-		return cache;
+		return cacheFile;
 	}
 
 	function getLatestVersion(info:ProjectInfo, version:SemVer=null):VersionInfo
