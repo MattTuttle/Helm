@@ -137,7 +137,7 @@ class Installer
 		Helm.logger.log("\n", false);
 	}
 
-	function installDownload(name:String, ?version:SemVer, ?target:Path):Bool
+	function installHaxelib(name:String, ?version:SemVer, ?target:Path):Bool
 	{
 		if (target == null) target = "";
 		var path = null;
@@ -202,46 +202,70 @@ class Installer
 		return false;
 	}
 
-	function parsePackageString(name:String):InstallDetail
+	function parsePackageString(@:const install:String):InstallDetail
 	{
+		var name = install;
 		var type = Haxelib;
-		if (name.startsWith("git+"))
+		// check if installing from a git url (git+http://mygitserver.com/repo.git)
+		if (install.startsWith("git+"))
 		{
-			var parts = name.split("#");
+			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1) branch = parts.pop();
 			var url = parts[0].substr(4);
 			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
 			type = Git(url, branch);
 		}
-		else if (name.split("/").length == 2) // <User>/<Repository>
+		// check if installing from github (<User>/<Repository>)
+		else if (install.split("/").length == 2)
 		{
-			var parts = name.split("#");
+			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1) branch = parts.pop();
 			var url = "https://github.com/" + parts[0] + ".git";
 			name = parts[0].split("/").pop();
 			type = Git(url, branch);
 		}
+		// check if installing from a path (C:\User\mypackage)
+		else if (FileSystem.isDirectory(install))
+		{
+			var info = PackageInfo.load(install);
+			if (info != null)
+			{
+				name = info.name;
+				type = FilePath(install);
+			}
+		}
+
 		return {
 			name: name,
 			type: type
 		}
 	}
 
-	public function install(packageRequest:String, ?version:SemVer, ?target:Path):Bool
+	function installFromFileSystem(name:String, path:Path, target:Path)
 	{
-		var detail = parsePackageString(packageRequest);
+		// TODO: copy folder and check dependencies instead of setting it as a dev directory
+		var installDir = getInstallPath(target, name);
+		FileSystem.createDirectory(installDir);
+		File.saveContent(installDir.join(".dev"), path);
+		return true;
+	}
+
+	public function install(packageInstall:String, ?version:SemVer, ?target:Path):Bool
+	{
+		// TODO: do something if target is not passed
+		var detail = parsePackageString(packageInstall);
 		if (!libraryIsInstalled(detail.name, version, target))
 		{
-			switch (detail.type)
+			return switch (detail.type)
 			{
 				case FilePath(path):
-					// TODO: load project info
+					installFromFileSystem(detail.name, path, target);
 				case Git(url, branch):
-					return installGit(detail.name, url, branch, target);
+					installGit(detail.name, url, branch, target);
 				case Haxelib:
-					return installDownload(detail.name, version, target);
+					installHaxelib(detail.name, version, target);
 			}
 		}
 		return false;
