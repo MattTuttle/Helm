@@ -28,7 +28,6 @@ class Helm
 		Helm.logger.log("|__|__|{blue}axe {yellow}|_____|{blue}xtended {yellow}|_____|{blue}ibrary {yellow}|_|_|_|{blue}anager   v" + VERSION + "{end}");
 		Helm.logger.log();
 		Helm.logger.log("{yellow}-g, --global{end}  Use the global library path");
-		// Helm.logger.log("{yellow}-u, --user{end}    Use the user library path");
 		Helm.logger.log("{yellow}-l, --local{end}   Use the local library path");
 		Helm.logger.log("{yellow}-v, --verbose{end} More output for each command");
 		Helm.logger.log("{yellow}--no-color{end}    Removes ANSI color output");

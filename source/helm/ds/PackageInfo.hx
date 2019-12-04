@@ -9,14 +9,14 @@ class PackageInfo
 	public var name(default, null):String;
 	public var version(default, null):SemVer;
 	public var dependencies(default, null):StringMap<String>;
-	public var path(default, null):String;
+	public var path(default, null):Path;
 	public var classPath(default, null):String = "";
 	public var mainClass(default, null):String;
 
 	public var fullName(get, never):String;
 	private inline function get_fullName():String { return name + ":" + version; }
 
-	public function new(name:String, version:String, dependencies:StringMap<String>, path:String, classPath:Path, mainClass:String)
+	public function new(name:String, version:String, dependencies:StringMap<String>, path:Path, classPath:Path, mainClass:String)
 	{
 		this.name = name;
 		this.version = version;

@@ -17,19 +17,14 @@ class Uninstall implements Command
     {
         for (packageName in args.get("packages"))
         {
-            var infos = Helm.repository.findPackageIn(packageName, path);
+            var infos = Helm.repository.findPackagesIn(packageName, path);
             if (infos.length > 0)
             {
-                var path:String = null;
                 // TODO: should this only delete from the immediate libs folder instead of searching for a package and accidentally deleting a dependency?
                 for (info in infos)
                 {
-                    if (path == null || info.path.length < path.length)
-                    {
-                        path = info.path;
-                    }
+                    FileSystem.delete(info.path.dirname());
                 }
-                FileSystem.delete(path);
                 Helm.logger.log(L10n.get("directory_deleted", [packageName]));
             }
         }

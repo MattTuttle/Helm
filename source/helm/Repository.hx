@@ -26,11 +26,11 @@ class Repository
 
 	public function findPackage(name:String):String
 	{
-		var repo = findPackageIn(name, Sys.getCwd());
+		var repo = findPackagesIn(name, Sys.getCwd());
 		// fallback, if no package found
 		if (repo.length == 0)
 		{
-			repo = findPackageIn(name, Config.globalPath);
+			repo = findPackagesIn(name, Config.globalPath);
 			if (repo.length == 0)
 				return null;
 		}
@@ -46,7 +46,7 @@ class Repository
 
 	function searchPackageList(name:String, l:Array<PackageInfo>):Array<PackageInfo>
 	{
-		var results = new Array<PackageInfo>();
+		var results = [];
 		for (item in l)
 		{
 			if (item.name == name)
@@ -77,7 +77,7 @@ class Repository
 		return original;
 	}
 
-	public function findPackageIn(name:String, target:Path):Array<PackageInfo>
+	public function findPackagesIn(name:String, target:Path):Array<PackageInfo>
 	{
 		name = name.toLowerCase();
 

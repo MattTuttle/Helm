@@ -1,7 +1,6 @@
 package helm.http;
 
 import haxe.io.Bytes;
-import helm.util.*;
 
 class DownloadProgress extends haxe.io.Output
 {
