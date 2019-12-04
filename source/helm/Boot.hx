@@ -34,7 +34,8 @@ class Boot
 		var info = PackageInfo.load(path);
 		if (version > info.version)
 		{
-			Helm.repository.install(PACKAGE_NAME, version, path);
+			var installer = new Installer();
+			installer.install(PACKAGE_NAME, version, path);
 		}
 
 		if (!sys.FileSystem.exists("helm"))

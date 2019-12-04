@@ -60,21 +60,24 @@ class FileSystem
 	 * @param path the directory's path
 	 * @return if the directory is successfully created
 	 */
-	static public function create(path:Path):Bool
+	static public function createDirectory(path:Path, recursive:Bool=false):Bool
 	{
-		if (!isDirectory(path))
+		if (isDirectory(path))
+		{
+			return false;
+		}
+		else
 		{
 			try
 			{
 				FS.createDirectory(path);
+				return true;
 			}
 			catch (e:Dynamic)
 			{
 				return false;
 			}
-			return true;
 		}
-		return false;
 	}
 
 	/**

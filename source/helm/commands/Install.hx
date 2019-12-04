@@ -19,6 +19,7 @@ class Install implements Command
 	{
 		// TODO: fix install git dependency from haxelib.json
 		var libs = Helm.repository.findDependencies(path);
+		var installer = new Installer();
 
 		// install libraries found
 		for (lib in libs.keys())
@@ -30,13 +31,14 @@ class Install implements Command
 			{
 				name = libs.get(lib);
 			}
-			Helm.repository.install(name, version, path);
+			installer.install(name, version, path);
 		}
 	}
 
 	function installPackage(name:String, path:Path)
 	{
 		var version:SemVer = null;
+		var installer = new Installer();
 
 		// try to split from name@version
 		if (name.indexOf("://") == -1)
@@ -49,7 +51,7 @@ class Install implements Command
 				if (version != null) name = parts[0];
 			}
 		}
-		Helm.repository.install(name, version, path);
+		installer.install(name, version, path);
 	}
 
 	public function run(args:Namespace, path:Path):Bool
