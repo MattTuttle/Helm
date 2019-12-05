@@ -8,7 +8,6 @@ import helm.ds.Types.VersionInfo;
 import helm.ds.Types.ProjectInfo;
 import helm.ds.PackageInfo;
 import helm.http.DownloadProgress;
-import helm.haxelib.Data;
 
 using StringTools;
 
@@ -20,6 +19,7 @@ enum InstallType {
 
 typedef InstallDetail = {
 	name:String,
+	original:String,
 	type:InstallType
 };
 
@@ -30,10 +30,8 @@ class Installer
 
 	public function new() {}
 
-	function installGit(name:String, url:String, branch:String, ?target:Path):Bool
+	function installGit(name:String, url:String, branch:String, target:Path):Null<Path>
 	{
-		if (target == null) target = Config.globalPath;
-
 		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
 
 		var tmpDir = FileSystem.createTemporary();
@@ -58,10 +56,9 @@ class Installer
 		{
 			var installPath = getInstallPath(target, info.name);
 			moveToRepository(path, installPath.join(versionDir));
-			saveCurrentFile(installPath);
-			return true;
+			return installPath;
 		}
-		return false;
+		return null;
 	}
 
 	function getInstallPath(target:Path, name:String)
@@ -137,16 +134,15 @@ class Installer
 		Helm.logger.log("\n", false);
 	}
 
-	function installHaxelib(name:String, ?version:SemVer, ?target:Path):Bool
+	function installHaxelib(name:String, version:SemVer, target:Path):Null<Path>
 	{
-		if (target == null) target = "";
 		var path = null;
 		// conflict resolution
 		var info = Helm.server.getProjectInfo(name);
 		if (info == null)
 		{
 			Helm.logger.error(L10n.get("not_a_package"));
-			return false;
+			return null;
 		}
 		var dir = checkInstalled(version, target, info);
 
@@ -155,7 +151,7 @@ class Installer
 		if (downloadVersion == null)
 		{
 			Helm.logger.error(L10n.get("version_not_found", [Std.string(version)]));
-			return false;
+			return null;
 		}
 		Helm.logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
 
@@ -166,12 +162,9 @@ class Installer
 		}
 
 		// TODO: if zip fails to read, redownload or throw an error?
-		var installDir = dir.join(versionDir);
-		unpackFile(path, installDir);
-		saveCurrentFile(dir);
+		unpackFile(path, dir.join(versionDir));
 
-		installDependencies(installDir, target);
-		return true;
+		return dir;
 	}
 
 	function installDependencies(installDir:Path, target:Path)
@@ -189,7 +182,15 @@ class Installer
 		}
 	}
 
-	function libraryIsInstalled(name:String, ?version:SemVer, ?target:Path):Bool
+	function addToPackageDependencies(name:String, version:String, target:Path):PackageInfo
+	{
+		var info = PackageInfo.load(target);
+		info.dependencies.set(name, version);
+		info.save();
+		return info;
+	}
+
+	function libraryIsInstalled(name:String, version:SemVer, target:Path):Bool
 	{
 		var packages = Helm.repository.findPackagesIn(name, target);
 		for (info in packages)
@@ -239,49 +240,68 @@ class Installer
 
 		return {
 			name: name,
+			original: install,
 			type: type
 		}
 	}
 
-	function installFromFileSystem(name:String, path:Path, target:Path)
+	function installFromFileSystem(name:String, path:Path, target:Path):Null<Path>
 	{
 		// TODO: copy folder and check dependencies instead of setting it as a dev directory
 		var installDir = getInstallPath(target, name);
 		FileSystem.createDirectory(installDir);
 		File.saveContent(installDir.join(".dev"), path);
+		return installDir;
+	}
+
+	function installFromType(detail:InstallDetail, version:SemVer, baseRepo:Path):Bool
+	{
+		var path:Path = switch (detail.type)
+		{
+			case FilePath(path):
+				installFromFileSystem(detail.name, path, baseRepo);
+			case Git(url, branch):
+				installGit(detail.name, url, branch, baseRepo);
+			case Haxelib:
+				installHaxelib(detail.name, version, baseRepo);
+		}
+
+		// check if something was installed
+		if (path == null)
+		{
+			Helm.logger.error("Could not install package " + detail.name);
+			return false;
+		}
+
+		saveCurrentFile(path);
+		addToPackageDependencies(detail.name, detail.original, baseRepo);
+		installDependencies(path, baseRepo);
 		return true;
 	}
 
 	public function install(packageInstall:String, ?version:SemVer, ?target:Path):Bool
 	{
-		// TODO: do something if target is not passed
+		final path = target == null ? Config.globalPath : target;
 		var detail = parsePackageString(packageInstall);
-		if (!libraryIsInstalled(detail.name, version, target))
+		if (!libraryIsInstalled(detail.name, version, path))
 		{
-			return switch (detail.type)
-			{
-				case FilePath(path):
-					installFromFileSystem(detail.name, path, target);
-				case Git(url, branch):
-					installGit(detail.name, url, branch, target);
-				case Haxelib:
-					installHaxelib(detail.name, version, target);
-			}
+			return installFromType(detail, version, path);
 		}
 		return false;
 	}
 
 	function locateBasePath(zip:List<haxe.zip.Entry>):String
 	{
+		var json = PackageInfo.JSON;
 		for (f in zip)
 		{
 			// find haxelib.json file
-			if (StringTools.endsWith(f.fileName, Data.JSON))
+			if (StringTools.endsWith(f.fileName, json))
 			{
-				return f.fileName.substr(0, f.fileName.length - Data.JSON.length);
+				return f.fileName.substr(0, f.fileName.length - json.length);
 			}
 		}
-		throw "No " + Data.JSON + " found";
+		throw "No " + json + " found";
 	}
 
 	public function download(version:VersionInfo):String

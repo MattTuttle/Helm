@@ -8,7 +8,6 @@ import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
 import helm.http.DownloadProgress;
-import helm.haxelib.Data;
 import helm.util.*;
 
 using StringTools;
@@ -35,7 +34,7 @@ class Repository
 				return null;
 		}
 		// TODO: resolve multiple packages found, select best one
-		return repo[0].path;
+		return repo[0].filePath;
 	}
 
 	function hasPackageNamed(path:Path, name:String):Bool
@@ -53,7 +52,7 @@ class Repository
 			{
 				results.push(item);
 			}
-			for (result in searchPackageList(name, list(item.path)))
+			for (result in searchPackageList(name, list(item.filePath)))
 			{
 				results.push(result);
 			}
@@ -63,7 +62,7 @@ class Repository
 
 	public function getPackageRoot(path:Path, ?find:String):String
 	{
-		if (find == null) find = Data.JSON;
+		if (find == null) find = PackageInfo.JSON;
 		var original = path;
 		// TODO: better string checking?
 		while (path != "" && path != "/")

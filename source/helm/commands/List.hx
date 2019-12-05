@@ -32,7 +32,7 @@ class List implements Command
 					for (p in list)
 					{
 						Helm.logger.log(p.fullName);
-						printPackagesFlat(Helm.repository.list(p.path));
+						printPackagesFlat(Helm.repository.list(p.filePath));
 					}
 				}
 				printPackagesFlat(list);
@@ -53,7 +53,7 @@ class List implements Command
 						{
 							start += (level[j] ? "  " : "│ ");
 						}
-						var packages = Helm.repository.list(item.path);
+						var packages = Helm.repository.list(item.filePath);
 						var hasChildren = packages.length > 0;
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
 						Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");

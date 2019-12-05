@@ -1,7 +1,6 @@
 package helm.commands;
 
 import helm.ds.PackageInfo;
-import helm.haxelib.Data;
 import helm.util.L10n;
 import argparse.ArgParser;
 import argparse.Namespace;
@@ -21,7 +20,7 @@ class Init implements Command
 			Helm.logger.error(L10n.get("package_already_exists", [info.fullName]));
 		}
 
-		Data.init(path, Helm.logger);
+		PackageInfo.init(path, Helm.logger);
 		return true;
 	}
 }

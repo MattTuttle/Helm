@@ -23,7 +23,7 @@ class Uninstall implements Command
                 // TODO: should this only delete from the immediate libs folder instead of searching for a package and accidentally deleting a dependency?
                 for (info in infos)
                 {
-                    FileSystem.delete(info.path.dirname());
+                    FileSystem.delete(info.filePath.dirname());
                 }
                 Helm.logger.log(L10n.get("directory_deleted", [packageName]));
             }

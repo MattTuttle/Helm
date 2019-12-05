@@ -6,4 +6,4 @@
 --interp
 -lib utest
 -lib compiletime
--lib argparse
+-lib argparser

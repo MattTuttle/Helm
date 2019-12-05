@@ -1,5 +1,5 @@
 -cp source
--lib argparse
+-lib argparser
 -lib compiletime
 -resource l10n/en-US/strings.xml@en-US
 
