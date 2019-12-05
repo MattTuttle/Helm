@@ -23,7 +23,7 @@ class Boot
 
 		// get latest version on server
 		var version:SemVer = try {
-			Helm.server.getProjectInfo(PACKAGE_NAME).currentVersion;
+			Helm.registry.getProjectInfo(PACKAGE_NAME).currentVersion;
 		} catch (e:Dynamic) {
 			"0.0.0";
 		};

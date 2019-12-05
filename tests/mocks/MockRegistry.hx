@@ -1,9 +1,10 @@
-package helm.repository;
+package mocks;
 
 import helm.ds.Types;
 import haxe.io.Bytes;
+import helm.registry.Registry;
 
-class Dummy
+class MockRegistry implements Registry
 {
     public function new()
     {

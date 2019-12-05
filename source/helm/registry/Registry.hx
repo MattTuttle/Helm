@@ -1,9 +1,9 @@
-package helm.repository;
+package helm.registry;
 
 import helm.ds.Types;
 import haxe.io.Bytes;
 
-interface Server
+interface Registry
 {
     public function getProjectInfo(name:String):ProjectInfo;
     public function getUserInfo(username:String):UserInfo;

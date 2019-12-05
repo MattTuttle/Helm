@@ -1,6 +1,6 @@
 package helm;
 
-import helm.repository.Server;
+import helm.registry.Registry;
 import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
 import helm.util.*;
@@ -13,7 +13,7 @@ class Helm
 	static public var repository = new Repository();
 	// TODO: setup a mirror list for multiple repository servers
 
-	static public var server:Server = new helm.repository.Haxelib();
+	static public var registry:Registry = new helm.registry.Haxelib();
 
 	public function new()
 	{

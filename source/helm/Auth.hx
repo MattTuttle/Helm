@@ -17,7 +17,7 @@ class Auth
 		while (true)
 		{
 			username = Helm.logger.prompt("Username: ").toLowerCase();
-			if (Helm.server.getUserInfo(username) != null) break;
+			if (Helm.registry.getUserInfo(username) != null) break;
 			Helm.logger.log(username + " is not registered.");
 			var result = Helm.logger.prompt("Would you like to register it? [y/N] ");
 			if (~/^y(es)?$/.match(result.toLowerCase()))
@@ -29,7 +29,7 @@ class Auth
 		while (true)
 		{
 			password = Helm.logger.prompt("Password: ", true);
-			if (Helm.server.checkPassword(username, password)) break;
+			if (Helm.registry.checkPassword(username, password)) break;
 			Helm.logger.log("Invalid password.");
 		}
 	}
@@ -49,7 +49,7 @@ class Auth
 				{
 					Helm.logger.log("Invalid username. Must be alphanumeric and 3-32 characters long.");
 				}
-				else if (Helm.server.getUserInfo(username) != null)
+				else if (Helm.registry.getUserInfo(username) != null)
 				{
 					Helm.logger.log("Username " + username + " is already taken");
 				}
@@ -81,7 +81,7 @@ class Auth
 
 		name = Helm.logger.prompt("Full Name: ");
 
-		Helm.server.register(username, password, email, name);
+		Helm.registry.register(username, password, email, name);
 	}
 
 }

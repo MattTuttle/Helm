@@ -34,7 +34,7 @@ class Info implements Command
 			for (arg in packages)
 			{
 				var parts = arg.split(":");
-				var info = Helm.server.getProjectInfo(parts[0]);
+				var info = Helm.registry.getProjectInfo(parts[0]);
 				if (info == null)
 				{
 					Helm.logger.error(L10n.get("not_a_package"));

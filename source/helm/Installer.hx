@@ -138,7 +138,7 @@ class Installer
 	{
 		var path = null;
 		// conflict resolution
-		var info = Helm.server.getProjectInfo(name);
+		var info = Helm.registry.getProjectInfo(name);
 		if (info == null)
 		{
 			Helm.logger.error(L10n.get("not_a_package"));

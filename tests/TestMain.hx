@@ -12,6 +12,7 @@ class TestMain
 	static public function main()
 	{
 		Helm.logger = new Logger(new BytesOutput());
+		Helm.registry = new mocks.MockRegistry();
 
 		var runner = new Runner();
 

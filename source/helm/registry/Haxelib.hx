@@ -1,4 +1,4 @@
-package helm.repository;
+package helm.registry;
 
 import helm.ds.SemVer;
 import helm.ds.Types.UserInfo;
@@ -6,7 +6,6 @@ import helm.ds.Types.ProjectInfo;
 import helm.ds.Types.VersionInfo;
 import haxe.crypto.Md5;
 import helm.http.UploadProgress;
-import helm.repository.Server;
 import haxe.io.Bytes;
 
 typedef UserInfos = {
@@ -33,7 +32,7 @@ typedef ProjectInfos = {
 	var tags:List<String>;
 }
 
-class Haxelib implements Server
+class Haxelib implements Registry
 {
 	final url:String;
 	final apiVersion:String = "3.0";

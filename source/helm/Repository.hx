@@ -98,7 +98,7 @@ class Repository
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
 		for (item in list(path))
 		{
-			var info = Helm.server.getProjectInfo(item.name);
+			var info = Helm.registry.getProjectInfo(item.name);
 			if (info == null) continue;
 			var version:SemVer = info.currentVersion;
 			if (version > item.version)

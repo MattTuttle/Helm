@@ -30,7 +30,7 @@ class Haxelib implements Command
 
 					for (arg in it)
 					{
-						var user = Helm.server.getUserInfo(arg);
+						var user = Helm.registry.getUserInfo(arg);
 						if (user == null)
 						{
 							Helm.logger.log(arg + " is not registered.");
@@ -54,7 +54,7 @@ class Haxelib implements Command
 					auth.login();
 					var bundleName = LibBundle.make(path);
 
-					Helm.server.submit(info.name, File.read(bundleName).readAll(), auth);
+					Helm.registry.submit(info.name, File.read(bundleName).readAll(), auth);
 				default:
 					return false;
 			}
