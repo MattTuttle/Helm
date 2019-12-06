@@ -19,7 +19,7 @@ class PackageInfo {
 	public final url:String;
 	public final dependencies:StringMap<String>;
 	public final version:SemVer;
-	public final filePath:Path;
+	public var filePath(default, null):Path;
 
 	public var fullName(get, never):String;
 
@@ -28,8 +28,7 @@ class PackageInfo {
 	}
 
 	// TODO: change dynamic to a typedef
-	function new(path:Path, data:Dynamic) {
-		filePath = path;
+	function new(data:Dynamic) {
 		dependencies = new StringMap<String>();
 		for (field in Reflect.fields(data.dependencies)) {
 			var version:String = Reflect.field(data.dependencies, field);
@@ -46,14 +45,19 @@ class PackageInfo {
 		version = SemVer.ofString(data.version);
 	}
 
+	static public function loadFromString(json:String):PackageInfo {
+		return new PackageInfo(Json.parse(json));
+	}
+
 	static public function load(path:Path):PackageInfo {
 		var dataPath = path.join(JSON);
 		if (FileSystem.isFile(dataPath)) {
 			try {
 				var data = File.getContent(dataPath);
 				var json = Json.parse(data);
-
-				return new PackageInfo(dataPath, json);
+				var info = new PackageInfo(json);
+				info.filePath = dataPath;
+				return info;
 			} catch (e:Dynamic) {
 				// do nothing?
 			}
@@ -61,9 +65,9 @@ class PackageInfo {
 		return null;
 	}
 
-	public function save():Bool {
+	public function save(path:Path):Bool {
 		try {
-			File.saveContent(filePath, toString());
+			File.saveContent(path, toString());
 			return true;
 		} catch (e:Dynamic) {
 			return false;
@@ -93,7 +97,7 @@ class PackageInfo {
 			dependencies.set(dep.name, dep.version);
 		}
 
-		var info = new PackageInfo(JSON, {
+		var info = new PackageInfo({
 			name: logger.prompt(L10n.get("init_project_name"), path.basename()),
 			description: logger.prompt(L10n.get("init_project_description")),
 			version: logger.prompt(L10n.get("init_project_version"), "0.1.0"),
@@ -101,7 +105,9 @@ class PackageInfo {
 			license: logger.prompt(L10n.get("init_project_license"), "MIT"),
 			dependencies: dependencies
 		});
-		var out = sys.io.File.write(JSON);
+		var path:Path = Sys.getCwd();
+		info.filePath = path.join(JSON);
+		var out = sys.io.File.write(info.filePath);
 		out.writeString(info.toString());
 		out.close();
 	}

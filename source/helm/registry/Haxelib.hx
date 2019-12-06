@@ -1,5 +1,7 @@
 package helm.registry;
 
+import helm.ds.PackageInfo;
+import sys.Http;
 import helm.ds.SemVer;
 import helm.ds.Types.UserInfo;
 import helm.ds.Types.ProjectInfo;
@@ -46,7 +48,7 @@ class Haxelib implements Registry {
 
 	function call(func:String, params:Array<Dynamic>):Dynamic {
 		var data = null;
-		var h = new haxe.Http(url + "api/" + apiVersion + "/index.n");
+		var h = new Http(url + "api/" + apiVersion + "/index.n");
 		var s = new haxe.Serializer();
 		s.serialize(["api", func]);
 		s.serialize(params);
@@ -59,6 +61,16 @@ class Haxelib implements Registry {
 			throw "Invalid response : '" + data + "'";
 		data = data.substr(3);
 		return new haxe.Unserializer(data).unserialize();
+	}
+
+	public function getPackageInfo(name:String, version:SemVer):PackageInfo {
+		var data = null;
+		// TODO: what about haxelib.json files that aren't in the base directory? Is that still a thing??
+		var h = new Http(url + "/p/" + name + "/" + version.toString() + "/raw-files/haxelib.json");
+		h.onData = (d) -> data = d;
+		h.onError = (e) -> throw e;
+		h.request(true);
+		return PackageInfo.loadFromString(data);
 	}
 
 	function sortVersionInfo(a:VersionInfo, b:VersionInfo):Int {
@@ -134,7 +146,7 @@ class Haxelib implements Registry {
 		call("checkDeveloper", [name, auth.username]);
 		var id = call("getSubmitId", []);
 
-		var h = new haxe.Http(url);
+		var h = new Http(url);
 		h.onData = (d) -> trace(d);
 		h.onError = (e) -> throw e;
 		h.fileTransfer("file", id, new UploadProgress(data), data.length);

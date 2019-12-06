@@ -1,11 +1,17 @@
 package mocks;
 
+import helm.ds.PackageInfo;
+import helm.ds.SemVer;
 import helm.ds.Types;
 import haxe.io.Bytes;
 import helm.registry.Registry;
 
 class MockRegistry implements Registry {
 	public function new() {}
+
+	public function getPackageInfo(name:String, version:SemVer):PackageInfo {
+		return null;
+	}
 
 	public function getProjectInfo(name:String):ProjectInfo {
 		return null;

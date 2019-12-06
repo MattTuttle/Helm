@@ -112,7 +112,7 @@ class Installer {
 		Helm.logger.log("\n", false);
 	}
 
-	function installHaxelib(target:Path, name:String, version:SemVer):Null<Path> {
+	function installHaxelib(target:Path, name:String, ?version:SemVer):Null<Path> {
 		var path = null;
 		// conflict resolution
 		var info = Helm.registry.getProjectInfo(name);
@@ -156,7 +156,7 @@ class Installer {
 	function addToPackageDependencies(name:String, version:String, target:Path):PackageInfo {
 		var info = PackageInfo.load(target);
 		info.dependencies.set(name, version);
-		info.save();
+		info.save(info.filePath);
 		return info;
 	}
 
