@@ -1,6 +1,7 @@
 package helm;
 
 import sys.FileSystem as FS;
+import sys.io.File;
 
 using StringTools;
 
@@ -45,6 +46,19 @@ class FileSystem {
 
 	static public function rename(oldPath:Path, newPath:Path):Void {
 		FS.rename(oldPath, newPath);
+	}
+
+	static public function copy(oldPath:Path, newPath:Path):Void {
+		if (isDirectory(oldPath)) {
+			for (item in readDirectory(oldPath)) {
+				copy(oldPath.join(item), newPath.join(item));
+			}
+		} else {
+			FileSystem.createDirectory(newPath.dirname());
+			// TODO: read in chunks to better handle larger files
+			var bytes = File.getBytes(oldPath);
+			File.saveBytes(newPath, bytes);
+		}
 	}
 
 	/**

@@ -14,7 +14,7 @@ using StringTools;
 enum InstallType {
 	FilePath(path:Path);
 	Git(url:String, branch:Null<String>);
-	Haxelib;
+	Haxelib(?version:SemVer);
 }
 
 typedef InstallDetail = {
@@ -28,7 +28,7 @@ class Installer {
 
 	public function new() {}
 
-	function installGit(name:String, url:String, branch:String, target:Path):Null<Path> {
+	function installGit(target:Path, name:String, url:String, branch:String):Null<Path> {
 		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
 
 		var tmpDir = FileSystem.createTemporary();
@@ -82,7 +82,7 @@ class Installer {
 	}
 
 	function saveCurrentFile(dir:Path) {
-		File.saveContent(dir.join(".current"), "helm");
+		File.saveContent(dir.join(".current"), versionDir);
 	}
 
 	function unpackFile(zipfile:Path, target:Path) {
@@ -112,7 +112,7 @@ class Installer {
 		Helm.logger.log("\n", false);
 	}
 
-	function installHaxelib(name:String, version:SemVer, target:Path):Null<Path> {
+	function installHaxelib(target:Path, name:String, version:SemVer):Null<Path> {
 		var path = null;
 		// conflict resolution
 		var info = Helm.registry.getProjectInfo(name);
@@ -146,9 +146,9 @@ class Installer {
 		var info = PackageInfo.load(installDir);
 		if (info != null && info.dependencies != null) {
 			for (name in info.dependencies.keys()) {
-				var version = info.dependencies.get(name);
+				var require = info.dependencies.get(name);
 				// prevent installing a library we already installed (infinite loop)
-				install(name, version, target);
+				install(require, target);
 			}
 		}
 	}
@@ -160,21 +160,25 @@ class Installer {
 		return info;
 	}
 
-	function libraryIsInstalled(name:String, version:SemVer, target:Path):Bool {
+	function libraryIsInstalled(name:String, target:Path):Bool {
 		var packages = Helm.repository.findPackagesIn(name, target);
-		for (info in packages) {
-			if (version == null || info.version == version) {
-				return true;
-			}
-		}
-		return false;
+		return packages.length > 0;
 	}
 
 	function parsePackageString(@:const install:String):InstallDetail {
 		var name = install;
-		var type = Haxelib;
+		var type:InstallType;
 		// check if installing from a git url (git+http://mygitserver.com/repo.git)
-		if (install.startsWith("git+")) {
+		if (FileSystem.isDirectory(install)) {
+			// check if installing from a path (C:\User\mypackage)
+			var info = PackageInfo.load(install);
+			if (info != null) {
+				name = info.name;
+				type = FilePath(install);
+			} else {
+				type = Haxelib();
+			}
+		} else if (install.startsWith("git+")) {
 			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1)
@@ -182,9 +186,8 @@ class Installer {
 			var url = parts[0].substr(4);
 			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
 			type = Git(url, branch);
-		}
-		// check if installing from github (<User>/<Repository>)
-		else if (install.split("/").length == 2) {
+		} else if (install.indexOf("/") >= 0) {
+			// check if installing from github (<User>/<Repository>)
 			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1)
@@ -192,14 +195,19 @@ class Installer {
 			var url = "https://github.com/" + parts[0] + ".git";
 			name = parts[0].split("/").pop();
 			type = Git(url, branch);
-		}
-		// check if installing from a path (C:\User\mypackage)
-		else if (FileSystem.isDirectory(install)) {
-			var info = PackageInfo.load(install);
-			if (info != null) {
-				name = info.name;
-				type = FilePath(install);
+		} else {
+			var version:SemVer = null;
+			// try to split from name:version
+			if (install.indexOf(":") >= 0) {
+				var parts = install.split(":");
+				if (parts.length == 2) {
+					version = SemVer.ofString(parts[1]);
+					// only use the first part if successfully parsing a version from the second part
+					if (version != null)
+						name = parts[0];
+				}
 			}
+			type = Haxelib(version);
 		}
 
 		return {
@@ -209,22 +217,21 @@ class Installer {
 		}
 	}
 
-	function installFromFileSystem(name:String, path:Path, target:Path):Null<Path> {
-		// TODO: copy folder and check dependencies instead of setting it as a dev directory
-		var installDir = getInstallPath(target, name);
-		FileSystem.createDirectory(installDir);
-		File.saveContent(installDir.join(".dev"), path);
+	function installFromFileSystem(target:Path, name:String, originalPath:Path):Null<Path> {
+		final installDir = getInstallPath(target, name);
+		// TODO: create symlink on unix platforms
+		FileSystem.copy(originalPath, installDir.join(versionDir));
 		return installDir;
 	}
 
-	function installFromType(detail:InstallDetail, version:SemVer, baseRepo:Path):Bool {
+	function installFromType(detail:InstallDetail, baseRepo:Path):Bool {
 		var path:Path = switch (detail.type) {
 			case FilePath(path):
-				installFromFileSystem(detail.name, path, baseRepo);
+				installFromFileSystem(baseRepo, detail.name, path);
 			case Git(url, branch):
-				installGit(detail.name, url, branch, baseRepo);
-			case Haxelib:
-				installHaxelib(detail.name, version, baseRepo);
+				installGit(baseRepo, detail.name, url, branch);
+			case Haxelib(version):
+				installHaxelib(baseRepo, detail.name, version);
 		}
 
 		// check if something was installed
@@ -234,16 +241,16 @@ class Installer {
 		}
 
 		saveCurrentFile(path);
-		addToPackageDependencies(detail.name, detail.original, baseRepo);
+		// addToPackageDependencies(detail.name, detail.original, baseRepo);
 		installDependencies(path, baseRepo);
 		return true;
 	}
 
-	public function install(packageInstall:String, ?version:SemVer, ?target:Path):Bool {
+	public function install(packageInstall:String, ?target:Path):Bool {
 		final path = target == null ? Config.globalPath : target;
 		var detail = parsePackageString(packageInstall);
-		if (!libraryIsInstalled(detail.name, version, path)) {
-			return installFromType(detail, version, path);
+		if (!libraryIsInstalled(detail.name, path)) {
+			return installFromType(detail, path);
 		}
 		return false;
 	}

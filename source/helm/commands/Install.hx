@@ -25,25 +25,13 @@ class Install implements Command {
 			if (version != null && SemVer.ofString(version) == null) {
 				name = libs.get(lib);
 			}
-			installer.install(name, version, path);
+			installer.install(name + ":" + path, path);
 		}
 	}
 
 	function installPackage(name:String, path:Path) {
-		var version:SemVer = null;
 		var installer = new Installer();
-
-		// try to split from name@version
-		if (name.indexOf("://") == -1) {
-			var parts = name.split(":");
-			if (parts.length == 2) {
-				version = SemVer.ofString(parts[1]);
-				// only use the first part if successfully parsing a version from the second part
-				if (version != null)
-					name = parts[0];
-			}
-		}
-		installer.install(name, version, path);
+		installer.install(name, path);
 	}
 
 	public function run(args:Namespace, path:Path):Bool {

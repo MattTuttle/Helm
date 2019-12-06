@@ -31,10 +31,10 @@ class Boot {
 		var info = PackageInfo.load(path);
 		if (version > info.version) {
 			var installer = new Installer();
-			installer.install(PACKAGE_NAME, version, path);
+			installer.install(PACKAGE_NAME + ":" + version, path);
 		}
 
-		if (!sys.FileSystem.exists("helm")) {
+		if (!FileSystem.isFile("helm")) {
 			// TODO: don't assume haxe and nekotools are installed
 			result = Sys.command("haxe", [
 				    "-neko",                     "helm.n",
@@ -43,12 +43,12 @@ class Boot {
 				"-resource", "l10n/en-US/strings.xml@en-US"
 			]);
 			result = Sys.command("nekotools", ["boot", "helm.n"]);
-			sys.FileSystem.deleteFile("helm.n");
+			FileSystem.delete("helm.n");
 			if (Sys.systemName() == "Windows") {
 				result = Sys.command("setx", ["path", '"%path%;$path\\bin\\"']);
 			} else {
-				if (!sys.FileSystem.exists("/usr/local/bin/helm")) {
-					result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin"]);
+				if (!FileSystem.isFile("/usr/local/bin/helm")) {
+					result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin/helm"]);
 				}
 			}
 		}

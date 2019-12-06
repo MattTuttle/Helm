@@ -37,12 +37,10 @@ class Repository {
 
 	function searchPackageList(name:String, l:Array<PackageInfo>):Array<PackageInfo> {
 		var results = [];
+		name = name.toLowerCase();
 		for (item in l) {
-			if (item.name == name) {
+			if (item.name.toLowerCase() == name) {
 				results.push(item);
-			}
-			for (result in searchPackageList(name, list(item.filePath))) {
-				results.push(result);
 			}
 		}
 		return results;
