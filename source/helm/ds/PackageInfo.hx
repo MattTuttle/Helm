@@ -6,9 +6,7 @@ import haxe.ds.StringMap;
 import helm.util.Logger;
 import helm.util.L10n;
 
-class PackageInfo
-{
-
+class PackageInfo {
 	static public var JSON:String = "haxelib.json";
 
 	public final name:String;
@@ -24,15 +22,16 @@ class PackageInfo
 	public final filePath:Path;
 
 	public var fullName(get, never):String;
-	private inline function get_fullName():String { return name + ":" + version; }
+
+	private inline function get_fullName():String {
+		return name + ":" + version;
+	}
 
 	// TODO: change dynamic to a typedef
-	function new(path:Path, data:Dynamic)
-	{
+	function new(path:Path, data:Dynamic) {
 		filePath = path;
 		dependencies = new StringMap<String>();
-		for (field in Reflect.fields(data.dependencies))
-		{
+		for (field in Reflect.fields(data.dependencies)) {
 			var version:String = Reflect.field(data.dependencies, field);
 			dependencies.set(field, version);
 		}
@@ -47,41 +46,31 @@ class PackageInfo
 		version = SemVer.ofString(data.version);
 	}
 
-	static public function load(path:Path):PackageInfo
-	{
+	static public function load(path:Path):PackageInfo {
 		var dataPath = path.join(JSON);
-		if (FileSystem.isFile(dataPath))
-		{
-			try
-			{
+		if (FileSystem.isFile(dataPath)) {
+			try {
 				var data = File.getContent(dataPath);
 				var json = Json.parse(data);
 
 				return new PackageInfo(dataPath, json);
-			}
-			catch (e:Dynamic)
-			{
+			} catch (e:Dynamic) {
 				// do nothing?
 			}
 		}
 		return null;
 	}
 
-	public function save():Bool
-	{
-		try
-		{
+	public function save():Bool {
+		try {
 			File.saveContent(filePath, toString());
 			return true;
-		}
-		catch (e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			return false;
 		}
 	}
 
-	public function toString():String
-	{
+	public function toString():String {
 		var data = {
 			name: name,
 			description: description,
@@ -97,12 +86,10 @@ class PackageInfo
 		return json;
 	}
 
-	static public function init(path:Path, logger:Logger)
-	{
+	static public function init(path:Path, logger:Logger) {
 		// fill in dependencies
 		var dependencies = new StringMap<String>();
-		for (dep in Helm.repository.list(path))
-		{
+		for (dep in Helm.repository.list(path)) {
 			dependencies.set(dep.name, dep.version);
 		}
 
@@ -118,5 +105,4 @@ class PackageInfo
 		out.writeString(info.toString());
 		out.close();
 	}
-
 }

@@ -3,8 +3,7 @@ package helm.commands;
 import argparse.ArgParser;
 import argparse.Namespace;
 
-interface Command
-{
-    public function start(parser:ArgParser):Void;
+interface Command {
+	public function start(parser:ArgParser):Void;
 	public function run(args:Namespace, path:Path):Bool;
 }

@@ -5,19 +5,13 @@ import sys.io.File;
 
 using StringTools;
 
-class LibBundle
-{
-
-	static private function readIgnoreFile(path:String):Array<String>
-	{
-		if (FileSystem.exists(path))
-		{
+class LibBundle {
+	static private function readIgnoreFile(path:String):Array<String> {
+		if (FileSystem.exists(path)) {
 			var ignoreFile = File.getContent(path);
 			var rules = new Array<String>();
-			for (line in ignoreFile.split("\n"))
-			{
-				if (line.trim() != "" && !line.startsWith("#"))
-				{
+			for (line in ignoreFile.split("\n")) {
+				if (line.trim() != "" && !line.startsWith("#")) {
 					rules.push(line);
 				}
 			}
@@ -26,22 +20,17 @@ class LibBundle
 		return null;
 	}
 
-	static private function addBundleEntries(path:Path, list:List<haxe.zip.Entry>, ignore:EReg, fileName:String=""):Void
-	{
-		for (file in FileSystem.readDirectory(path.join(fileName)))
-		{
-			if (ignore.match(file)) continue;
+	static private function addBundleEntries(path:Path, list:List<haxe.zip.Entry>, ignore:EReg, fileName:String = ""):Void {
+		for (file in FileSystem.readDirectory(path.join(fileName))) {
+			if (ignore.match(file))
+				continue;
 			var name = fileName + file;
 			var filePath = path + name;
-			if (FileSystem.isDirectory(filePath))
-			{
-				if (!ignore.match(name + "/"))
-				{
+			if (FileSystem.isDirectory(filePath)) {
+				if (!ignore.match(name + "/")) {
 					addBundleEntries(path, list, ignore, name + "/");
 				}
-			}
-			else
-			{
+			} else {
 				// var stat = FileSystem.stat(filePath);
 				var bytes = File.read(filePath, true).readAll();
 				var entry = {
@@ -60,16 +49,14 @@ class LibBundle
 		}
 	}
 
-	static public function make(path:String):String
-	{
+	static public function make(path:String):String {
 		var info = helm.ds.PackageInfo.load(path);
-		if (info == null) throw "Not in a package";
+		if (info == null)
+			throw "Not in a package";
 		var rules = readIgnoreFile(path + ".helmignore");
-		if (rules == null)
-		{
+		if (rules == null) {
 			rules = readIgnoreFile(path + ".gitignore");
-			if (rules == null)
-			{
+			if (rules == null) {
 				rules = [];
 			}
 		}
@@ -89,5 +76,4 @@ class LibBundle
 		writer.write(entries);
 		return zipName;
 	}
-
 }

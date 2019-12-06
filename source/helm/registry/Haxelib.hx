@@ -32,13 +32,11 @@ typedef ProjectInfos = {
 	var tags:List<String>;
 }
 
-class Haxelib implements Registry
-{
+class Haxelib implements Registry {
 	final url:String;
 	final apiVersion:String = "3.0";
 
-	public function new()
-	{
+	public function new() {
 		#if cpp
 		url = "https://lib.haxe.org/";
 		#else
@@ -46,28 +44,29 @@ class Haxelib implements Registry
 		#end
 	}
 
-	function call(func:String, params:Array<Dynamic>):Dynamic
-	{
+	function call(func:String, params:Array<Dynamic>):Dynamic {
 		var data = null;
 		var h = new haxe.Http(url + "api/" + apiVersion + "/index.n");
 		var s = new haxe.Serializer();
 		s.serialize(["api", func]);
 		s.serialize(params);
-		h.setHeader("X-Haxe-Remoting","1");
-		h.setParameter("__x",s.toString());
-		h.onData = function(d) { data = d; };
-		h.onError = function(e) { throw e; };
+		h.setHeader("X-Haxe-Remoting", "1");
+		h.setParameter("__x", s.toString());
+		h.onData = (d) -> data = d;
+		h.onError = (e) -> throw e;
 		h.request(true);
-		if( data.substr(0,3) != "hxr" )
-			throw "Invalid response : '"+data+"'";
+		if (data.substr(0, 3) != "hxr")
+			throw "Invalid response : '" + data + "'";
 		data = data.substr(3);
 		return new haxe.Unserializer(data).unserialize();
 	}
 
-	public function getProjectInfo(name:String):ProjectInfo
-	{
-		try
-		{
+	function sortVersionInfo(a:VersionInfo, b:VersionInfo):Int {
+		return a.value > b.value ? -1 : (a.value < b.value ? 1 : 0);
+	}
+
+	public function getProjectInfo(name:String):ProjectInfo {
+		try {
 			var data:ProjectInfos = call("infos", [name]);
 			var info:ProjectInfo = {
 				name: data.name,
@@ -81,8 +80,7 @@ class Haxelib implements Registry
 			};
 
 			var projectUrl = url + "files/" + apiVersion + "/" + data.name + "-";
-			for (version in data.versions)
-			{
+			for (version in data.versions) {
 				info.versions.push({
 					value: SemVer.ofString(version.name),
 					url: projectUrl + version.name.split(".").join(",") + ".zip",
@@ -90,21 +88,15 @@ class Haxelib implements Registry
 					comments: version.comments
 				});
 			}
-			info.versions.sort(function(a:VersionInfo, b:VersionInfo):Int {
-				return a.value > b.value ? -1 : (a.value < b.value ? 1 : 0);
-			});
+			info.versions.sort(sortVersionInfo);
 			return info;
-		}
-		catch (e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			return null;
 		}
 	}
 
-    public function getUserInfo(username:String):UserInfo
-	{
-		try
-		{
+	public function getUserInfo(username:String):UserInfo {
+		try {
 			var info:UserInfos = call("user", [username]);
 			return {
 				name: info.name,
@@ -112,51 +104,39 @@ class Haxelib implements Registry
 				projects: info.projects,
 				email: info.email
 			};
-		}
-		catch (e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			return null;
 		}
 	}
 
-    public function register(username:String, password:String, email:String, name:String):Bool
-	{
-		try
-		{
+	public function register(username:String, password:String, email:String, name:String):Bool {
+		try {
 			return call("register", [username, Md5.encode(password), email, name]);
-		}
-		catch (e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			return false;
 		}
 	}
 
-	public function checkPassword(username:String, password:String):Bool
-	{
-		try
-		{
+	public function checkPassword(username:String, password:String):Bool {
+		try {
 			return call("checkPassword", [username, Md5.encode(password)]);
-		}
-		catch (e:Dynamic)
-		{
+		} catch (e:Dynamic) {
 			return false;
 		}
 	}
 
-	public function search(word:String):Array<String>
-	{
-		var result:List<{ id:Int, name:String }> = call("search", [word]);
+	public function search(word:String):Array<String> {
+		var result:List<{id:Int, name:String}> = call("search", [word]);
 		return [for (row in result) row.name];
 	}
 
-	public function submit(name:String, data:Bytes, auth:helm.Auth):Void
-	{
+	public function submit(name:String, data:Bytes, auth:helm.Auth):Void {
 		call("checkDeveloper", [name, auth.username]);
 		var id = call("getSubmitId", []);
 
 		var h = new haxe.Http(url);
-		h.onError = function(e) { throw e; };
-		h.onData = function(d) { trace(d); }
+		h.onData = (d) -> trace(d);
+		h.onError = (e) -> throw e;
 		h.fileTransfer("file", id, new UploadProgress(data), data.length);
 		h.request(true);
 

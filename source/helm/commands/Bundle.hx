@@ -5,14 +5,10 @@ import argparse.ArgParser;
 
 @category("development")
 @alias("package")
-class Bundle implements Command
-{
-    public function start(parser:ArgParser):Void
-    {
-    }
+class Bundle implements Command {
+	public function start(parser:ArgParser):Void {}
 
-	public function run(args:Namespace, path:Path):Bool
-	{
+	public function run(args:Namespace, path:Path):Bool {
 		LibBundle.make(path);
 		return true;
 	}

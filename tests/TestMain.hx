@@ -3,14 +3,11 @@ import utest.Runner;
 import utest.ui.Report;
 import helm.commands.Search;
 import helm.commands.Init;
-
 import helm.Helm;
 import helm.util.Logger;
 
-class TestMain
-{
-	static public function main()
-	{
+class TestMain {
+	static public function main() {
 		Helm.logger = new Logger(new BytesOutput());
 		Helm.registry = new mocks.MockRegistry();
 

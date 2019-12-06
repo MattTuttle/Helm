@@ -5,23 +5,19 @@ import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
 import helm.util.*;
 
-class Helm
-{
-
+class Helm {
 	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
 	static public var logger = new Logger(Sys.stdout());
 	static public var repository = new Repository();
-	// TODO: setup a mirror list for multiple repository servers
 
+	// TODO: setup a mirror list for multiple repository servers
 	static public var registry:Registry = new helm.registry.Haxelib();
 
-	public function new()
-	{
+	public function new() {
 		Commands.init();
 	}
 
-	public function usage():Void
-	{
+	public function usage():Void {
 		Helm.logger.log("{yellow} __ __      _____          __            __ __ ");
 		Helm.logger.log("|  |  |    |   __|        |  |          |     |");
 		Helm.logger.log("|     |    |   __|        |  |__        | | | |");
@@ -38,14 +34,10 @@ class Helm
 		Sys.exit(1);
 	}
 
-	private function getPathTarget():Path
-	{
-		if (Config.useGlobal)
-		{
+	private function getPathTarget():Path {
+		if (Config.useGlobal) {
 			return Config.globalPath;
-		}
-		else
-		{
+		} else {
 			var cwd:Path = Sys.getCwd(); // current working directory
 			cwd = cwd.normalize(); // cwd has a nasty habit of including a trailing slash
 			var path = Helm.repository.getPackageRoot(cwd);
@@ -53,23 +45,19 @@ class Helm
 		}
 	}
 
-	function runCommands(parser:ArgParser, args:Array<String>):Bool
-	{
+	function runCommands(parser:ArgParser, args:Array<String>):Bool {
 		var result = parser.parse(args, false);
 
-		if (!result.exists("command"))
-		{
+		if (!result.exists("command")) {
 			return false;
 		}
 
 		var path = getPathTarget();
-		for (commandName in result.get("command"))
-		{
+		for (commandName in result.get("command")) {
 			var command = Commands.getCommand(commandName);
 
 			// if a command can't be found, try it as a run command
-			if (command == null)
-			{
+			if (command == null) {
 				command = Commands.getCommand("run");
 				args.unshift("run");
 			}
@@ -77,17 +65,17 @@ class Helm
 			command.start(parser);
 			var result = parser.parse(args);
 			var success = command.call(result, path);
-			if (!success) return false;
+			if (!success)
+				return false;
 		}
 
 		return true;
 	}
 
-	public function process(args:Array<String>):Bool
-	{
+	public function process(args:Array<String>):Bool {
 		var parser = new ArgParser();
-		parser.addArgument({flags: ["--global", "-g"] });
-		parser.addArgument({flags: "--version" });
+		parser.addArgument({flags: ["--global", "-g"]});
+		parser.addArgument({flags: "--version"});
 		parser.addArgument({flags: "--no-color"});
 		parser.addArgument({flags: ["-v", "--verbose"]});
 		parser.addArgument({flags: "command"});
@@ -105,15 +93,12 @@ class Helm
 		return runCommands(parser, args);
 	}
 
-	static public function main()
-	{
+	static public function main() {
 		L10n.init("en-US");
 
 		var lib = new Helm();
-		if (!lib.process(Sys.args()))
-		{
+		if (!lib.process(Sys.args())) {
 			lib.usage();
 		}
 	}
-
 }

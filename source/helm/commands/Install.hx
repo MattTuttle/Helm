@@ -7,66 +7,53 @@ import helm.ds.SemVer;
 @usage("[package[:version]...]")
 @alias("add", "i", "isntall")
 @category("development")
-class Install implements Command
-{
+class Install implements Command {
+	public function start(parser:ArgParser) {
+		parser.addArgument({flags: 'package', numArgs: '?'});
+	}
 
-    public function start(parser:ArgParser)
-    {
-        parser.addArgument({flags: 'package', numArgs: '?'});
-    }
-
-	function installAll(path:Path)
-	{
+	function installAll(path:Path) {
 		// TODO: fix install git dependency from haxelib.json
 		var libs = Helm.repository.findDependencies(path);
 		var installer = new Installer();
 
 		// install libraries found
-		for (lib in libs.keys())
-		{
+		for (lib in libs.keys()) {
 			var name = lib;
 			var version:String = libs.get(lib);
 			// if version is null it's probably a git repository
-			if (version != null && SemVer.ofString(version) == null)
-			{
+			if (version != null && SemVer.ofString(version) == null) {
 				name = libs.get(lib);
 			}
 			installer.install(name, version, path);
 		}
 	}
 
-	function installPackage(name:String, path:Path)
-	{
+	function installPackage(name:String, path:Path) {
 		var version:SemVer = null;
 		var installer = new Installer();
 
 		// try to split from name@version
-		if (name.indexOf("://") == -1)
-		{
+		if (name.indexOf("://") == -1) {
 			var parts = name.split(":");
-			if (parts.length == 2)
-			{
+			if (parts.length == 2) {
 				version = SemVer.ofString(parts[1]);
 				// only use the first part if successfully parsing a version from the second part
-				if (version != null) name = parts[0];
+				if (version != null)
+					name = parts[0];
 			}
 		}
 		installer.install(name, version, path);
 	}
 
-	public function run(args:Namespace, path:Path):Bool
-	{
+	public function run(args:Namespace, path:Path):Bool {
 		var packages = args.get('package');
 		// if no packages are given as arguments, search in local directory for dependencies
-		if (packages.length == 0)
-		{
+		if (packages.length == 0) {
 			installAll(path);
-		}
-		else
-		{
+		} else {
 			// default rule
-			for (name in packages)
-			{
+			for (name in packages) {
 				installPackage(name, path);
 			}
 		}

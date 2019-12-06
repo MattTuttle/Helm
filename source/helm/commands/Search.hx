@@ -6,24 +6,18 @@ import argparse.ArgParser;
 @usage("package...")
 @category("information")
 @alias("find")
-class Search implements Command
-{
-	public function start(parser:ArgParser):Void
-	{
+class Search implements Command {
+	public function start(parser:ArgParser):Void {
 		parser.addArgument({flags: "package"});
 	}
 
-	public function run(args:Namespace, path:Path):Bool
-	{
-		if (args.exists("package"))
-		{
+	public function run(args:Namespace, path:Path):Bool {
+		if (args.exists("package")) {
 			var names = new Array<String>();
 
 			// for every argument do a search against haxelib repository
-			for (arg in args.get("package"))
-			{
-				for (result in Helm.registry.search(arg))
-				{
+			for (arg in args.get("package")) {
+				for (result in Helm.registry.search(arg)) {
 					names.push(result);
 				}
 			}

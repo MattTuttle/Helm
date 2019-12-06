@@ -5,13 +5,10 @@ import helm.ds.*;
 /**
  * Boot/Upgrade HELM without requiring anything installed
  */
-class Boot
-{
-
+class Boot {
 	static inline private var PACKAGE_NAME:String = "helm";
 
-	static public function main()
-	{
+	static public function main() {
 		var result:Int;
 
 		// TODO: if package not found, install it
@@ -32,31 +29,25 @@ class Boot
 		Sys.setCwd(path);
 
 		var info = PackageInfo.load(path);
-		if (version > info.version)
-		{
+		if (version > info.version) {
 			var installer = new Installer();
 			installer.install(PACKAGE_NAME, version, path);
 		}
 
-		if (!sys.FileSystem.exists("helm"))
-		{
+		if (!sys.FileSystem.exists("helm")) {
 			// TODO: don't assume haxe and nekotools are installed
 			result = Sys.command("haxe", [
-				"-neko", "helm.n",
-				"-main", "helm.Helm",
-				"-cp", "source",
+				    "-neko",                     "helm.n",
+				    "-main",                  "helm.Helm",
+				      "-cp",                     "source",
 				"-resource", "l10n/en-US/strings.xml@en-US"
 			]);
 			result = Sys.command("nekotools", ["boot", "helm.n"]);
 			sys.FileSystem.deleteFile("helm.n");
-			if (Sys.systemName() == "Windows")
-			{
+			if (Sys.systemName() == "Windows") {
 				result = Sys.command("setx", ["path", '"%path%;$path\\bin\\"']);
-			}
-			else
-			{
-				if (!sys.FileSystem.exists("/usr/local/bin/helm"))
-				{
+			} else {
+				if (!sys.FileSystem.exists("/usr/local/bin/helm")) {
 					result = Sys.command("ln", ["-s", path + "helm", "/usr/local/bin"]);
 				}
 			}

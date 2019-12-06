@@ -6,51 +6,38 @@ import argparse.Namespace;
 
 @category("information")
 @alias("l", "ls")
-class List implements Command
-{
-    public function start(parser:ArgParser):Void
-    {
-        parser.addArgument({flags: ["--flat", "-f"]});
-    }
+class List implements Command {
+	public function start(parser:ArgParser):Void {
+		parser.addArgument({flags: ["--flat", "-f"]});
+	}
 
-	public function run(args:Namespace, path:Path):Bool
-	{
+	public function run(args:Namespace, path:Path):Bool {
 		var flat = args.exists("flat");
 
 		Helm.logger.log(path);
 		var list = Helm.repository.list(path);
-		if (list.length == 0)
-		{
+		if (list.length == 0) {
 			Helm.logger.log("└── (empty)");
-		}
-		else
-		{
-			if (flat)
-			{
-				function printPackagesFlat(list:Array<PackageInfo>)
-				{
-					for (p in list)
-					{
+		} else {
+			if (flat) {
+				function printPackagesFlat(list:Array<PackageInfo>) {
+					for (p in list) {
 						Helm.logger.log(p.fullName);
 						printPackagesFlat(Helm.repository.list(p.filePath));
 					}
 				}
 				printPackagesFlat(list);
-			}
-			else
-			{
-				function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>)
-				{
-					if (level == null) level = [true];
+			} else {
+				function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>) {
+					if (level == null)
+						level = [true];
 
 					var numItems = list.length, i = 0;
-					for (item in list)
-					{
+					for (item in list) {
 						i += 1;
 						var start = "";
 						level[level.length - 1] = (i == numItems);
-						for (j in 0...level.length - 1)
-						{
+						for (j in 0...level.length - 1) {
 							start += (level[j] ? "  " : "│ ");
 						}
 						var packages = Helm.repository.list(item.filePath);
@@ -58,8 +45,7 @@ class List implements Command
 						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
 						Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
 
-						if (hasChildren)
-						{
+						if (hasChildren) {
 							level.push(true);
 							printPackages(packages, level);
 							level.pop();

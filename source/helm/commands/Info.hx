@@ -8,35 +8,26 @@ import argparse.Namespace;
 
 @usage("[package[:version]...]")
 @category("information")
-class Info implements Command
-{
-    public function start(parser:ArgParser):Void
-    {
-        parser.addArgument({flags: 'packages'});
-    }
+class Info implements Command {
+	public function start(parser:ArgParser):Void {
+		parser.addArgument({flags: 'packages'});
+	}
 
-	public function run(args:Namespace, path:Path):Bool
-	{
-        var packages = args.get('packages');
-		if (packages.length == 0)
-		{
+	public function run(args:Namespace, path:Path):Bool {
+		var packages = args.get('packages');
+		if (packages.length == 0) {
 			var path = Helm.repository.getPackageRoot(Sys.getCwd());
 			var info = PackageInfo.load(path);
-			if (info == null)
-			{
+			if (info == null) {
 				Helm.logger.error(L10n.get("not_a_package"));
 			}
 
 			Helm.logger.log(info.fullName);
-		}
-		else
-		{
-			for (arg in packages)
-			{
+		} else {
+			for (arg in packages) {
 				var parts = arg.split(":");
 				var info = Helm.registry.getProjectInfo(parts[0]);
-				if (info == null)
-				{
+				if (info == null) {
 					Helm.logger.error(L10n.get("not_a_package"));
 				}
 
@@ -48,16 +39,13 @@ class Info implements Command
 				Helm.logger.log(L10n.get("info_tags", [info.tags.join(", ")]));
 				Helm.logger.log();
 
-				if (parts.length == 2)
-				{
+				if (parts.length == 2) {
 					var versions = new Array<String>();
 					// TODO: error handling if invalid version passed or if no version is found
 					var requestedVersion = SemVer.ofString(parts[1]);
 					var found = false;
-					for (version in info.versions)
-					{
-						if (version.value == requestedVersion)
-						{
+					for (version in info.versions) {
+						if (version.value == requestedVersion) {
 							Helm.logger.log(L10n.get("info_version", [version.value]));
 							Helm.logger.log(L10n.get("info_date", [version.date]));
 							Helm.logger.log(L10n.get("info_comments", [version.comments]));
@@ -65,15 +53,14 @@ class Info implements Command
 							break;
 						}
 					}
-					if (!found)
-					{
+					if (!found) {
 						Helm.logger.log(L10n.get("version_not_found", [requestedVersion]));
 					}
-				}
-				else
-				{
+				} else {
 					var versions = new Array<String>();
-					for (version in info.versions) { versions.push(version.value); }
+					for (version in info.versions) {
+						versions.push(version.value);
+					}
 					Helm.logger.log(L10n.get("info_versions", [info.currentVersion]));
 					Helm.logger.logList(versions, false);
 				}

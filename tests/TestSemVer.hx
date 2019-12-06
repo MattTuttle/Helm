@@ -2,13 +2,9 @@ import helm.ds.SemVer;
 import utest.Test;
 import utest.Assert;
 
-class TestSemVer extends Test
-{
-
-	public function testValues()
-	{
-		var a:SemVer = "0.9.43-rc.6",
-			b:SemVer = "0.9.43-rc.6";
+class TestSemVer extends Test {
+	public function testValues() {
+		var a:SemVer = "0.9.43-rc.6", b:SemVer = "0.9.43-rc.6";
 
 		Assert.equals(a.major, b.major);
 		Assert.equals(0, a.major);
@@ -26,8 +22,7 @@ class TestSemVer extends Test
 		Assert.equals(6, a.preReleaseNum);
 	}
 
-	public function testComparison()
-	{
+	public function testComparison() {
 		var a:SemVer = "1.1.0",
 			b:SemVer = "1.1.3",
 			c:SemVer = "1.1.0-alpha.1",
@@ -62,10 +57,8 @@ class TestSemVer extends Test
 		Assert.isTrue(e != c);
 	}
 
-	public function testNull()
-	{
-		var a:SemVer = "1.1.0",
-			b:SemVer = null;
+	public function testNull() {
+		var a:SemVer = "1.1.0", b:SemVer = null;
 
 		Assert.isFalse(a == null);
 		Assert.isFalse(null == a);
@@ -73,10 +66,8 @@ class TestSemVer extends Test
 		Assert.isTrue(null == b);
 	}
 
-	public function testToString()
-	{
+	public function testToString() {
 		var a:SemVer = "1.0.0-alpha.1";
 		Assert.equals("1.0.0-alpha.1", a.toString());
 	}
-
 }

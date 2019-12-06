@@ -1,27 +1,24 @@
 package helm;
 
-class Config
-{
-
+class Config {
 	static public var useGlobal:Bool = false;
 
 	@:isVar static public var globalPath(get, null):Path;
-	static private function get_globalPath():Path
-	{
+
+	static private function get_globalPath():Path {
 		return FileSystem.homeDir.join(".helm");
 	}
 
 	static public var cachePath(get, never):Path;
-	static private inline function get_cachePath():Path
-	{
+
+	static private inline function get_cachePath():Path {
 		return globalPath.join("cache");
 	}
 
 	static public var helmPath(get, never):Path;
-	static private inline function get_helmPath():Path
-	{
+
+	static private inline function get_helmPath():Path {
 		// TODO: verify that this actually exists, assumes it is installed
 		return globalPath;
 	}
-
 }
