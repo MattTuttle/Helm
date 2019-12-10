@@ -42,7 +42,8 @@ class Run implements Command {
 		var command:String;
 		if (info.mainClass != null) {
 			command = "haxe";
-			for (name in info.dependencies.keys()) {
+			// TODO: fix this for git and path dependencies
+			for (name in info.dependencies) {
 				args.push("-lib");
 				args.push(name);
 			}

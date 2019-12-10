@@ -13,19 +13,12 @@ class Install implements Command {
 	}
 
 	function installAll(path:Path) {
-		// TODO: fix install git dependency from haxelib.json
-		var libs = Helm.repository.findDependencies(path);
+		var dependencies = Helm.repository.findDependencies(path);
 		var installer = new Installer();
 
-		// install libraries found
-		for (lib in libs.keys()) {
-			var name = lib;
-			var version:String = libs.get(lib);
-			// if version is null it's probably a git repository
-			if (version != null && SemVer.ofString(version) == null) {
-				name = libs.get(lib);
-			}
-			installer.install(name + ":" + path, path);
+		// install dependencies found
+		for (requirement in dependencies) {
+			installer.install(requirement, path);
 		}
 	}
 

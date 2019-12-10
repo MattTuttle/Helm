@@ -6,6 +6,39 @@ import haxe.ds.StringMap;
 import helm.util.Logger;
 import helm.util.L10n;
 
+class DependencyIterator {
+	var it:Iterator<String>;
+	var map:StringMap<String>;
+
+	public function new(dependencies:StringMap<String>) {
+		it = dependencies.keys();
+		map = dependencies;
+	}
+
+	public inline function hasNext():Bool {
+		return it.hasNext();
+	}
+
+	public function next():String {
+		var key = it.next();
+		var require = map.get(key);
+		// if the requirement is a version or empty, include the name
+		if (require == "" || require == null) {
+			return key;
+		} else if (SemVer.ofString(require) != null) {
+			return key + ":" + require;
+		}
+		return require;
+	}
+}
+
+@:forward(set)
+abstract Dependencies(StringMap<String>) from StringMap<String> to StringMap<String> {
+	public function iterator():DependencyIterator {
+		return new DependencyIterator(this);
+	}
+}
+
 class PackageInfo {
 	static public var JSON:String = "haxelib.json";
 
@@ -17,8 +50,8 @@ class PackageInfo {
 	public final releasenote:String;
 	public final mainClass:String;
 	public final url:String;
-	public final dependencies:StringMap<String>;
 	public final version:SemVer;
+	public final dependencies:Dependencies;
 	public var filePath(default, null):Path;
 
 	public var fullName(get, never):String;
@@ -63,6 +96,10 @@ class PackageInfo {
 			}
 		}
 		return null;
+	}
+
+	public function addDependency(name:String, version:String) {
+		dependencies.set(name, version);
 	}
 
 	public function save(path:Path):Bool {

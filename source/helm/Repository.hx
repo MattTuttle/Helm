@@ -124,8 +124,8 @@ class Repository {
 	/**
 	 * Returns a list of project dependencies based on files found in the directory
 	 */
-	public function findDependencies(dir:String):StringMap<String> {
-		var libs = new StringMap<String>();
+	public function findDependencies(dir:String):Array<String> {
+		var libs = [];
 		var info = PackageInfo.load(dir);
 		if (info == null) {
 			// search files for libraries to install
@@ -134,50 +134,28 @@ class Repository {
 					for (line in File.getContent(item).split("\n")) {
 						if (line.startsWith("-lib")) {
 							var lib = line.split(" ").pop().split("=");
-							libs.set(lib[0], lib.length > 1 ? lib[1] : null);
+							if (lib.length > 1) {
+								libs.push(lib[0] + ":" + lib[1]);
+							} else {
+								libs.push(lib[0]);
+							}
 						}
 					}
 				} else if (item.endsWith("xml") || item.endsWith("nmml")) {
 					var xml = Xml.parse(File.getContent(item));
 					for (element in xml.firstElement().elements()) {
 						if (element.nodeName == "haxelib") {
-							var lib = element.get("name");
 							// TODO: get version from lime xml?
-							libs.set(lib, null);
+							libs.push(element.get("name"));
 						}
 					}
 				}
 			}
 		} else {
-			for (name in info.dependencies.keys()) {
-				var version = info.dependencies.get(name);
-				libs.set(name, version);
+			for (version in info.dependencies) {
+				libs.push(version);
 			}
 		}
 		return libs;
-	}
-
-	public function include(name:String):Array<String> {
-		var cwd:Path = Sys.getCwd();
-		cwd = cwd.normalize();
-		var root = getPackageRoot(cwd);
-		var path:Path = hasPackageNamed(root, name) ? root : findPackage(name);
-
-		var result = [];
-		if (path != null && FileSystem.isDirectory(path)) {
-			var info = PackageInfo.load(path);
-			var lib = path.join(NDLL_DIR);
-			if (FileSystem.isDirectory(lib)) {
-				result.push("-L " + lib);
-			}
-			result.push(path + info.classPath);
-			result.push("-D " + name);
-			for (name in info.dependencies.keys()) {
-				result = result.concat(include(name));
-			}
-		} else {
-			Helm.logger.log(L10n.get("not_installed", [name]));
-		}
-		return result;
 	}
 }

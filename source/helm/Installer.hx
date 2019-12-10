@@ -145,8 +145,7 @@ class Installer {
 		// install any dependencies
 		var info = PackageInfo.load(installDir);
 		if (info != null && info.dependencies != null) {
-			for (name in info.dependencies.keys()) {
-				var require = info.dependencies.get(name);
+			for (require in info.dependencies) {
 				// prevent installing a library we already installed (infinite loop)
 				install(require, target);
 			}
@@ -155,7 +154,7 @@ class Installer {
 
 	function addToPackageDependencies(name:String, version:String, target:Path):PackageInfo {
 		var info = PackageInfo.load(target);
-		info.dependencies.set(name, version);
+		info.addDependency(name, version);
 		info.save(info.filePath);
 		return info;
 	}
@@ -168,9 +167,8 @@ class Installer {
 	function parsePackageString(@:const install:String):InstallDetail {
 		var name = install;
 		var type:InstallType;
-		// check if installing from a git url (git+http://mygitserver.com/repo.git)
 		if (FileSystem.isDirectory(install)) {
-			// check if installing from a path (C:\User\mypackage)
+			// installing from a path (C:\User\mypackage)
 			var info = PackageInfo.load(install);
 			if (info != null) {
 				name = info.name;
@@ -179,6 +177,7 @@ class Installer {
 				type = Haxelib();
 			}
 		} else if (install.startsWith("git+")) {
+			// installing from a git url (git+http://mygitserver.com/repo.git)
 			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1)
@@ -187,7 +186,7 @@ class Installer {
 			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
 			type = Git(url, branch);
 		} else if (install.indexOf("/") >= 0) {
-			// check if installing from github (<User>/<Repository>)
+			// installing from github (<User>/<Repository>)
 			var parts = install.split("#");
 			var branch = null;
 			if (parts.length > 1)
@@ -196,6 +195,7 @@ class Installer {
 			name = parts[0].split("/").pop();
 			type = Git(url, branch);
 		} else {
+			// installing from haxelib
 			var version:SemVer = null;
 			// try to split from name:version
 			if (install.indexOf(":") >= 0) {
@@ -242,7 +242,7 @@ class Installer {
 
 		saveCurrentFile(path);
 		// addToPackageDependencies(detail.name, detail.original, baseRepo);
-		installDependencies(path, baseRepo);
+		installDependencies(path.join(versionDir), baseRepo);
 		return true;
 	}
 
