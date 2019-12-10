@@ -26,9 +26,7 @@ class Haxelib implements Installable {
 			Helm.logger.error(L10n.get("not_a_package"));
 			return false;
 		}
-		var dir = checkInstalled(version, target, info);
 
-		// TODO: pick the correct version, not just the latest
 		var downloadVersion = getLatestVersion(info, version);
 		if (downloadVersion == null) {
 			Helm.logger.error(L10n.get("version_not_found", [Std.string(version)]));
@@ -42,7 +40,7 @@ class Haxelib implements Installable {
 		}
 
 		// TODO: if zip fails to read, redownload or throw an error?
-		unpackFile(path, dir);
+		unpackFile(path, target);
 
 		return true;
 	}
@@ -96,20 +94,6 @@ class Haxelib implements Installable {
 			}
 		}
 		Helm.logger.log("\n", false);
-	}
-
-	function checkInstalled(version:SemVer, target:Path, info:ProjectInfo):Path {
-		var dir = Installer.getInstallPath(target, info.name);
-		if (FileSystem.isDirectory(dir)) {
-			var info = PackageInfo.load(dir);
-			if (info != null && (version == null || version == info.version)) {
-				// TODO: change this to a warning
-				Helm.logger.error(L10n.get("already_installed", [info.fullName]));
-			} else {
-				FileSystem.delete(dir);
-			}
-		}
-		return dir;
 	}
 
 	function locateBasePath(zip:List<haxe.zip.Entry>):String {

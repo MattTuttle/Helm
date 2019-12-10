@@ -90,4 +90,8 @@ class Requirement {
 			}
 		}
 	}
+
+	function toString():String {
+		return name + ":" + version.toString();
+	}
 }

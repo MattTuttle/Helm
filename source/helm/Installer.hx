@@ -1,5 +1,8 @@
 package helm;
 
+import helm.util.L10n;
+import helm.ds.Types.ProjectInfo;
+import helm.ds.SemVer;
 import sys.io.File;
 import helm.ds.PackageInfo;
 import helm.ds.Requirement;
@@ -12,7 +15,7 @@ class Installer {
 
 	public function new() {}
 
-	static public function getInstallPath(target:Path, name:String) {
+	function getInstallPath(target:Path, name:String) {
 		return target.join(Repository.LIB_DIR).join(name).join(versionDir);
 	}
 
@@ -43,13 +46,19 @@ class Installer {
 
 	function libraryIsInstalled(requirement:Requirement, target:Path):Bool {
 		var packages = Helm.repository.findPackagesIn(requirement.name, target);
+		if (requirement.version == null) {
+			for (info in packages) {
+				// TODO: break or throw error if more than one package?
+				requirement.version = info.version;
+			}
+		}
 		return packages.length > 0;
 	}
 
 	function installFromType(req:Requirement, baseRepo:Path, lockfile:Lockfile):Bool {
 		var path = getInstallPath(baseRepo, req.name);
 		// check if something was installed
-		if (req.install(baseRepo, req.name) && !saveCurrentFile(path)) {
+		if (req.install(path, req.name) && !saveCurrentFile(path)) {
 			Helm.logger.error("Could not install package " + req.name);
 			return false;
 		}
@@ -66,7 +75,9 @@ class Installer {
 		}
 		var requirement = new Requirement(packageInstall);
 		// prevent installing a library already installed (infinite loop)
-		if (!libraryIsInstalled(requirement, path)) {
+		if (libraryIsInstalled(requirement, path)) {
+			Helm.logger.log(L10n.get("already_installed", [requirement]));
+		} else {
 			if (installFromType(requirement, path, lockfile)) {
 				lockfile.addRequirement(requirement);
 				lockfile.save(path);

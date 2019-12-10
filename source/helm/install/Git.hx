@@ -31,8 +31,7 @@ class Git implements Installable {
 			FileSystem.delete(tmpDir);
 			Helm.logger.error(L10n.get("not_a_package"));
 		} else {
-			var installPath = Installer.getInstallPath(target, info.name);
-			moveToRepository(path, installPath);
+			moveToRepository(path, target);
 			return true;
 		}
 		return false;

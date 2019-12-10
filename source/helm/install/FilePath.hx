@@ -8,9 +8,8 @@ class FilePath implements Installable {
 	}
 
 	public function install(target:Path, name:String):Bool {
-		final installDir = Installer.getInstallPath(target, name);
 		// TODO: create symlink on unix platforms
-		FileSystem.copy(this.path, installDir);
+		FileSystem.copy(this.path, target);
 		return true;
 	}
 }
