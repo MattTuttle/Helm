@@ -1,9 +1,7 @@
-package helm.ds;
+package helm.install;
 
-import helm.install.Installable;
-import helm.install.Haxelib;
-import helm.install.FilePath;
-import helm.install.Git;
+import helm.ds.PackageInfo;
+import helm.ds.SemVer;
 
 using StringTools;
 
@@ -15,6 +13,7 @@ class Requirement {
 	public var dependencies:Array<String>;
 
 	var installable:Installable;
+
 	var original:String;
 
 	public function new(requirement:String) {
@@ -34,8 +33,8 @@ class Requirement {
 		}
 	}
 
-	public inline function install(target:Path, name:String):Bool {
-		return installable.install(target, name);
+	public function install(target:Path):Bool {
+		return installable.install(target, this);
 	}
 
 	// installing from a path (C:\User\mypackage)

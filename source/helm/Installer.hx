@@ -1,11 +1,12 @@
 package helm;
 
+import helm.install.Installable;
 import helm.util.L10n;
 import helm.ds.Types.ProjectInfo;
 import helm.ds.SemVer;
 import sys.io.File;
 import helm.ds.PackageInfo;
-import helm.ds.Requirement;
+import helm.install.Requirement;
 import helm.ds.Lockfile;
 
 using StringTools;
@@ -55,11 +56,11 @@ class Installer {
 		return packages.length > 0;
 	}
 
-	function installFromType(req:Requirement, baseRepo:Path, lockfile:Lockfile):Bool {
-		var path = getInstallPath(baseRepo, req.name);
+	function installFromType(requirement:Requirement, baseRepo:Path, lockfile:Lockfile):Bool {
+		var path = getInstallPath(baseRepo, requirement.name);
 		// check if something was installed
-		if (req.install(path, req.name) && !saveCurrentFile(path)) {
-			Helm.logger.error("Could not install package " + req.name);
+		if (requirement.install(path) && !saveCurrentFile(path)) {
+			Helm.logger.error("Could not install package " + requirement.name);
 			return false;
 		}
 

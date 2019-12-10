@@ -1,5 +1,6 @@
 package helm.install;
 
+import haxe.crypto.Sha256;
 import haxe.Http;
 import helm.http.DownloadProgress;
 import helm.ds.Types.ProjectInfo;
@@ -18,10 +19,9 @@ class Haxelib implements Installable {
 		this.version = version;
 	}
 
-	public function install(target:Path, name:String):Bool {
-		var path = null;
+	public function install(target:Path, requirement:Requirement):Bool {
 		// conflict resolution
-		var info = Helm.registry.getProjectInfo(name);
+		var info = Helm.registry.getProjectInfo(requirement.name);
 		if (info == null) {
 			Helm.logger.error(L10n.get("not_a_package"));
 			return false;
@@ -35,9 +35,12 @@ class Haxelib implements Installable {
 		Helm.logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
 
 		// download if not installing from a local file
-		if (path == null) {
-			path = download(downloadVersion);
-		}
+		var path = download(downloadVersion.url);
+
+		requirement.version = downloadVersion.value;
+		requirement.resolved = downloadVersion.url;
+		// TODO: need a faster method of generating the integrity
+		// requirement.integrity = Sha256.encode(File.getContent(path));
 
 		// TODO: if zip fails to read, redownload or throw an error?
 		unpackFile(path, target);
@@ -45,8 +48,8 @@ class Haxelib implements Installable {
 		return true;
 	}
 
-	public function download(version:VersionInfo):String {
-		var filename = version.url.split("/").pop();
+	public function download(url:Path):String {
+		var filename = url.basename();
 		var cacheFile = Config.cachePath.join(filename);
 
 		// TODO: allow to redownload with --force argument
@@ -58,7 +61,7 @@ class Haxelib implements Installable {
 			// download the file and show progress
 			var out = File.write(downloadPath, true);
 			var progress = new DownloadProgress(out);
-			var http = new Http(version.url);
+			var http = new Http(url);
 			http.onError = (error) -> progress.close();
 			http.customRequest(false, progress);
 
@@ -107,7 +110,7 @@ class Haxelib implements Installable {
 		throw "No " + json + " found";
 	}
 
-	function getLatestVersion(info:ProjectInfo, version:SemVer = null):VersionInfo {
+	function getLatestVersion(info:ProjectInfo, ?version:SemVer):VersionInfo {
 		if (version == null) {
 			// TODO: sort versions?
 			for (v in info.versions) {

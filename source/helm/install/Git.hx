@@ -12,8 +12,8 @@ class Git implements Installable {
 		this.branch = branch;
 	}
 
-	public function install(target:Path, name:String):Bool {
-		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
+	public function install(target:Path, detail:Requirement):Bool {
+		Helm.logger.log(L10n.get("installing_package", [detail.name + "@" + url]));
 
 		var tmpDir = FileSystem.createTemporary();
 		var path = tmpDir;

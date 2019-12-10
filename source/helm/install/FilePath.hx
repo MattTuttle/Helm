@@ -7,7 +7,7 @@ class FilePath implements Installable {
 		this.path = path;
 	}
 
-	public function install(target:Path, name:String):Bool {
+	public function install(target:Path, detail:Requirement):Bool {
 		// TODO: create symlink on unix platforms
 		FileSystem.copy(this.path, target);
 		return true;
