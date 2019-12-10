@@ -1,6 +1,7 @@
 package helm;
 
-import helm.ds.*;
+import helm.ds.PackageInfo;
+import helm.ds.SemVer;
 
 /**
  * Boot/Upgrade HELM without requiring anything installed

@@ -2,7 +2,6 @@ package helm.commands;
 
 import argparse.Namespace;
 import argparse.ArgParser;
-import helm.ds.SemVer;
 
 @usage("[package[:version]...]")
 @alias("add", "i", "isntall")

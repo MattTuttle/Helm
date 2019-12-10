@@ -1,14 +1,9 @@
 package helm;
 
-import haxe.Http;
-import haxe.ds.StringMap;
 import sys.io.File;
 import helm.FileSystem;
-import helm.ds.Types;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
-import helm.http.DownloadProgress;
-import helm.util.*;
 
 using StringTools;
 

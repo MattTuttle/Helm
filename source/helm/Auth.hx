@@ -1,7 +1,5 @@
 package helm;
 
-import helm.util.*;
-
 class Auth {
 	public var username(default, null):String;
 	public var password(default, null):String;
