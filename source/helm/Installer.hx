@@ -17,11 +17,82 @@ enum InstallType {
 	Haxelib(?version:SemVer);
 }
 
-typedef InstallDetail = {
-	name:String,
-	original:String,
-	type:InstallType
-};
+class Requirement {
+	public var name(default, null):String;
+	public var original(default, null):String;
+	public var type(default, null):InstallType;
+
+	public function new(requirement:String) {
+		original = requirement;
+		var checkFuncs = [checkFilePath, checkGit, checkGithub, checkHaxelib];
+		for (func in checkFuncs) {
+			func(requirement);
+			if (name != null && type != null) {
+				break;
+			}
+		}
+		if (name == null) {
+			name = requirement;
+		}
+		if (type == null) {
+			type = Haxelib();
+		}
+	}
+
+	// installing from a path (C:\User\mypackage)
+	function checkFilePath(requirement:String) {
+		if (FileSystem.isDirectory(requirement)) {
+			var info = PackageInfo.load(requirement);
+			if (info != null) {
+				name = info.name;
+				type = FilePath(requirement);
+			}
+		}
+	}
+
+	// installing from a git url (git+http://mygitserver.com/repo.git)
+	function checkGit(requirement:String) {
+		if (requirement.startsWith("git+")) {
+			var parts = requirement.split("#");
+			var branch = null;
+			if (parts.length > 1)
+				branch = parts.pop();
+			var url = parts[0].substr(4);
+			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
+			type = Git(url, branch);
+		}
+	}
+
+	// installing from github (<User>/<Repository>)
+	function checkGithub(requirement:String) {
+		if (requirement.indexOf("/") >= 0) {
+			var parts = requirement.split("#");
+			var branch = null;
+			if (parts.length > 1)
+				branch = parts.pop();
+			var url = "https://github.com/" + parts[0] + ".git";
+			name = parts[0].split("/").pop();
+			type = Git(url, branch);
+		}
+	}
+
+	// installing from haxelib
+	function checkHaxelib(requirement:String) {
+		var version:SemVer = null;
+		// try to split from name:version
+		if (requirement.indexOf(":") >= 0) {
+			var parts = requirement.split(":");
+			if (parts.length == 2) {
+				version = SemVer.ofString(parts[1]);
+				// only use the first part if successfully parsing a version from the second part
+				if (version != null) {
+					name = parts[0];
+					type = Haxelib(version);
+				}
+			}
+		}
+	}
+}
 
 class Installer {
 	var versionDir = "helm";
@@ -159,62 +230,9 @@ class Installer {
 		return info;
 	}
 
-	function libraryIsInstalled(name:String, target:Path):Bool {
-		var packages = Helm.repository.findPackagesIn(name, target);
+	function libraryIsInstalled(requirement:Requirement, target:Path):Bool {
+		var packages = Helm.repository.findPackagesIn(requirement.name, target);
 		return packages.length > 0;
-	}
-
-	function parsePackageString(@:const install:String):InstallDetail {
-		var name = install;
-		var type:InstallType;
-		if (FileSystem.isDirectory(install)) {
-			// installing from a path (C:\User\mypackage)
-			var info = PackageInfo.load(install);
-			if (info != null) {
-				name = info.name;
-				type = FilePath(install);
-			} else {
-				type = Haxelib();
-			}
-		} else if (install.startsWith("git+")) {
-			// installing from a git url (git+http://mygitserver.com/repo.git)
-			var parts = install.split("#");
-			var branch = null;
-			if (parts.length > 1)
-				branch = parts.pop();
-			var url = parts[0].substr(4);
-			name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
-			type = Git(url, branch);
-		} else if (install.indexOf("/") >= 0) {
-			// installing from github (<User>/<Repository>)
-			var parts = install.split("#");
-			var branch = null;
-			if (parts.length > 1)
-				branch = parts.pop();
-			var url = "https://github.com/" + parts[0] + ".git";
-			name = parts[0].split("/").pop();
-			type = Git(url, branch);
-		} else {
-			// installing from haxelib
-			var version:SemVer = null;
-			// try to split from name:version
-			if (install.indexOf(":") >= 0) {
-				var parts = install.split(":");
-				if (parts.length == 2) {
-					version = SemVer.ofString(parts[1]);
-					// only use the first part if successfully parsing a version from the second part
-					if (version != null)
-						name = parts[0];
-				}
-			}
-			type = Haxelib(version);
-		}
-
-		return {
-			name: name,
-			original: install,
-			type: type
-		}
 	}
 
 	function installFromFileSystem(target:Path, name:String, originalPath:Path):Null<Path> {
@@ -224,7 +242,7 @@ class Installer {
 		return installDir;
 	}
 
-	function installFromType(detail:InstallDetail, baseRepo:Path):Bool {
+	function installFromType(detail:Requirement, baseRepo:Path):Bool {
 		var path:Path = switch (detail.type) {
 			case FilePath(path):
 				installFromFileSystem(baseRepo, detail.name, path);
@@ -248,9 +266,9 @@ class Installer {
 
 	public function install(packageInstall:String, ?target:Path):Bool {
 		final path = target == null ? Config.globalPath : target;
-		var detail = parsePackageString(packageInstall);
-		if (!libraryIsInstalled(detail.name, path)) {
-			return installFromType(detail, path);
+		var requirement = new Requirement(packageInstall);
+		if (!libraryIsInstalled(requirement, path)) {
+			return installFromType(requirement, path);
 		}
 		return false;
 	}

@@ -38,10 +38,14 @@ class Boot {
 		if (!FileSystem.isFile("helm")) {
 			// TODO: don't assume haxe and nekotools are installed
 			result = Sys.command("haxe", [
-				    "-neko",                     "helm.n",
-				    "-main",                  "helm.Helm",
-				      "-cp",                     "source",
-				"-resource", "l10n/en-US/strings.xml@en-US"
+				"-neko",
+				"helm.n",
+				"-main",
+				"helm.Helm",
+				"-cp",
+				"source",
+				"-resource",
+				"l10n/en-US/strings.xml@en-US"
 			]);
 			result = Sys.command("nekotools", ["boot", "helm.n"]);
 			FileSystem.delete("helm.n");
