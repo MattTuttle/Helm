@@ -12,7 +12,7 @@ import sys.io.File;
 using StringTools;
 
 class Haxelib implements Installable {
-	var version:SemVer;
+	var version:Null<SemVer>;
 
 	public function new(?version:SemVer) {
 		this.version = version;
@@ -38,7 +38,7 @@ class Haxelib implements Installable {
 
 		requirement.version = downloadVersion.value;
 		requirement.resolved = downloadVersion.url;
-		#if cpp
+		#if (cpp || hl)
 		requirement.integrity = haxe.crypto.Sha256.encode(File.getContent(path));
 		#end
 
@@ -92,7 +92,7 @@ class Haxelib implements Installable {
 			FileSystem.createDirectory(loc.dirname(), true);
 
 			var data = haxe.zip.Reader.unzip(item);
-			if (data.length > 0) {
+			if (data != null && data.length > 0) {
 				File.saveBytes(loc, data);
 			}
 		}
@@ -110,7 +110,7 @@ class Haxelib implements Installable {
 		throw "No " + json + " found";
 	}
 
-	function getLatestVersion(info:ProjectInfo, ?version:SemVer):VersionInfo {
+	function getLatestVersion(info:ProjectInfo, ?version:SemVer):Null<VersionInfo> {
 		if (version == null) {
 			// TODO: sort versions?
 			for (v in info.versions) {

@@ -82,7 +82,7 @@ class PackageInfo {
 		return new PackageInfo(Json.parse(json));
 	}
 
-	static public function load(path:Path):PackageInfo {
+	static public function load(path:Path):Null<PackageInfo> {
 		var dataPath = path.join(JSON);
 		if (FileSystem.isFile(dataPath)) {
 			try {

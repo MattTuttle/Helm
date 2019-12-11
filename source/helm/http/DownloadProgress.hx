@@ -55,5 +55,5 @@ class DownloadProgress extends haxe.io.Output {
 	private var _fileOutput:haxe.io.Output;
 	private var _currentBytes:Int;
 	private var _totalBytes:Int = 0;
-	private var _totalText:String;
+	private var _totalText:String = "";
 }

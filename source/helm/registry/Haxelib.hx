@@ -77,7 +77,7 @@ class Haxelib implements Registry {
 		return a.value > b.value ? -1 : (a.value < b.value ? 1 : 0);
 	}
 
-	public function getProjectInfo(name:String):ProjectInfo {
+	public function getProjectInfo(name:String):Null<ProjectInfo> {
 		try {
 			var data:ProjectInfos = call("infos", [name]);
 			var info:ProjectInfo = {
@@ -88,7 +88,7 @@ class Haxelib implements Registry {
 				description: data.desc,
 				currentVersion: data.curversion,
 				license: data.license,
-				versions: new Array<VersionInfo>()
+				versions: []
 			};
 
 			var projectUrl = url + "files/" + apiVersion + "/" + data.name + "-";
@@ -107,7 +107,7 @@ class Haxelib implements Registry {
 		}
 	}
 
-	public function getUserInfo(username:String):UserInfo {
+	public function getUserInfo(username:String):Null<UserInfo> {
 		try {
 			var info:UserInfos = call("user", [username]);
 			return {

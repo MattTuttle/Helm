@@ -19,18 +19,28 @@ class SemVerData {
 	inline public function new(?value:String) {
 		if (value != null) {
 			if (_semVerRegex.match(value)) {
-				major = _semVerRegex.matched(1).parseInt();
-				minor = _semVerRegex.matched(2).parseInt();
-				patch = _semVerRegex.matched(3).parseInt();
+				major = parseInt(_semVerRegex.matched(1));
+				minor = parseInt(_semVerRegex.matched(2));
+				patch = parseInt(_semVerRegex.matched(3));
 				preRelease = switch (_semVerRegex.matched(4)) {
 					case "alpha": Alpha;
 					case "beta": Beta;
 					case "rc": ReleaseCandidate;
 					default: None;
 				}
-				preReleaseNum = _semVerRegex.matched(5) == null ? -1 : _semVerRegex.matched(5).parseInt();
+				preReleaseNum = parseInt(_semVerRegex.matched(5));
 			}
 		}
+	}
+
+	function parseInt(value:Null<String>):Int {
+		if (value != null) {
+			var intValue = value.parseInt();
+			if (intValue != null) {
+				return intValue;
+			}
+		}
+		return -1;
 	}
 
 	static var _semVerRegex = ~/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-(alpha|beta|rc)(?:\.([0-9]+))?)?$/;
@@ -175,7 +185,7 @@ abstract SemVer(SemVerData) {
 	@:from
 	static inline public function ofString(value:String) {
 		var data = new SemVerData(value);
-		return data.major < 0 ? null : new SemVer(data);
+		return new SemVer(data);
 	}
 
 	@:to

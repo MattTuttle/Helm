@@ -18,6 +18,7 @@ class Git implements Installable {
 		var tmpDir = FileSystem.createTemporary();
 		var path = tmpDir;
 		var args = ["clone"];
+		var branch = this.branch; // for null safety
 		if (branch != null) {
 			args.push("-b");
 			args.push(branch);

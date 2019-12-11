@@ -13,7 +13,7 @@ class Repository {
 
 	public function new() {}
 
-	public function findPackage(name:String):String {
+	public function findPackage(name:String):Null<String> {
 		var repo = findPackagesIn(name, Sys.getCwd());
 		// fallback, if no package found
 		if (repo.length == 0) {
@@ -128,11 +128,14 @@ class Repository {
 				if (item.endsWith("hxml")) {
 					for (line in File.getContent(item).split("\n")) {
 						if (line.startsWith("-lib")) {
-							var lib = line.split(" ").pop().split("=");
-							if (lib.length > 1) {
-								libs.push(lib[0] + ":" + lib[1]);
-							} else {
-								libs.push(lib[0]);
+							var result = line.split(" ").pop();
+							if (result != null) {
+								var lib = result.split("=");
+								if (lib.length > 1) {
+									libs.push(lib[0] + ":" + lib[1]);
+								} else {
+									libs.push(lib[0]);
+								}
 							}
 						}
 					}

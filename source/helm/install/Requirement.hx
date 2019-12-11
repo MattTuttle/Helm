@@ -8,9 +8,9 @@ using StringTools;
 class Requirement {
 	public var name(default, null):String;
 	public var version:SemVer;
-	public var resolved:String;
-	public var integrity:String;
-	public var dependencies:Array<String>;
+	public var resolved:Null<String>;
+	public var integrity:Null<String>;
+	public var dependencies:Null<Array<String>>;
 
 	var installable:Installable;
 
@@ -18,18 +18,15 @@ class Requirement {
 
 	public function new(requirement:String) {
 		original = requirement;
-		var checkFuncs = [checkFilePath, checkGit, checkGithub, checkHaxelib];
-		for (func in checkFuncs) {
+		name = requirement;
+		installable = new Haxelib();
+		version = "";
+
+		for (func in [checkFilePath, checkGit, checkGithub, checkHaxelib]) {
 			func(requirement);
 			if (name != null && installable != null) {
 				break;
 			}
-		}
-		if (name == null) {
-			name = requirement;
-		}
-		if (installable == null) {
-			installable = new Haxelib();
 		}
 	}
 
@@ -68,8 +65,8 @@ class Requirement {
 			var branch = null;
 			if (parts.length > 1)
 				branch = parts.pop();
-			var url = "https://github.com/" + parts[0] + ".git";
-			name = parts[0].split("/").pop();
+			var url:Path = "https://github.com/" + parts[0] + ".git";
+			name = url.basename();
 			installable = new Git(url, branch);
 		}
 	}

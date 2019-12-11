@@ -16,7 +16,9 @@ class Build implements Command {
 		var result = true;
 
 		if (args.exists("hxml")) {
-			result = buildHxmlFile(path.join(args.get("hxml").shift()));
+			for (hxml in args.get("hxml")) {
+				result = buildHxmlFile(path.join(hxml));
+			}
 		} else {
 			// build all hxml files in the current directory
 			for (file in FileSystem.readDirectory(path)) {

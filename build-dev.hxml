@@ -1,0 +1,7 @@
+-cp source
+-lib argparser
+-lib compiletime
+-resource l10n/en-US/strings.xml@en-US
+
+-main helm.Helm
+-hl build/bin/helm.hl

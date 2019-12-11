@@ -39,13 +39,13 @@ class Haxelib implements Command {
 					var info = PackageInfo.load(path);
 					if (info == null) {
 						Helm.logger.error(L10n.get("not_a_package"));
+					} else {
+						var auth = new Auth();
+						auth.login();
+						var bundleName = LibBundle.make(path);
+
+						Helm.registry.submit(info.name, File.read(bundleName).readAll(), auth);
 					}
-
-					var auth = new Auth();
-					auth.login();
-					var bundleName = LibBundle.make(path);
-
-					Helm.registry.submit(info.name, File.read(bundleName).readAll(), auth);
 				default:
 					return false;
 			}

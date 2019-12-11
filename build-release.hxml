@@ -1,0 +1,20 @@
+-cp source
+-lib argparser
+-lib compiletime
+-resource l10n/en-US/strings.xml@en-US
+
+--each
+
+-neko run.n
+-main helm.Boot
+
+--next
+
+--cmd mkdir -p build
+-main helm.Helm
+-hl build/helm.c
+--macro nullSafety("helm", Strict)
+--macro keep('helm.commands')
+--dce full
+--cmd clang -O3 -o build/bin/helm -std=c11 -I build build/helm.c -lhl /usr/local/lib/fmt.hdll /usr/local/lib/ssl.hdll
+--cmd mv build/bin/helm /usr/local/bin/helm

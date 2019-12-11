@@ -33,11 +33,12 @@ class Installer {
 		}
 	}
 
-	function addToPackageDependencies(name:String, version:String, target:Path):PackageInfo {
+	function addToPackageDependencies(name:String, version:String, target:Path):Void {
 		var info = PackageInfo.load(target);
-		info.addDependency(name, version);
-		info.save(info.filePath);
-		return info;
+		if (info != null) {
+			info.addDependency(name, version);
+			info.save(info.filePath);
+		}
 	}
 
 	function libraryIsInstalled(requirement:Requirement, target:Path):Bool {

@@ -20,9 +20,9 @@ class Info implements Command {
 			var info = PackageInfo.load(path);
 			if (info == null) {
 				Helm.logger.error(L10n.get("not_a_package"));
+			} else {
+				Helm.logger.log(info.fullName);
 			}
-
-			Helm.logger.log(info.fullName);
 		} else {
 			for (arg in packages) {
 				var parts = arg.split(":");

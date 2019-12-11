@@ -24,7 +24,7 @@ class Lockfile {
 		return lockfile;
 	}
 
-	static public function load(path:Path):Lockfile {
+	static public function load(path:Path):Null<Lockfile> {
 		var dataPath = path.join(JSON);
 		if (FileSystem.isFile(dataPath)) {
 			try {
