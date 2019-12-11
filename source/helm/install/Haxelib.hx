@@ -1,6 +1,5 @@
 package helm.install;
 
-import haxe.crypto.Sha256;
 import haxe.Http;
 import helm.http.DownloadProgress;
 import helm.ds.Types.ProjectInfo;
@@ -39,8 +38,9 @@ class Haxelib implements Installable {
 
 		requirement.version = downloadVersion.value;
 		requirement.resolved = downloadVersion.url;
-		// TODO: need a faster method of generating the integrity
-		// requirement.integrity = Sha256.encode(File.getContent(path));
+		#if cpp
+		requirement.integrity = haxe.crypto.Sha256.encode(File.getContent(path));
+		#end
 
 		// TODO: if zip fails to read, redownload or throw an error?
 		unpackFile(path, target);
@@ -114,7 +114,7 @@ class Haxelib implements Installable {
 		if (version == null) {
 			// TODO: sort versions?
 			for (v in info.versions) {
-				if (v.value.preRelease == null) {
+				if (v.value.preRelease == None) {
 					return v;
 				}
 			}

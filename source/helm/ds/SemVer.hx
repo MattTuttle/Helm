@@ -6,14 +6,15 @@ enum PreRelease {
 	Alpha;
 	Beta;
 	ReleaseCandidate;
+	None;
 }
 
 class SemVerData {
-	public var major:Int;
-	public var minor:Int;
-	public var patch:Int;
-	public var preRelease:Null<PreRelease>;
-	public var preReleaseNum:Null<Int>;
+	public final major:Int = -1;
+	public final minor:Int = -1;
+	public final patch:Int = -1;
+	public final preRelease:PreRelease = None;
+	public final preReleaseNum:Int = -1;
 
 	inline public function new(?value:String) {
 		if (value != null) {
@@ -25,9 +26,9 @@ class SemVerData {
 					case "alpha": Alpha;
 					case "beta": Beta;
 					case "rc": ReleaseCandidate;
-					default: null;
+					default: None;
 				}
-				preReleaseNum = _semVerRegex.matched(5) == null ? null : _semVerRegex.matched(5).parseInt();
+				preReleaseNum = _semVerRegex.matched(5) == null ? -1 : _semVerRegex.matched(5).parseInt();
 			}
 		}
 	}
@@ -174,24 +175,25 @@ abstract SemVer(SemVerData) {
 	@:from
 	static inline public function ofString(value:String) {
 		var data = new SemVerData(value);
-		return data.major == null ? null : new SemVer(data);
+		return data.major < 0 ? null : new SemVer(data);
 	}
 
 	@:to
 	public function toString():String {
-		if (this == null)
+		if (this == null) {
 			return "0.0.0";
-		var out = major + "." + minor + "." + patch;
-		if (preRelease != null) {
-			out += "-" + switch (preRelease) {
-				case Alpha: "alpha";
-				case Beta: "beta";
-				case ReleaseCandidate: "rc";
+		} else {
+			var out = major + "." + minor + "." + patch;
+			out += switch (preRelease) {
+				case Alpha: "-alpha";
+				case Beta: "-beta";
+				case ReleaseCandidate: "-rc";
+				case None: "";
 			};
-			if (preReleaseNum != null) {
+			if (preReleaseNum >= 0) {
 				out += "." + preReleaseNum;
 			}
+			return out;
 		}
-		return out;
 	}
 }

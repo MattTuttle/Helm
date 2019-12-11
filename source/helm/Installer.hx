@@ -1,15 +1,10 @@
 package helm;
 
-import helm.install.Installable;
 import helm.util.L10n;
-import helm.ds.Types.ProjectInfo;
-import helm.ds.SemVer;
 import sys.io.File;
 import helm.ds.PackageInfo;
 import helm.install.Requirement;
 import helm.ds.Lockfile;
-
-using StringTools;
 
 class Installer {
 	static var versionDir = "helm";
