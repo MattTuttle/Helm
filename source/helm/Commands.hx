@@ -1,5 +1,6 @@
 package helm;
 
+import sys.ssl.Certificate;
 import argparse.Namespace;
 import argparse.ArgParser;
 import haxe.ds.StringMap;
@@ -10,7 +11,7 @@ import haxe.CallStack;
 class CommandCall {
 	public final name:String;
 	public final helpText:String = "";
-	public final category:String;
+	public final category:Null<String>;
 	public final aliases:Array<String>;
 
 	final _command:Command;
@@ -34,7 +35,8 @@ class CommandCall {
 		var meta = Meta.getType(command);
 		if (meta.usage != null) {
 			if (meta.usage.length == 1) {
-				this.helpText = meta.usage.shift();
+				var text = meta.usage.shift();
+				this.helpText = text == null ? "" : text;
 			} else {
 				var sep = "\n        ";
 				this.helpText += "command\n      {blue}Commands:{end}" + sep + meta.usage.join(sep);
@@ -43,11 +45,17 @@ class CommandCall {
 		// grab a list of aliases
 		this.aliases = meta.alias == null ? [] : cast meta.alias;
 		// get class name from path
-		this.name = Type.getClassName(command).split('.').pop();
-		// add lowercase name as the first alias
-		this.aliases.unshift(name.toLowerCase());
+		var name = Type.getClassName(command).split('.').pop();
+		if (name == null) {
+			// TODO: error handling
+			this.name = "";
+		} else {
+			this.name = name;
+			// add lowercase name as the first alias
+			this.aliases.unshift(name.toLowerCase());
+		}
 		// set the category, if any
-		this.category = meta.category == null ? "" : meta.category.shift();
+		this.category = meta.category.shift();
 		// create an instance of the class and store it for later calls
 		this._command = Type.createEmptyInstance(command);
 	}
@@ -84,18 +92,26 @@ class Commands {
 		var categories = new StringMap<Array<CommandCall>>();
 		for (command in _commands) {
 			var category = command.category;
-			var list = categories.exists(category) ? categories.get(category) : [];
+			var list = [];
+			if (category != null) {
+				var catList = categories.get(category);
+				if (catList != null) {
+					list = catList;
+				}
+				categories.set(category, list);
+			}
 			list.push(command);
-			categories.set(category, list);
 		}
 		for (category in categories.keys()) {
 			Helm.logger.log("{blue}-- " + category + " --{end}");
 			var list = categories.get(category);
-			list.sort(sortCommandCall);
-			for (command in list) {
-				Helm.logger.log('    helm {yellow}${command.aliases[0]}{end} ${command.helpText}');
+			if (list != null) {
+				list.sort(sortCommandCall);
+				for (command in list) {
+					Helm.logger.log('    helm {yellow}${command.aliases[0]}{end} ${command.helpText}');
+				}
+				Helm.logger.log();
 			}
-			Helm.logger.log();
 		}
 	}
 

@@ -60,7 +60,10 @@ class Repository {
 
 		// search in the current directory for a haxelib.json file
 		if (hasPackageNamed(target, name)) {
-			return [PackageInfo.load(target)];
+			var info = PackageInfo.load(target);
+			if (info != null) {
+				return [info];
+			}
 		}
 
 		// find a libs directory in the current directory or a parent

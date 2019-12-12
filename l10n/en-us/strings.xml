@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <strings>
 	<text key="not_registered">Username is not registered.</text>
+	<text key="not_logged_in">User is not logged in.</text>
 	<text key="num_of_bytes">$1 bytes</text>
 	<text key="not_installed">Package $1 is not installed</text>
 	<text key="package_already_exists">Package {yellow}$1{end} already exists!</text>

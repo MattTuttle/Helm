@@ -94,8 +94,8 @@ class Logger {
 	 * @param secure whether or not to show user input (default = false)
 	 * @return the user input value
 	 */
-	public function prompt(msg:String, secure:Bool = false, ?defaultValue:String):String {
-		var result = null;
+	public function prompt(msg:String, secure:Bool = false, ?defaultValue:String):Null<String> {
+		var result:Null<String> = null;
 		log(msg, false);
 		if (defaultValue != null) {
 			log('[$defaultValue] ', false);

@@ -52,7 +52,7 @@ class PackageInfo {
 	public final url:String;
 	public final version:SemVer;
 	public final dependencies:Dependencies;
-	public var filePath(default, null):Path;
+	public var filePath(default, null):Path = "";
 
 	public var fullName(get, never):String;
 

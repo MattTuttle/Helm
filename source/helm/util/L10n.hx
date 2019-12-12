@@ -5,8 +5,6 @@ import sys.io.File;
 
 class L10n {
 	static public function init(locale:String = "en-US") {
-		_strings = new StringMap<String>();
-
 		var path = Config.helmPath.join("l10n").join(locale).join("/strings.xml");
 		var content = sys.FileSystem.exists(path) ? File.getContent(path) : haxe.Resource.getString("en-US");
 		var root = Xml.parse(content).firstElement();
@@ -23,17 +21,20 @@ class L10n {
 		var reg = ~/\$([0-9]+)/g;
 		if (_strings.exists(key)) {
 			value = _strings.get(key);
-			while (reg.match(value)) {
-				var index = Std.parseInt(reg.matched(1)) - 1;
-				if (index >= 0 && args != null && index < args.length) {
-					value = reg.matchedLeft() + Std.string(args[index]) + reg.matchedRight();
-				} else {
-					throw "Expected argument for " + reg.matched(0);
+			while (value != null && reg.match(value)) {
+				var num = Std.parseInt(reg.matched(1));
+				if (num != null) {
+					var index = num - 1;
+					if (index >= 0 && args != null && index < args.length) {
+						value = reg.matchedLeft() + Std.string(args[index]) + reg.matchedRight();
+					} else {
+						throw "Expected argument for " + reg.matched(0);
+					}
 				}
 			}
 		}
-		return value;
+		return value == null ? "(missing)" : value;
 	}
 
-	static private var _strings:StringMap<String>;
+	static private var _strings:StringMap<String> = new StringMap<String>();
 }

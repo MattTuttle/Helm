@@ -1,7 +1,6 @@
 -cp source
 -lib argparser
 -lib compiletime
--resource l10n/en-US/strings.xml@en-US
 
 --each
 
@@ -10,6 +9,7 @@
 
 --next
 
+-resource l10n/en-US/strings.xml@en-US
 --cmd mkdir -p build
 -main helm.Helm
 -hl build/helm.c

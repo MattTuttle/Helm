@@ -15,19 +15,24 @@ class Run implements Command {
 	}
 
 	public function run(args:Namespace, path:Path):Bool {
-		var code = if (args.exists("haxelib")) {
-			var arguments = ["run", args.get("package")[0]];
+		var name = args.get("package").shift();
+		if (name != null) {
+			var code = if (args.exists("haxelib")) {
+				var arguments = ["run", name];
 
-			Sys.command("haxelib", arguments.concat(args.get("args")));
-		} else {
-			var useEnvironment = args.exists("env");
+				Sys.command("haxelib", arguments.concat(args.get("args")));
+			} else {
+				var useEnvironment = args.exists("env");
 
-			var name = args.get("package")[0];
-			path = Helm.repository.findPackage(name);
-
-			exec(args.get("args"), path, useEnvironment);
+				var path = Helm.repository.findPackage(name);
+				if (path != null) {
+					exec(args.get("args"), path, useEnvironment);
+				} else {
+					1; // return code when no path is found
+				}
+			}
+			Sys.exit(code);
 		}
-		Sys.exit(code);
 
 		return true;
 	}

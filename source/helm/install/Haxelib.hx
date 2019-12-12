@@ -28,7 +28,10 @@ class Haxelib implements Installable {
 
 		var downloadVersion = getLatestVersion(info, version);
 		if (downloadVersion == null) {
-			Helm.logger.error(L10n.get("version_not_found", [Std.string(version)]));
+			var version = this.version;
+			if (version != null) {
+				Helm.logger.error(L10n.get("version_not_found", [Std.string(version)]));
+			}
 			return false;
 		}
 		Helm.logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));

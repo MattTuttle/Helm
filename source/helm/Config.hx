@@ -3,7 +3,7 @@ package helm;
 class Config {
 	static public var useGlobal:Bool = false;
 
-	@:isVar static public var globalPath(get, null):Path;
+	static public var globalPath(get, never):Path;
 
 	static private function get_globalPath():Path {
 		return FileSystem.homeDir.join(".helm");

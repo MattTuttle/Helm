@@ -17,7 +17,7 @@ class LibBundle {
 			}
 			return rules;
 		}
-		return null;
+		return [];
 	}
 
 	static private function addBundleEntries(path:Path, list:List<haxe.zip.Entry>, ignore:EReg, fileName:String = ""):Void {

@@ -4,4 +4,5 @@
 -resource l10n/en-US/strings.xml@en-US
 
 -main helm.Helm
+--macro nullSafety("helm", Strict)
 -hl build/bin/helm.hl

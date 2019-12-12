@@ -1,9 +1,10 @@
 package helm;
 
-import helm.registry.Registry;
-import helm.util.Logger.LogLevel;
 import argparse.ArgParser;
-import helm.util.*;
+import helm.registry.Registry;
+import helm.util.L10n;
+import helm.util.Logger;
+import helm.util.Logger.LogLevel;
 
 class Helm {
 	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
@@ -61,12 +62,13 @@ class Helm {
 				command = Commands.getCommand("run");
 				args.unshift("run");
 			}
-
-			command.start(parser);
-			var result = parser.parse(args);
-			var success = command.call(result, path);
-			if (!success)
-				return false;
+			if (command != null) {
+				command.start(parser);
+				var result = parser.parse(args);
+				var success = command.call(result, path);
+				if (!success)
+					return false;
+			}
 		}
 
 		return true;

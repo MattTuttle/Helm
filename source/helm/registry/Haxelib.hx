@@ -1,5 +1,6 @@
 package helm.registry;
 
+import helm.util.L10n;
 import helm.ds.PackageInfo;
 import sys.Http;
 import helm.ds.SemVer;
@@ -47,7 +48,7 @@ class Haxelib implements Registry {
 	}
 
 	function call(func:String, params:Array<Dynamic>):Dynamic {
-		var data = null;
+		var data = "";
 		var h = new Http(url + "api/" + apiVersion + "/index.n");
 		var s = new haxe.Serializer();
 		s.serialize(["api", func]);
@@ -64,7 +65,7 @@ class Haxelib implements Registry {
 	}
 
 	public function getPackageInfo(name:String, version:SemVer):PackageInfo {
-		var data = null;
+		var data = "";
 		// TODO: what about haxelib.json files that aren't in the base directory? Is that still a thing??
 		var h = new Http(url + "/p/" + name + "/" + version.toString() + "/raw-files/haxelib.json");
 		h.onData = (d) -> data = d;
@@ -143,15 +144,20 @@ class Haxelib implements Registry {
 	}
 
 	public function submit(name:String, data:Bytes, auth:helm.Auth):Void {
-		call("checkDeveloper", [name, auth.username]);
-		var id = call("getSubmitId", []);
+		var user = auth.username, pass = auth.password;
+		if (user == null || pass == null) {
+			Helm.logger.log(L10n.get("not_logged_in"));
+		} else {
+			call("checkDeveloper", [name, user]);
+			var id = call("getSubmitId", []);
 
-		var h = new Http(url);
-		h.onData = (d) -> trace(d);
-		h.onError = (e) -> throw e;
-		h.fileTransfer("file", id, new UploadProgress(data), data.length);
-		h.request(true);
+			var h = new Http(url);
+			h.onData = (d) -> trace(d);
+			h.onError = (e) -> throw e;
+			h.fileTransfer("file", id, new UploadProgress(data), data.length);
+			h.request(true);
 
-		call("processSubmit", [id, auth.username, auth.password]);
+			call("processSubmit", [id, user, pass]);
+		}
 	}
 }
