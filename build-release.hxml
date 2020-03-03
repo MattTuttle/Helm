@@ -17,4 +17,3 @@
 --macro keep('helm.commands')
 --dce full
 --cmd clang -O3 -o build/bin/helm -std=c11 -I build build/helm.c -lhl /usr/local/lib/fmt.hdll /usr/local/lib/ssl.hdll
---cmd mv build/bin/helm /usr/local/bin/helm

@@ -4,7 +4,6 @@ import helm.util.L10n;
 import sys.io.File;
 import helm.ds.PackageInfo;
 import helm.install.Requirement;
-import helm.ds.Lockfile;
 
 class Installer {
 	static var versionDir = "helm";
@@ -23,12 +22,12 @@ class Installer {
 		return false;
 	}
 
-	function installDependencies(installDir:Path, target:Path, lockfile:Lockfile) {
+	function installDependencies(installDir:Path, target:Path) {
 		// install any dependencies
 		var info = PackageInfo.load(installDir);
 		if (info != null && info.dependencies != null) {
 			for (require in info.dependencies) {
-				install(require, target, lockfile);
+				install(require, target);
 			}
 		}
 	}
@@ -41,44 +40,31 @@ class Installer {
 		}
 	}
 
-	function libraryIsInstalled(requirement:Requirement, target:Path):Bool {
-		var packages = Helm.repository.findPackagesIn(requirement.name, target);
-		if (requirement.version == null) {
-			for (info in packages) {
-				// TODO: break or throw error if more than one package?
-				requirement.version = info.version;
-			}
-		}
-		return packages.length > 0;
-	}
-
-	function installFromType(requirement:Requirement, baseRepo:Path, lockfile:Lockfile):Bool {
-		var path = getInstallPath(baseRepo, requirement.name);
+	function installFromType(requirement:Requirement, baseRepo:Path):Bool {
+		var name = requirement.installable.name;
+		var path = getInstallPath(baseRepo, name);
 		// check if something was installed
 		if (requirement.install(path) && !saveCurrentFile(path)) {
-			Helm.logger.error("Could not install package " + requirement.name);
+			Helm.logger.error("Could not install package " + name);
 			return false;
 		}
 
 		// addToPackageDependencies(req.name, req.original, baseRepo);
-		installDependencies(path, baseRepo, lockfile);
+		installDependencies(path, baseRepo);
 		return true;
 	}
 
-	public function install(packageInstall:String, ?target:Path, ?lockfile:Lockfile):Bool {
+	public function install(packageInstall:String, ?target:Path):Bool {
 		final path = target == null ? Config.globalPath : target;
-		if (lockfile == null) {
-			lockfile = new Lockfile();
-		}
-		var requirement = new Requirement(packageInstall);
+		var lockfile = Helm.project.lockfile(path);
+		var requirement = Requirement.fromString(packageInstall);
+		if (requirement == null)
+			return false;
 		// prevent installing a library already installed (infinite loop)
-		if (libraryIsInstalled(requirement, path)) {
+		if (requirement.installable.isInstalled(path)) {
 			Helm.logger.log(L10n.get("already_installed", [requirement]));
 		} else {
-			if (installFromType(requirement, path, lockfile)) {
-				lockfile.addRequirement(requirement);
-				lockfile.save(path);
-			}
+			return installFromType(requirement, path);
 		}
 		return false;
 	}

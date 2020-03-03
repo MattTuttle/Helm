@@ -3,17 +3,57 @@ package helm.install;
 import helm.ds.PackageInfo;
 import helm.util.L10n;
 
+using StringTools;
+
 class Git implements Installable {
+	public final name:String;
+
 	var url:String;
 	var branch:Null<String>;
 
-	public function new(url:String, branch:Null<String>) {
+	public function new(name:String, url:String, branch:Null<String>) {
+		this.name = name;
 		this.url = url;
 		this.branch = branch;
 	}
 
+	/** installing from a git url (git+http://mygitserver.com/repo.git) */
+	@:requirement
+	public static function checkGit(requirement:String):Null<Installable> {
+		if (requirement.startsWith("git+")) {
+			var parts = requirement.split("#");
+			var branch = null;
+			if (parts.length > 1)
+				branch = parts.pop();
+			var url = parts[0].substr(4);
+			var name = url.substr(url.lastIndexOf("/") + 1).replace(".git", "");
+			return new Git(name, url, branch);
+		}
+		return null;
+	}
+
+	/** installing from github (<User>/<Repository>) */
+	@:requirement
+	public static function checkGithub(requirement:String):Null<Installable> {
+		if (requirement.indexOf("/") >= 0) {
+			var parts = requirement.split("#");
+			var branch = null;
+			if (parts.length > 1)
+				branch = parts.pop();
+			var url:Path = "https://github.com/" + parts[0] + ".git";
+			var name = url.basename();
+			return new Git(name, url, branch);
+		}
+		return null;
+	}
+
+	public function isInstalled(target:Path):Bool {
+		var packages = Helm.repository.findPackagesIn(name, target);
+		return packages.length > 0;
+	}
+
 	public function install(target:Path, detail:Requirement):Bool {
-		Helm.logger.log(L10n.get("installing_package", [detail.name + "@" + url]));
+		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
 
 		var tmpDir = FileSystem.createTemporary();
 		var path = tmpDir;

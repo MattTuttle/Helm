@@ -19,13 +19,13 @@ class Lockfile {
 		var lockfile = new Lockfile();
 		for (library in ini.keys()) {
 			var section = ini.get(library);
-			var req = new Requirement(library.toLowerCase());
+			var req = Requirement.fromString(library.toLowerCase());
+			if (req == null)
+				continue;
 			lockfile.addRequirement(req);
 			for (key in section.keys()) {
 				var value = section.get(key);
 				switch (key) {
-					case "version":
-						req.version = value;
 					case "resolved":
 						req.resolved = value;
 					case "integrity":
@@ -62,10 +62,9 @@ class Lockfile {
 		var ini = new Ini();
 		for (req in requirements) {
 			var section = new IniSection();
-			section.set('version', req.version);
 			section.set('resolved', req.resolved);
 			section.set('integrity', req.integrity);
-			ini.set(req.name.toLowerCase(), section);
+			ini.set(req.installable.name.toLowerCase(), section);
 		}
 		return '; Helm lockfile\n$ini';
 	}

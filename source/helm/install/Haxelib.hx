@@ -12,21 +12,35 @@ import sys.io.File;
 using StringTools;
 
 class Haxelib implements Installable {
+	public final name:String;
+
 	var version:Null<SemVer>;
 
-	public function new(?version:SemVer) {
+	public function new(name:String, ?version:SemVer) {
+		this.name = name;
 		this.version = version;
+	}
+
+	/** installing from haxelib */
+	@:requirement
+	public static function fromString(requirement:String):Null<Installable> {
+		// try to split from name:version
+		if (requirement.indexOf(":") >= 0) {
+			var parts = requirement.split(":");
+			if (parts.length == 2) {
+				var version = SemVer.ofString(parts[1]);
+				// only use the first part if successfully parsing a version from the second part
+				if (version != null) {
+					return new Haxelib(parts[0], version);
+				}
+			}
+		}
+		return null;
 	}
 
 	public function install(target:Path, requirement:Requirement):Bool {
 		// conflict resolution
-		var info = Helm.registry.getProjectInfo(requirement.name);
-		if (info == null) {
-			Helm.logger.error(L10n.get("not_a_package"));
-			return false;
-		}
-
-		var downloadVersion = getLatestVersion(info, version);
+		var downloadVersion = getLatestVersion(version);
 		if (downloadVersion == null) {
 			var version = this.version;
 			if (version != null) {
@@ -34,12 +48,14 @@ class Haxelib implements Installable {
 			}
 			return false;
 		}
-		Helm.logger.log(L10n.get("installing_package", [info.name + ":" + downloadVersion.value]));
+		Helm.logger.log(L10n.get("installing_package", [name + ":" + downloadVersion.value]));
 
 		// download if not installing from a local file
 		var path = download(downloadVersion.url);
 
-		requirement.version = downloadVersion.value;
+		var ver = version;
+		if (ver != null && ver != downloadVersion.value)
+			Helm.logger.log(L10n.get("version_not_matching"));
 		requirement.resolved = downloadVersion.url;
 		#if (cpp || hl)
 		requirement.integrity = haxe.crypto.Sha256.encode(File.getContent(path));
@@ -49,6 +65,11 @@ class Haxelib implements Installable {
 		unpackFile(path, target);
 
 		return true;
+	}
+
+	public function isInstalled(target:Path):Bool {
+		var packages = Helm.repository.findPackagesIn(name, target);
+		return packages.length > 0;
 	}
 
 	public function download(url:Path):String {
@@ -113,7 +134,13 @@ class Haxelib implements Installable {
 		throw "No " + json + " found";
 	}
 
-	function getLatestVersion(info:ProjectInfo, ?version:SemVer):Null<VersionInfo> {
+	function getLatestVersion(?version:SemVer):Null<VersionInfo> {
+		var info = Helm.registry.getProjectInfo(name);
+		if (info == null) {
+			Helm.logger.error(L10n.get("not_a_package"));
+			return null;
+		}
+
 		if (version == null) {
 			// TODO: sort versions?
 			for (v in info.versions) {
