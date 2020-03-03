@@ -65,8 +65,8 @@ class Lockfile {
 			section.set('version', req.version);
 			section.set('resolved', req.resolved);
 			section.set('integrity', req.integrity);
-			ini.set(req.name, section);
+			ini.set(req.name.toLowerCase(), section);
 		}
-		return ini;
+		return '; Helm lockfile\n$ini';
 	}
 }
