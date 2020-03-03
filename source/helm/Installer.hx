@@ -58,8 +58,6 @@ class Installer {
 		final path = target == null ? Config.globalPath : target;
 		var lockfile = Helm.project.lockfile(path);
 		var requirement = Requirement.fromString(packageInstall);
-		if (requirement == null)
-			return false;
 		// prevent installing a library already installed (infinite loop)
 		if (requirement.installable.isInstalled(path)) {
 			Helm.logger.log(L10n.get("already_installed", [requirement]));

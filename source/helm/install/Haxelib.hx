@@ -1,5 +1,6 @@
 package helm.install;
 
+import helm.ds.Ini.IniSection;
 import haxe.Http;
 import helm.http.DownloadProgress;
 import helm.ds.Types.ProjectInfo;
@@ -36,6 +37,16 @@ class Haxelib implements Installable {
 			}
 		}
 		return null;
+	}
+
+	public function freeze(map:IniSection) {
+		var ver = version;
+		if (ver != null)
+			map.set("version", ver);
+	}
+
+	public function thaw(map:IniSection) {
+		version = map.get("version");
 	}
 
 	public function install(target:Path, requirement:Requirement):Bool {

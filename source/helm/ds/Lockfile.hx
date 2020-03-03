@@ -19,10 +19,11 @@ class Lockfile {
 		var lockfile = new Lockfile();
 		for (library in ini.keys()) {
 			var section = ini.get(library);
-			var req = Requirement.fromString(library.toLowerCase());
-			if (req == null)
+			if (section == null)
 				continue;
+			var req = Requirement.fromString(library.toLowerCase());
 			lockfile.addRequirement(req);
+			req.installable.thaw(section);
 			for (key in section.keys()) {
 				var value = section.get(key);
 				switch (key) {
@@ -64,6 +65,7 @@ class Lockfile {
 			var section = new IniSection();
 			section.set('resolved', req.resolved);
 			section.set('integrity', req.integrity);
+			req.installable.freeze(section);
 			ini.set(req.installable.name.toLowerCase(), section);
 		}
 		return '; Helm lockfile\n$ini';

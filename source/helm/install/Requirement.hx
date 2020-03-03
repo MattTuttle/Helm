@@ -16,7 +16,7 @@ class Requirement {
 		this.installable = installable;
 	}
 
-	public static function fromString(requirement:String):Null<Requirement> {
+	public static function fromString(requirement:String):Requirement {
 		for (func in [FilePath.fromString, Git.checkGit, Git.checkGithub, Haxelib.fromString]) {
 			var result = func(requirement);
 			if (result != null) {

@@ -1,6 +1,7 @@
 package helm.install;
 
 import helm.ds.PackageInfo;
+import helm.ds.Ini.IniSection;
 
 class FilePath implements Installable {
 	public final name:String;
@@ -22,6 +23,14 @@ class FilePath implements Installable {
 			}
 		}
 		return null;
+	}
+
+	public function freeze(map:IniSection) {
+		map.set("path", path);
+	}
+
+	public function thaw(map:IniSection) {
+		path = map.get("path");
 	}
 
 	public function isInstalled(target:Path):Bool {

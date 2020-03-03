@@ -1,5 +1,6 @@
 package helm.install;
 
+import helm.ds.Ini.IniSection;
 import helm.ds.PackageInfo;
 import helm.util.L10n;
 
@@ -45,6 +46,16 @@ class Git implements Installable {
 			return new Git(name, url, branch);
 		}
 		return null;
+	}
+
+	public function freeze(map:IniSection) {
+		map.set("url", url);
+		map.set("branch", branch);
+	}
+
+	public function thaw(map:IniSection) {
+		url = map.get("url");
+		branch = map.get("branch");
 	}
 
 	public function isInstalled(target:Path):Bool {

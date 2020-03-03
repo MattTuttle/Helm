@@ -26,9 +26,7 @@ class Project {
 			lockfile = new Lockfile();
 			for (lib in Helm.repository.installed(path)) {
 				var req = Requirement.fromString(lib.name + "@" + lib.version);
-				if (req != null) {
-					lockfile.addRequirement(req);
-				}
+				lockfile.addRequirement(req);
 			}
 		}
 		return lockfile;

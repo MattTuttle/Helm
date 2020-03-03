@@ -4,10 +4,15 @@ import haxe.ds.StringMap;
 
 using StringTools;
 
-@:forward(keys, get)
-abstract IniSection(StringMap<String>) {
+@:forward(keys)
+abstract IniSection(StringMap<String>) to StringMap<String> {
 	public function new() {
 		this = new StringMap<String>();
+	}
+
+	public function get(name:String, defaultValue:String = ""):String {
+		var value = this.get(name);
+		return value == null ? defaultValue : value;
 	}
 
 	public function set(name:String, value:Null<String>) {
@@ -47,6 +52,8 @@ abstract Ini(IniData) from IniData to IniData {
 		var lines = [];
 		for (section in ini.keys()) {
 			var data = ini.get(section);
+			if (data == null)
+				continue;
 			lines.push('[$section]');
 			for (key in data.keys()) {
 				var value = data.get(key);
