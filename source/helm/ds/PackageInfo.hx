@@ -130,7 +130,7 @@ class PackageInfo {
 	static public function init(path:Path, logger:Logger) {
 		// fill in dependencies
 		var dependencies = new StringMap<String>();
-		for (dep in Helm.repository.list(path)) {
+		for (dep in Helm.repository.installed(path)) {
 			dependencies.set(dep.name, dep.version);
 		}
 

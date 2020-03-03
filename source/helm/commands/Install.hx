@@ -1,5 +1,6 @@
 package helm.commands;
 
+import helm.ds.Lockfile;
 import argparse.Namespace;
 import argparse.ArgParser;
 
@@ -13,11 +14,11 @@ class Install implements Command {
 
 	public function run(args:Namespace, path:Path):Bool {
 		var packages = args.get('package');
+		var installer = new Installer();
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (packages.length == 0) {
 			packages = Helm.repository.findDependencies(path);
 		}
-		var installer = new Installer();
 		for (requirement in packages) {
 			installer.install(requirement, path);
 		}

@@ -41,20 +41,6 @@ class Repository {
 		return results;
 	}
 
-	public function getPackageRoot(path:Path, ?find:String):String {
-		if (find == null)
-			find = PackageInfo.JSON;
-		var original = path;
-		// TODO: better string checking?
-		while (path != "" && path != "/") {
-			if (FileSystem.isFile(path.join(find)) || FileSystem.isDirectory(path.join(find))) {
-				return path;
-			}
-			path = path.dirname();
-		}
-		return original;
-	}
-
 	public function findPackagesIn(name:String, target:Path):Array<PackageInfo> {
 		name = name.toLowerCase();
 
@@ -66,16 +52,13 @@ class Repository {
 			}
 		}
 
-		// find a libs directory in the current directory or a parent
-		target = getPackageRoot(target, LIB_DIR);
-
-		return searchPackageList(name, list(target));
+		return searchPackageList(name, installed(target));
 	}
 
-	public function outdated(path:String):List<{name:String, current:SemVer, latest:SemVer}> {
+	public function outdated(path:Path):List<{name:String, current:SemVer, latest:SemVer}> {
 		// TODO: change this to a typedef and include more info
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
-		for (item in list(path)) {
+		for (item in installed(path)) {
 			var info = Helm.registry.getProjectInfo(item.name);
 			if (info == null)
 				continue;
@@ -107,9 +90,24 @@ class Repository {
 		return null;
 	}
 
-	public function list(path:Path):Array<PackageInfo> {
+	function findRoot(path:Path):Path {
+		var search = path;
+		while (search != "") {
+			if (FileSystem.isDirectory(search.join(LIB_DIR))) {
+				return search.join(LIB_DIR);
+			}
+			search = search.dirname();
+		}
+		// TODO: throw an error if we don't find the repository folder?
+		return path.join(LIB_DIR);
+	}
+
+	/**
+	 * Provides a list of all the packages installed in this repository
+	 */
+	public function installed(path:Path):Array<PackageInfo> {
 		var packages = new Array<PackageInfo>();
-		var dir = path.join(LIB_DIR);
+		var dir = findRoot(path);
 		for (item in FileSystem.readDirectory(dir)) {
 			var libPath = dir.join(item);
 			var info = getPackageInfo(libPath);

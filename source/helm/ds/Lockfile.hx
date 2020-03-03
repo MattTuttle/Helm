@@ -1,31 +1,43 @@
 package helm.ds;
 
-import haxe.Json;
-import helm.install.Requirement;
 import sys.io.File;
+import helm.ds.Ini.IniSection;
+import helm.install.Requirement;
 
 class Lockfile {
-	static final JSON = "helm.lock";
+	static final FILE = "helm.lock";
 
-	final libraries = new Array<Requirement>();
+	final requirements = new Array<Requirement>();
 
 	public function new() {}
 
 	public function addRequirement(requirement:Requirement) {
-		libraries.push(requirement);
+		requirements.push(requirement);
 	}
 
-	static public function loadFromString(json:String):Lockfile {
+	static public function loadFromString(ini:Ini):Lockfile {
 		var lockfile = new Lockfile();
-		var libs:Array<String> = Json.parse(json);
-		for (requirement in libs) {
-			lockfile.addRequirement(new Requirement(requirement));
+		for (library in ini.keys()) {
+			var section = ini.get(library);
+			var req = new Requirement(library.toLowerCase());
+			lockfile.addRequirement(req);
+			for (key in section.keys()) {
+				var value = section.get(key);
+				switch (key) {
+					case "version":
+						req.version = value;
+					case "resolved":
+						req.resolved = value;
+					case "integrity":
+						req.integrity = value;
+				}
+			}
 		}
 		return lockfile;
 	}
 
 	static public function load(path:Path):Null<Lockfile> {
-		var dataPath = path.join(JSON);
+		var dataPath = path.join(FILE);
 		if (FileSystem.isFile(dataPath)) {
 			try {
 				var data = File.getContent(dataPath);
@@ -39,7 +51,7 @@ class Lockfile {
 
 	public function save(path:Path):Bool {
 		try {
-			File.saveContent(path.join(JSON), toString());
+			File.saveContent(path.join(FILE), toString());
 			return true;
 		} catch (e:Dynamic) {
 			return false;
@@ -47,6 +59,14 @@ class Lockfile {
 	}
 
 	public function toString():String {
-		return haxe.Json.stringify(libraries, null, "\t");
+		var ini = new Ini();
+		for (req in requirements) {
+			var section = new IniSection();
+			section.set('version', req.version);
+			section.set('resolved', req.resolved);
+			section.set('integrity', req.integrity);
+			ini.set(req.name, section);
+		}
+		return ini;
 	}
 }

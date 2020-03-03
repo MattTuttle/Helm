@@ -10,6 +10,7 @@ class Helm {
 	static public var VERSION = helm.ds.SemVer.ofString("0.1.0");
 	static public var logger = new Logger(Sys.stdout());
 	static public var repository = new Repository();
+	static public var project = new Project();
 
 	// TODO: setup a mirror list for multiple repository servers
 	static public var registry:Registry = new helm.registry.Haxelib();
@@ -41,7 +42,7 @@ class Helm {
 		} else {
 			var cwd:Path = Sys.getCwd(); // current working directory
 			cwd = cwd.normalize(); // cwd has a nasty habit of including a trailing slash
-			var path = Helm.repository.getPackageRoot(cwd);
+			var path = Helm.project.getRoot(cwd);
 			return path == null ? cwd : path;
 		}
 	}

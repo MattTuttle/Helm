@@ -1,6 +1,7 @@
 -cp source
 -lib argparser
 -lib compiletime
+-lib hxIni
 -resource l10n/en-US/strings.xml@en-US
 
 -main helm.Helm

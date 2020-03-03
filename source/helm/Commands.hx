@@ -1,6 +1,5 @@
 package helm;
 
-import sys.ssl.Certificate;
 import argparse.Namespace;
 import argparse.ArgParser;
 import haxe.ds.StringMap;

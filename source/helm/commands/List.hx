@@ -15,46 +15,32 @@ class List implements Command {
 		var flat = args.exists("flat");
 
 		Helm.logger.log(path);
-		var list = Helm.repository.list(path);
+		var list = Helm.repository.installed(path);
 		if (list.length == 0) {
 			Helm.logger.log("└── (empty)");
 		} else {
 			if (flat) {
-				function printPackagesFlat(list:Array<PackageInfo>) {
-					for (p in list) {
-						Helm.logger.log(p.fullName);
-						printPackagesFlat(Helm.repository.list(p.filePath));
-					}
-				}
 				printPackagesFlat(list);
 			} else {
-				function printPackages(list:Array<PackageInfo>, ?level:Array<Bool>) {
-					if (level == null)
-						level = [true];
-
-					var numItems = list.length, i = 0;
-					for (item in list) {
-						i += 1;
-						var start = "";
-						level[level.length - 1] = (i == numItems);
-						for (j in 0...level.length - 1) {
-							start += (level[j] ? "  " : "│ ");
-						}
-						var packages = Helm.repository.list(item.filePath);
-						var hasChildren = packages.length > 0;
-						var separator = (i == numItems ? "└" : "├") + (hasChildren ? "─┬ " : "── ");
-						Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
-
-						if (hasChildren) {
-							level.push(true);
-							printPackages(packages, level);
-							level.pop();
-						}
-					}
-				}
 				printPackages(list);
 			}
 		}
 		return true;
+	}
+
+	function printPackagesFlat(list:Array<PackageInfo>) {
+		for (p in list) {
+			Helm.logger.log(p.fullName);
+		}
+	}
+
+	function printPackages(list:Array<PackageInfo>) {
+		var numItems = list.length, i = 0;
+		for (item in list) {
+			i += 1;
+			var start = "";
+			var separator = (i == numItems ? "└" : "├") + "── ";
+			Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
+		}
 	}
 }

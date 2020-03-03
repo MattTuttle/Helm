@@ -10,13 +10,13 @@ import argparse.Namespace;
 @category("information")
 class Info implements Command {
 	public function start(parser:ArgParser):Void {
-		parser.addArgument({flags: 'packages'});
+		parser.addArgument({flags: 'packages', optional: true});
 	}
 
 	public function run(args:Namespace, path:Path):Bool {
 		var packages = args.get('packages');
 		if (packages.length == 0) {
-			var path = Helm.repository.getPackageRoot(Sys.getCwd());
+			var path = Helm.project.getRoot(Sys.getCwd());
 			var info = PackageInfo.load(path);
 			if (info == null) {
 				Helm.logger.error(L10n.get("not_a_package"));
