@@ -1,14 +1,16 @@
 package helm;
 
+import helm.ds.Lockfile;
 import helm.util.L10n;
 import helm.ds.PackageInfo;
 import helm.install.Requirement;
 
 class Installer {
-	var installed = [];
+	var installed:Array<Requirement>;
 
 	public function new() {
 		var lockfile = Helm.project.lockfile();
+		installed = lockfile.requirements;
 	}
 
 	function installDependencies(installDir:Path) {
@@ -30,14 +32,14 @@ class Installer {
 	function installRequirement(requirement:Requirement):Bool {
 		var name = requirement.name;
 		// check if something was installed
-		if (!requirement.install()) {
-			Helm.logger.error("Could not install package " + name);
-			return false;
-		} else {
+		if (requirement.install()) {
+			installed.push(requirement);
 			// addToPackageDependencies(req.name, req.original, baseRepo);
 			installDependencies(requirement.installPath);
 			return true;
 		}
+		Helm.logger.error("Could not install package " + name);
+		return false;
 	}
 
 	public function install(packages:Array<String>) {
@@ -50,5 +52,7 @@ class Installer {
 				installRequirement(requirement);
 			}
 		}
+		var lockfile = new Lockfile(installed);
+		lockfile.save();
 	}
 }

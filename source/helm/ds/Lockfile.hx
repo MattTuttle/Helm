@@ -7,26 +7,25 @@ import helm.install.Requirement;
 class Lockfile {
 	static final FILE = "helm.lock";
 
-	final requirements = new Array<Requirement>();
+	public final requirements:Array<Requirement>;
 
-	public function new() {}
-
-	public function addRequirement(requirement:Requirement) {
-		requirements.push(requirement);
+	public function new(requirements:Array<Requirement>) {
+		this.requirements = requirements;
 	}
 
 	static public function loadFromString(ini:Ini):Lockfile {
-		var lockfile = new Lockfile();
+		var requirements = [];
 		for (library in ini.keys()) {
 			var section = ini.get(library);
 			if (section == null)
 				continue;
 			var req = Requirement.fromString(library.toLowerCase());
-			lockfile.addRequirement(req);
-			req.thaw(section);
+			requirements.push(req);
 			for (key in section.keys()) {
 				var value = section.get(key);
 				switch (key) {
+					case "version":
+						req.version = value;
 					case "resolved":
 						req.resolved = value;
 					case "integrity":
@@ -34,7 +33,7 @@ class Lockfile {
 				}
 			}
 		}
-		return lockfile;
+		return new Lockfile(requirements);
 	}
 
 	static public function load(path:Path):Null<Lockfile> {
@@ -50,8 +49,9 @@ class Lockfile {
 		return null;
 	}
 
-	public function save(path:Path):Bool {
+	public function save():Bool {
 		try {
+			var path = Helm.project.path;
 			File.saveContent(path.join(FILE), toString());
 			return true;
 		} catch (e:Dynamic) {
@@ -63,10 +63,12 @@ class Lockfile {
 		var ini = new Ini();
 		for (req in requirements) {
 			var section = new IniSection();
+			var version = req.version;
+			if (version != null)
+				section.set('version', version);
 			section.set('resolved', req.resolved);
 			section.set('integrity', req.integrity);
-			req.freeze(section);
-			ini.set(req.name.toLowerCase(), section);
+			ini.set(req.name, section);
 		}
 		return '; Helm lockfile\n$ini';
 	}

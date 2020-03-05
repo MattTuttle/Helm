@@ -28,11 +28,11 @@ class Project {
 	public function lockfile():Lockfile {
 		var lockfile = Lockfile.load(path);
 		if (lockfile == null) {
-			lockfile = new Lockfile();
-			for (lib in Helm.repository.installed()) {
-				var req = Requirement.fromString(lib.name + "@" + lib.version);
-				lockfile.addRequirement(req);
-			}
+			lockfile = new Lockfile([
+				for (lib in Helm.repository.installed()) {
+					Requirement.fromString(lib.name + "@" + lib.version);
+				}
+			]);
 		}
 		return lockfile;
 	}

@@ -1,7 +1,6 @@
 package helm.install;
 
 import helm.ds.PackageInfo;
-import helm.ds.Ini.IniSection;
 
 class FilePath implements Installable {
 	public final name:String;
@@ -25,22 +24,19 @@ class FilePath implements Installable {
 		return null;
 	}
 
-	public function freeze(map:IniSection) {
-		map.set("path", path);
-	}
-
-	public function thaw(map:IniSection) {
-		path = map.get("path");
-	}
-
 	public function isInstalled():Bool {
 		var packages = Helm.repository.findPackagesIn(name);
 		return packages.length > 0;
 	}
 
 	public function install(target:Path, detail:Requirement):Bool {
-		// TODO: create symlink on unix platforms
-		FileSystem.copy(this.path, target);
+		var info = PackageInfo.load(path);
+		if (info != null) {
+			// TODO: create symlink on unix platforms
+			FileSystem.copy(path, target);
+			detail.resolved = path;
+			detail.version = info.version;
+		}
 		return true;
 	}
 }

@@ -1,9 +1,7 @@
 package helm.install;
 
-import helm.ds.Ini.IniSection;
 import haxe.Http;
 import helm.http.DownloadProgress;
-import helm.ds.Types.ProjectInfo;
 import helm.ds.PackageInfo;
 import helm.ds.Types.VersionInfo;
 import helm.util.L10n;
@@ -39,16 +37,6 @@ class Haxelib implements Installable {
 		return null;
 	}
 
-	public function freeze(map:IniSection) {
-		var ver = version;
-		if (ver != null)
-			map.set("version", ver);
-	}
-
-	public function thaw(map:IniSection) {
-		version = map.get("version");
-	}
-
 	public function install(target:Path, requirement:Requirement):Bool {
 		// conflict resolution
 		var downloadVersion = getLatestVersion(version);
@@ -67,6 +55,7 @@ class Haxelib implements Installable {
 		var ver = version;
 		if (ver != null && ver != downloadVersion.value)
 			Helm.logger.log(L10n.get("version_not_matching"));
+		requirement.version = downloadVersion.value;
 		requirement.resolved = downloadVersion.url;
 		#if (cpp || hl)
 		requirement.integrity = haxe.crypto.Sha256.encode(File.getContent(path));

@@ -12,6 +12,7 @@ class Uninstall implements Command {
 	}
 
 	public function run(args:Namespace):Bool {
+		// TODO: modify lockfile
 		for (packageName in args.get("packages")) {
 			var infos = Helm.repository.findPackagesIn(packageName);
 			for (info in infos) {

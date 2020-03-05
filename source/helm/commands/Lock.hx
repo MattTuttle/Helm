@@ -8,8 +8,7 @@ class Lock implements Command {
 	public function start(parser:ArgParser) {}
 
 	public function run(args:Namespace):Bool {
-		var lockfile = Helm.project.lockfile();
-		lockfile.save(Helm.project.path);
+		Helm.project.lockfile();
 		return true;
 	}
 }

@@ -1,6 +1,6 @@
 package helm.install;
 
-import helm.ds.Ini.IniSection;
+import sys.io.Process;
 import helm.ds.PackageInfo;
 import helm.util.L10n;
 
@@ -48,23 +48,23 @@ class Git implements Installable {
 		return null;
 	}
 
-	public function freeze(map:IniSection) {
-		map.set("url", url);
-		map.set("branch", branch);
-	}
-
-	public function thaw(map:IniSection) {
-		url = map.get("url");
-		branch = map.get("branch");
-	}
-
 	public function isInstalled():Bool {
 		var packages = Helm.repository.findPackagesIn(name);
 		return packages.length > 0;
 	}
 
+	function getCommitId(path:Path):String {
+		var cwd = Sys.getCwd();
+		Sys.setCwd(path);
+		var p = new Process("git", ["rev-parse", "HEAD"]);
+		var commitId = p.stdout.readLine();
+		p.close();
+		Sys.setCwd(cwd);
+		return commitId;
+	}
+
 	public function install(target:Path, detail:Requirement):Bool {
-		Helm.logger.log(L10n.get("installing_package", [name + "@" + url]));
+		Helm.logger.log(L10n.get("installing_package", [name + Config.VERSION_SEP + url]));
 
 		var tmpDir = FileSystem.createTemporary();
 		var path = tmpDir;
@@ -84,6 +84,8 @@ class Git implements Installable {
 			Helm.logger.error(L10n.get("not_a_package"));
 		} else {
 			moveToRepository(path, target);
+			detail.resolved = url + "#" + getCommitId(target);
+			detail.version = info.version;
 			return true;
 		}
 		return false;

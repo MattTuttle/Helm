@@ -1,12 +1,13 @@
 package helm.install;
 
+import helm.ds.SemVer;
 import sys.io.File;
-import helm.ds.Ini.IniSection;
 import helm.install.Installable;
 
 class Requirement {
 	static var versionDir = "helm";
 
+	public var version:Null<SemVer>;
 	public var resolved:Null<String>;
 	public var integrity:Null<String>;
 
@@ -32,7 +33,7 @@ class Requirement {
 	public var name(get, never):String;
 
 	inline function get_name():String {
-		return installable.name;
+		return installable.name.toLowerCase();
 	}
 
 	function saveCurrentFile(dir:Path):Bool {
@@ -56,14 +57,6 @@ class Requirement {
 
 	public inline function isInstalled():Bool {
 		return installable.isInstalled();
-	}
-
-	public inline function thaw(values:IniSection) {
-		return installable.thaw(values);
-	}
-
-	public inline function freeze(values:IniSection) {
-		return installable.freeze(values);
 	}
 
 	function toString():String {
