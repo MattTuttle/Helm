@@ -12,15 +12,15 @@ class Install implements Command {
 		parser.addArgument({flags: 'package', numArgs: '?'});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var packages = args.get('package');
 		var installer = new Installer();
 		// if no packages are given as arguments, search in local directory for dependencies
 		if (packages.length == 0) {
-			packages = Helm.repository.findDependencies(path);
+			packages = Helm.repository.findDependencies();
 		}
 		for (requirement in packages) {
-			installer.install(requirement, path);
+			installer.install(requirement);
 		}
 
 		return true;

@@ -10,8 +10,8 @@ class Installer {
 
 	public function new() {}
 
-	function getInstallPath(target:Path, name:String) {
-		return target.join(Repository.LIB_DIR).join(name).join(versionDir);
+	function getInstallPath(name:String) {
+		return Helm.repository.path.join(name).join(versionDir);
 	}
 
 	function saveCurrentFile(dir:Path):Bool {
@@ -22,12 +22,12 @@ class Installer {
 		return false;
 	}
 
-	function installDependencies(installDir:Path, target:Path) {
+	function installDependencies(installDir:Path) {
 		// install any dependencies
 		var info = PackageInfo.load(installDir);
 		if (info != null && info.dependencies != null) {
 			for (require in info.dependencies) {
-				install(require, target);
+				install(require);
 			}
 		}
 	}
@@ -40,9 +40,9 @@ class Installer {
 		}
 	}
 
-	function installFromType(requirement:Requirement, baseRepo:Path):Bool {
+	function installFromType(requirement:Requirement):Bool {
 		var name = requirement.installable.name;
-		var path = getInstallPath(baseRepo, name);
+		var path = getInstallPath(name);
 		// check if something was installed
 		if (requirement.install(path) && !saveCurrentFile(path)) {
 			Helm.logger.error("Could not install package " + name);
@@ -50,19 +50,18 @@ class Installer {
 		}
 
 		// addToPackageDependencies(req.name, req.original, baseRepo);
-		installDependencies(path, baseRepo);
+		installDependencies(path);
 		return true;
 	}
 
-	public function install(packageInstall:String, ?target:Path):Bool {
-		final path = target == null ? Config.globalPath : target;
-		var lockfile = Helm.project.lockfile(path);
+	public function install(packageInstall:String):Bool {
+		var lockfile = Helm.project.lockfile();
 		var requirement = Requirement.fromString(packageInstall);
 		// prevent installing a library already installed (infinite loop)
-		if (requirement.installable.isInstalled(path)) {
+		if (requirement.installable.isInstalled()) {
 			Helm.logger.log(L10n.get("already_installed", [requirement]));
 		} else {
-			return installFromType(requirement, path);
+			return installFromType(requirement);
 		}
 		return false;
 	}

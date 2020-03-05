@@ -7,8 +7,8 @@ import argparse.ArgParser;
 class Outdated implements Command {
 	public function start(parser:ArgParser):Void {}
 
-	public function run(args:Namespace, path:Path):Bool {
-		var outdated = Helm.repository.outdated(path);
+	public function run(args:Namespace):Bool {
+		var outdated = Helm.repository.outdated();
 		for (item in outdated) {
 			Helm.logger.log(item.name + ":" + item.current + " < " + item.latest);
 		}

@@ -5,5 +5,5 @@ import argparse.Namespace;
 
 interface Command {
 	public function start(parser:ArgParser):Void;
-	public function run(args:Namespace, path:Path):Bool;
+	public function run(args:Namespace):Bool;
 }

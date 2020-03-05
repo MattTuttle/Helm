@@ -10,12 +10,12 @@ class Upgrade implements Command {
 		parser.addArgument({flags: "includes"});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var installer = new Installer();
-		var outdated = Helm.repository.outdated(path);
+		var outdated = Helm.repository.outdated();
 		// TODO: take git repositories into account
 		for (item in outdated) {
-			installer.install(item.name + ":" + item.latest, path);
+			installer.install(item.name + ":" + item.latest);
 		}
 		return true;
 	}

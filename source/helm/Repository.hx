@@ -8,24 +8,22 @@ import helm.ds.SemVer;
 using StringTools;
 
 class Repository {
-	static public var LIB_DIR:String = ".haxelib";
+	@:allow(helm.Helm) static var LIB_DIR:String = ".haxelib";
 	static public var NDLL_DIR:String = "ndll";
 
-	public function new() {}
+	public final path:Path;
+
+	public function new(?path:Path) {
+		this.path = path == null ? Config.globalPath : path;
+	}
 
 	public function findPackage(name:String):Null<String> {
-		var repo = findPackagesIn(name, Sys.getCwd());
-		// fallback, if no package found
-		if (repo.length == 0) {
-			repo = findPackagesIn(name, Config.globalPath);
-			if (repo.length == 0)
-				return null;
-		}
+		var repo = findPackagesIn(name);
 		// TODO: resolve multiple packages found, select best one
 		return repo[0].filePath;
 	}
 
-	function hasPackageNamed(path:Path, name:String):Bool {
+	function hasPackageNamed(name:String):Bool {
 		var info = PackageInfo.load(path);
 		return (info != null && info.name == name);
 	}
@@ -41,24 +39,24 @@ class Repository {
 		return results;
 	}
 
-	public function findPackagesIn(name:String, target:Path):Array<PackageInfo> {
+	public function findPackagesIn(name:String):Array<PackageInfo> {
 		name = name.toLowerCase();
 
 		// search in the current directory for a haxelib.json file
-		if (hasPackageNamed(target, name)) {
-			var info = PackageInfo.load(target);
+		if (hasPackageNamed(name)) {
+			var info = PackageInfo.load(path);
 			if (info != null) {
 				return [info];
 			}
 		}
 
-		return searchPackageList(name, installed(target));
+		return searchPackageList(name, installed());
 	}
 
-	public function outdated(path:Path):List<{name:String, current:SemVer, latest:SemVer}> {
+	public function outdated():List<{name:String, current:SemVer, latest:SemVer}> {
 		// TODO: change this to a typedef and include more info
 		var outdated = new List<{name:String, current:SemVer, latest:SemVer}>();
-		for (item in installed(path)) {
+		for (item in installed()) {
 			var info = Helm.registry.getProjectInfo(item.name);
 			if (info == null)
 				continue;
@@ -90,26 +88,13 @@ class Repository {
 		return null;
 	}
 
-	function findRoot(path:Path):Path {
-		var search = path;
-		while (search != "") {
-			if (FileSystem.isDirectory(search.join(LIB_DIR))) {
-				return search.join(LIB_DIR);
-			}
-			search = search.dirname();
-		}
-		// TODO: throw an error if we don't find the repository folder?
-		return path.join(LIB_DIR);
-	}
-
 	/**
 	 * Provides a list of all the packages installed in this repository
 	 */
-	public function installed(path:Path):Array<PackageInfo> {
+	public function installed():Array<PackageInfo> {
 		var packages = new Array<PackageInfo>();
-		var dir = findRoot(path);
-		for (item in FileSystem.readDirectory(dir)) {
-			var libPath = dir.join(item);
+		for (item in FileSystem.readDirectory(path)) {
+			var libPath = path.join(item);
 			var info = getPackageInfo(libPath);
 			if (info != null)
 				packages.push(info);
@@ -120,12 +105,12 @@ class Repository {
 	/**
 	 * Returns a list of project dependencies based on files found in the directory
 	 */
-	public function findDependencies(dir:String):Array<String> {
+	public function findDependencies():Array<String> {
 		var libs = [];
-		var info = PackageInfo.load(dir);
+		var info = PackageInfo.load(path);
 		if (info == null) {
 			// search files for libraries to install
-			for (item in FileSystem.readDirectory(dir)) {
+			for (item in FileSystem.readDirectory(path)) {
 				if (item.endsWith("hxml")) {
 					for (line in File.getContent(item).split("\n")) {
 						if (line.startsWith("-lib")) {

@@ -58,8 +58,8 @@ class Git implements Installable {
 		branch = map.get("branch");
 	}
 
-	public function isInstalled(target:Path):Bool {
-		var packages = Helm.repository.findPackagesIn(name, target);
+	public function isInstalled():Bool {
+		var packages = Helm.repository.findPackagesIn(name);
 		return packages.length > 0;
 	}
 

@@ -11,9 +11,9 @@ class Uninstall implements Command {
 		parser.addArgument({flags: "packages"});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		for (packageName in args.get("packages")) {
-			var infos = Helm.repository.findPackagesIn(packageName, path);
+			var infos = Helm.repository.findPackagesIn(packageName);
 			for (info in infos) {
 				FileSystem.delete(info.filePath.dirname().dirname());
 				Helm.logger.log(L10n.get("directory_deleted", [info.name]));

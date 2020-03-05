@@ -19,10 +19,10 @@ class CommandCall {
 		_command.start(parser);
 	}
 
-	public function call(args:Namespace, path:String):Bool {
+	public function call(args:Namespace):Bool {
 		// wrap in a try/catch; so if the command explodes it can exit gracefully
 		try {
-			return _command.run(args, path);
+			return _command.run(args);
 		} catch (e:Dynamic) {
 			Helm.logger.log(Std.string(e));
 			Helm.logger.log(CallStack.toString(CallStack.exceptionStack()));

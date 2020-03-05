@@ -9,7 +9,7 @@ import argparse.Namespace;
 class Clean implements Command {
 	public function start(parser:ArgParser):Void {}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var result = Helm.logger.prompt(L10n.get("delete_cache_confirm"));
 		if (result != null && ~/^y(es)?$/.match(result.toLowerCase())) {
 			FileSystem.delete(Config.cachePath);

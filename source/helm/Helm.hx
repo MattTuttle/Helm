@@ -36,25 +36,23 @@ class Helm {
 		Sys.exit(1);
 	}
 
-	private function getPathTarget():Path {
-		if (Config.useGlobal) {
-			return Config.globalPath;
+	private function initializeRepositoryPath() {
+		var path = if (Config.useGlobal) {
+			Config.globalPath;
 		} else {
-			var cwd:Path = Sys.getCwd(); // current working directory
-			cwd = cwd.normalize(); // cwd has a nasty habit of including a trailing slash
-			var path = Helm.project.getRoot(cwd);
-			return path == null ? cwd : path;
+			project.path.join(Repository.LIB_DIR);
 		}
+		repository = new Repository(path);
 	}
 
 	function runCommands(parser:ArgParser, args:Array<String>):Bool {
 		var result = parser.parse(args, false);
+		initializeRepositoryPath();
 
 		if (!result.exists("command")) {
 			return false;
 		}
 
-		var path = getPathTarget();
 		for (commandName in result.get("command")) {
 			var command = Commands.getCommand(commandName);
 
@@ -66,7 +64,7 @@ class Helm {
 			if (command != null) {
 				command.start(parser);
 				var result = parser.parse(args);
-				var success = command.call(result, path);
+				var success = command.call(result);
 				if (!success)
 					return false;
 			}

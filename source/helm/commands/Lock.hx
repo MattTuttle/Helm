@@ -7,10 +7,9 @@ import argparse.ArgParser;
 class Lock implements Command {
 	public function start(parser:ArgParser) {}
 
-	public function run(args:Namespace, path:Path):Bool {
-		var projectRoot = Helm.project.getRoot(path);
-		var lockfile = Helm.project.lockfile(projectRoot);
-		lockfile.save(projectRoot);
+	public function run(args:Namespace):Bool {
+		var lockfile = Helm.project.lockfile();
+		lockfile.save(Helm.project.path);
 		return true;
 	}
 }

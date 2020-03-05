@@ -5,12 +5,18 @@ import helm.ds.Lockfile;
 import helm.ds.PackageInfo;
 
 class Project {
-	public function new() {}
+	public final path:Path;
+
+	public function new() {
+		var cwd:Path = Sys.getCwd(); // current working directory
+		cwd = cwd.normalize(); // cwd has a nasty habit of including a trailing slash
+		this.path = getRoot(cwd);
+	}
 
 	public function getRoot(path:Path):Path {
 		var search = path;
 		while (search != "") {
-			if (FileSystem.isFile(search.join(PackageInfo.JSON))) {
+			if (FileSystem.isFile(search.join("haxelib.json"))) {
 				return search;
 			}
 			search = search.dirname();
@@ -19,12 +25,11 @@ class Project {
 		return path;
 	}
 
-	public function lockfile(path:Path):Lockfile {
-		var projectRoot = Helm.project.getRoot(path);
-		var lockfile = Lockfile.load(projectRoot);
+	public function lockfile():Lockfile {
+		var lockfile = Lockfile.load(path);
 		if (lockfile == null) {
 			lockfile = new Lockfile();
-			for (lib in Helm.repository.installed(path)) {
+			for (lib in Helm.repository.installed()) {
 				var req = Requirement.fromString(lib.name + "@" + lib.version);
 				lockfile.addRequirement(req);
 			}

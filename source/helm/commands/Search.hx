@@ -11,7 +11,7 @@ class Search implements Command {
 		parser.addArgument({flags: "package"});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		if (args.exists("package")) {
 			var names = new Array<String>();
 

@@ -12,9 +12,10 @@ class Build implements Command {
 		parser.addArgument({flags: "hxml", numArgs: '?'});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var result = true;
 
+		var path = Helm.project.path;
 		if (args.exists("hxml")) {
 			for (hxml in args.get("hxml")) {
 				result = buildHxmlFile(path.join(hxml));

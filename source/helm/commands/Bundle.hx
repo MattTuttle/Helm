@@ -8,8 +8,8 @@ import argparse.ArgParser;
 class Bundle implements Command {
 	public function start(parser:ArgParser):Void {}
 
-	public function run(args:Namespace, path:Path):Bool {
-		LibBundle.make(path);
+	public function run(args:Namespace):Bool {
+		LibBundle.make(Helm.project.path);
 		return true;
 	}
 }

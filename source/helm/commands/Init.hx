@@ -9,7 +9,8 @@ import argparse.Namespace;
 class Init implements Command {
 	public function start(parser:ArgParser) {}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
+		var path = Helm.project.path;
 		var info = PackageInfo.load(path);
 		if (info != null) {
 			Helm.logger.error(L10n.get("package_already_exists", [info.fullName]));

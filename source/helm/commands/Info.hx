@@ -13,7 +13,8 @@ class Info implements Command {
 		parser.addArgument({flags: 'packages', optional: true});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
+		var path = Helm.project.path;
 		var packages = args.get('packages');
 		if (packages.length == 0) {
 			var path = Helm.project.getRoot(Sys.getCwd());

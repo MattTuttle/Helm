@@ -14,7 +14,7 @@ class Run implements Command {
 		parser.addArgument({flags: "args", numArgs: '*'});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var name = args.get("package").shift();
 		if (name != null) {
 			var code = if (args.exists("haxelib")) {

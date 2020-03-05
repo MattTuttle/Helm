@@ -13,7 +13,7 @@ class Haxelib implements Command {
 		parser.addArgument({flags: "args"});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		if (args.exists("args")) {
 			var it = args.get("args").iterator();
 			switch (it.next()) {
@@ -36,6 +36,7 @@ class Haxelib implements Command {
 						}
 					}
 				case "publish", "upload", "submit":
+					var path = Helm.project.path;
 					var info = PackageInfo.load(path);
 					if (info == null) {
 						Helm.logger.error(L10n.get("not_a_package"));

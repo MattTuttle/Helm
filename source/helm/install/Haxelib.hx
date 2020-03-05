@@ -78,8 +78,8 @@ class Haxelib implements Installable {
 		return true;
 	}
 
-	public function isInstalled(target:Path):Bool {
-		var packages = Helm.repository.findPackagesIn(name, target);
+	public function isInstalled():Bool {
+		var packages = Helm.repository.findPackagesIn(name);
 		return packages.length > 0;
 	}
 

@@ -11,11 +11,11 @@ class List implements Command {
 		parser.addArgument({flags: ["--flat", "-f"]});
 	}
 
-	public function run(args:Namespace, path:Path):Bool {
+	public function run(args:Namespace):Bool {
 		var flat = args.exists("flat");
 
-		Helm.logger.log(path);
-		var list = Helm.repository.installed(path);
+		Helm.logger.log(Helm.repository.path);
+		var list = Helm.repository.installed();
 		if (list.length == 0) {
 			Helm.logger.log("└── (empty)");
 		} else {

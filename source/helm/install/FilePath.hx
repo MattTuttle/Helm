@@ -33,8 +33,8 @@ class FilePath implements Installable {
 		path = map.get("path");
 	}
 
-	public function isInstalled(target:Path):Bool {
-		var packages = Helm.repository.findPackagesIn(name, target);
+	public function isInstalled():Bool {
+		var packages = Helm.repository.findPackagesIn(name);
 		return packages.length > 0;
 	}
 
