@@ -40,7 +40,7 @@ class List implements Command {
 			i += 1;
 			var start = "";
 			var separator = (i == numItems ? "└" : "├") + "── ";
-			Helm.logger.log(start + separator + item.name + "{blue}:" + item.version + "{end}");
+			Helm.logger.log(start + separator + item.name + "{blue}" + Config.VERSION_SEP + item.version + "{end}");
 		}
 	}
 }

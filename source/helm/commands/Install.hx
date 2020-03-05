@@ -19,9 +19,7 @@ class Install implements Command {
 		if (packages.length == 0) {
 			packages = Helm.repository.findDependencies();
 		}
-		for (requirement in packages) {
-			installer.install(requirement);
-		}
+		installer.install(packages);
 
 		return true;
 	}

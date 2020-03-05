@@ -1,5 +1,6 @@
 package helm;
 
+import helm.install.Haxelib;
 import helm.ds.PackageInfo;
 import helm.ds.SemVer;
 
@@ -32,7 +33,7 @@ class Boot {
 		var info = PackageInfo.load(path);
 		if (version > info.version) {
 			var installer = new Installer();
-			installer.install(PACKAGE_NAME + ":" + version, path);
+			installer.install([PACKAGE_NAME + Haxelib.VERSION_SEP + version]);
 		}
 
 		if (!FileSystem.isFile("helm")) {

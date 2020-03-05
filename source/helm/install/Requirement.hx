@@ -1,13 +1,16 @@
 package helm.install;
 
+import sys.io.File;
+import helm.ds.Ini.IniSection;
 import helm.install.Installable;
 
 class Requirement {
+	static var versionDir = "helm";
+
 	public var resolved:Null<String>;
 	public var integrity:Null<String>;
-	public var dependencies:Null<Array<String>>;
 
-	public var installable:Installable;
+	var installable:Installable;
 
 	var original:String;
 
@@ -26,11 +29,44 @@ class Requirement {
 		return new Requirement(requirement, new Haxelib(requirement));
 	}
 
-	public function install(target:Path):Bool {
-		return installable.install(target, this);
+	public var name(get, never):String;
+
+	inline function get_name():String {
+		return installable.name;
+	}
+
+	function saveCurrentFile(dir:Path):Bool {
+		if (dir != null && FileSystem.isDirectory(dir)) {
+			File.saveContent(dir.dirname().join(".current"), versionDir);
+			return true;
+		}
+		return false;
+	}
+
+	public var installPath(get, never):Path;
+
+	inline function get_installPath():Path {
+		return Helm.repository.path.join(name).join(versionDir);
+	}
+
+	public inline function install():Bool {
+		var path = installPath;
+		return installable.install(path, this) && saveCurrentFile(path);
+	}
+
+	public inline function isInstalled():Bool {
+		return installable.isInstalled();
+	}
+
+	public inline function thaw(values:IniSection) {
+		return installable.thaw(values);
+	}
+
+	public inline function freeze(values:IniSection) {
+		return installable.freeze(values);
 	}
 
 	function toString():String {
-		return installable.name;
+		return name;
 	}
 }

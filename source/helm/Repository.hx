@@ -118,7 +118,7 @@ class Repository {
 							if (result != null) {
 								var lib = result.split("=");
 								if (lib.length > 1) {
-									libs.push(lib[0] + ":" + lib[1]);
+									libs.push(lib[0] + Config.VERSION_SEP + lib[1]);
 								} else {
 									libs.push(lib[0]);
 								}

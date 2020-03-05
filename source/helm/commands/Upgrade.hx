@@ -14,9 +14,10 @@ class Upgrade implements Command {
 		var installer = new Installer();
 		var outdated = Helm.repository.outdated();
 		// TODO: take git repositories into account
-		for (item in outdated) {
-			installer.install(item.name + ":" + item.latest);
-		}
+		installer.install([
+			for (item in outdated)
+				item.name + Config.VERSION_SEP + item.latest
+		]);
 		return true;
 	}
 }

@@ -26,8 +26,8 @@ class Haxelib implements Installable {
 	@:requirement
 	public static function fromString(requirement:String):Null<Installable> {
 		// try to split from name:version
-		if (requirement.indexOf(":") >= 0) {
-			var parts = requirement.split(":");
+		if (requirement.indexOf(Config.VERSION_SEP) >= 0) {
+			var parts = requirement.split(Config.VERSION_SEP);
 			if (parts.length == 2) {
 				var version = SemVer.ofString(parts[1]);
 				// only use the first part if successfully parsing a version from the second part
@@ -59,7 +59,7 @@ class Haxelib implements Installable {
 			}
 			return false;
 		}
-		Helm.logger.log(L10n.get("installing_package", [name + ":" + downloadVersion.value]));
+		Helm.logger.log(L10n.get("installing_package", [name + Config.VERSION_SEP + downloadVersion.value]));
 
 		// download if not installing from a local file
 		var path = download(downloadVersion.url);

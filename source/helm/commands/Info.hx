@@ -26,7 +26,7 @@ class Info implements Command {
 			}
 		} else {
 			for (arg in packages) {
-				var parts = arg.split(":");
+				var parts = arg.split(Config.VERSION_SEP);
 				var info = Helm.registry.getProjectInfo(parts[0]);
 				if (info == null) {
 					Helm.logger.error(L10n.get("not_a_package"));

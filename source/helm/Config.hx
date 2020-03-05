@@ -1,6 +1,7 @@
 package helm;
 
 class Config {
+	static public final VERSION_SEP:String = "@";
 	static public var useGlobal:Bool = false;
 
 	static public var globalPath(get, never):Path;

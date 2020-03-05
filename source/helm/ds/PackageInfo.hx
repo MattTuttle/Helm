@@ -26,7 +26,7 @@ class DependencyIterator {
 		if (require == "" || require == null) {
 			return key;
 		} else if (SemVer.ofString(require) != null) {
-			return key + ":" + require;
+			return key + Config.VERSION_SEP + require;
 		}
 		return require;
 	}
@@ -57,7 +57,7 @@ class PackageInfo {
 	public var fullName(get, never):String;
 
 	private inline function get_fullName():String {
-		return name + ":" + version;
+		return name + Config.VERSION_SEP + version;
 	}
 
 	// TODO: change dynamic to a typedef
